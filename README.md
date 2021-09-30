@@ -9,9 +9,8 @@ All scripts in repository are used for DevTest only.
 | 2 | Get-Azone-Service.ps1 | Get the replication method of Azure Services supporting Availability Zones |
 | 3 | Create-Image-FromDisk.ps1 | Create ARM VM Image from Managed Disk |
 
+# Azure Services Naming Principle
 
-# Azure Naming Principle
-
-- Windows computer name cannot be more than 15 characters long, 
 - Be entirely numeric
 - Not contain the following characters: ` ~ ! @ # $ % ^ & * ( ) = + _ [ ] { } \ | ; : . ' " , < > / ?.
+- Azure VM name cannot be more than 15 characters long
