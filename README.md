@@ -1,1 +1,1 @@
-This repository is used for DevTest only. 
+All scripts in repository are used for DevTest only.
