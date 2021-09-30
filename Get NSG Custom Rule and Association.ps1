@@ -1,5 +1,7 @@
-# Login-AzAccount
-$TenantId = "83eef0ff-65ef-4870-89dc-e1b9c8e4356f"
+Login-AzAccount
+
+# Global Parameter
+$TenantId = "" # Enter Tenant ID if multiple
 $Subscriptions = Get-AzSubscription -TenantId $TenantId
 $Global:ResultArray = @()
 [int]$CurrentItem = 0
@@ -55,7 +57,7 @@ function Add-Record {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Associated NetworkInterface" -Value $NetworkInterfaceList
     }
 
-    # Rule
+    # Custom Rule
     if ($HasCustomRule) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "HasCustomRule" -Value "Yes"
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "RuleName" -Value $Rules.Name
@@ -107,6 +109,7 @@ function Add-Record {
     $Global:ResultArray += $obj
 }
 
+# Run
 foreach ($Subscription in $Subscriptions) {
 
 	Set-AzContext -SubscriptionId $Subscription.Id
