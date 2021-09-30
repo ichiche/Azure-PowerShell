@@ -1,3 +1,4 @@
+# Global Parameter
 $TenantId = "2bd50c63-c7a7-4718-897e-9c1600a37b66" # Riwhisper
 $Subscriptions = Get-AzSubscription -TenantId $TenantId -SubscriptionId "5ba60130-b60b-4c4b-8614-06a0c6723d9b"
 

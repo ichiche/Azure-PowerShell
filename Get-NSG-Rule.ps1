@@ -1,8 +1,8 @@
-Login-AzAccount
-
 # Global Parameter
 $TenantId = "" # Enter Tenant ID if multiple
 $Subscriptions = Get-AzSubscription -TenantId $TenantId
+
+# Script Variable
 $Global:ResultArray = @()
 [int]$CurrentItem = 0
 
@@ -110,6 +110,8 @@ function Add-Record {
 }
 
 # Run
+Login-AzAccount
+
 foreach ($Subscription in $Subscriptions) {
 
 	Set-AzContext -SubscriptionId $Subscription.Id
