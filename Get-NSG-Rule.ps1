@@ -1,6 +1,6 @@
 # Global Parameter
-$ConnectSpecificTenant = "Y" # "Y" or "N"
-$TenantId = "97f55d35-1929-4acf-9c11-d7aaf05b6756" # Enter Tenant ID
+$ConnectSpecificTenant = "" # "Y" or "N"
+$TenantId = "" # Enter Tenant ID
 $CsvFullPath = "C:\Temp\Azure-NsgCustomRule-Association.csv" # Export Result to CSV file 
 
 # Script Variable

@@ -1,8 +1,8 @@
 # Global Parameter
 $NewImageName = ""
 $osDiskName = "" # Enter OS Disk Name of VM
-$rgName = ""
-$location = "" # e.g. East Asia
+$rgName = "" # Enter Resource Group Name
+$location = "" # Enter Azure Resource Location, e.g. "East Asia"
 $subscriptionId = "" # Enter Subscription ID
 
 # Login
