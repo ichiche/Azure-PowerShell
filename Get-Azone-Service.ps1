@@ -12,7 +12,7 @@ $Subscriptions = Get-AzSubscription
 foreach ($Subscription in $Subscriptions) {
 	$AzContext = Set-AzContext -SubscriptionId $Subscription.Id 
     $CurrentItem++
-    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0,$AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
+    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
 
     $AppGateways = Get-AzApplicationGateway
 

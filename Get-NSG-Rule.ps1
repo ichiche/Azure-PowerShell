@@ -1,11 +1,16 @@
 # Global Parameter
-$TenantId = "" # Enter Tenant ID if multiple
-$Subscriptions = Get-AzSubscription -TenantId $TenantId
+$ConnectSpecificTenant = "Y" # "Y" or "N"
+$TenantId = "97f55d35-1929-4acf-9c11-d7aaf05b6756" # Enter Tenant ID
+$CsvFullPath = "C:\Temp\Azure-NsgCustomRule-Association.csv" # Export Result to CSV file 
 
 # Script Variable
 $Global:ResultArray = @()
 [int]$CurrentItem = 0
 
+# Login
+Connect-AzAccount # Comment this line if using Connect-To-Cloud.ps1
+
+# Function
 function Add-Record {
     param (
         $nsg,
@@ -33,8 +38,8 @@ function Add-Record {
             } else {
                 $vNetSubnetList += ", " + $st
             }
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Associated VirtualNetwork/Subnet" -Value $vNetSubnetList
         }
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Associated VirtualNetwork/Subnet" -Value $vNetSubnetList
     }
 
     # Associated Network Interface
@@ -109,14 +114,18 @@ function Add-Record {
     $Global:ResultArray += $obj
 }
 
-# Run
-Login-AzAccount
+# Get Azure Subscription
+if ($ConnectSpecificTenant -eq "Y") {
+    $Subscriptions = Get-AzSubscription -TenantId $TenantId
+} else {
+    $Subscriptions = Get-AzSubscription
+}
 
+# Main
 foreach ($Subscription in $Subscriptions) {
-
-	Set-AzContext -SubscriptionId $Subscription.Id
+	$AzContext = Set-AzContext -SubscriptionId $Subscription.Id 
     $CurrentItem++
-    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Subscriptions.Count + " Subscription`n") -ForegroundColor Yellow
+    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
 
     $nsgs = Get-AzNetworkSecurityGroup
 
@@ -134,5 +143,8 @@ foreach ($Subscription in $Subscriptions) {
     }
 }
 
-# Export
-$Global:ResultArray | Export-Csv -Path C:\Temp\Azure-NsgCustomRule-Association.csv -NoTypeInformation -Confirm:$false -Force 
+# Export Result to CSV file
+$Global:ResultArray | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force 
+
+# Logout
+Disconnect-AzAccount
