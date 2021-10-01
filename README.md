@@ -11,7 +11,15 @@ All scripts in repository are used for DevTest only.
 - Variable under **# Script Variable** is expected NOT to modify
 - Decide to use either **Connect-To-Cloud.ps1** or manually run command **Connect-AzAccount** to login
 
-# File List
+
+# Basic Script
+
+| Id | File Name | Description |
+| - | - | - |
+| 1 | Encrypt-Password-Embed.ps1 | Specify the password in script file, converting to **SecureString** and output to text file finally |
+| 2 | Encrypt-Password-ReadHost.ps1 | Enter the password at PowerShell session for Converting to **SecureString** and output to text file finally |
+
+# Script for Azure Operation
 
 | Id | File Name | Description |
 | - | - | - |
