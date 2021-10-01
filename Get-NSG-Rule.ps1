@@ -1,7 +1,7 @@
 # Global Parameter
 $ConnectSpecificTenant = "" # "Y" or "N"
 $TenantId = "" # Enter Tenant ID
-$CsvFullPath = "C:\Temp\Azure-NsgCustomRule-Association.csv" # Export Result to CSV file 
+$CsvFullPath = "C:\Temp\Azure-NsgCustomRule.csv" # Export Result to CSV file 
 
 # Script Variable
 $Global:ResultArray = @()
@@ -14,7 +14,7 @@ Connect-AzAccount # Comment this line if using Connect-To-Cloud.ps1
 function Add-Record {
     param (
         $nsg,
-        $Rules,
+        $rule,
         [switch]$HasCustomRule
     )
 
@@ -65,23 +65,23 @@ function Add-Record {
     # Custom Rule
     if ($HasCustomRule) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "HasCustomRule" -Value "Yes"
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "RuleName" -Value $Rules.Name
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Priority" -Value $Rules.Priority
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Access" -Value $Rules.Access
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Direction" -Value $Rules.Direction
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "RuleName" -Value $rule.Name
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Priority" -Value $rule.Priority
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Access" -Value $rule.Access
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Direction" -Value $rule.Direction
         
-        [string]$st = $Rules.SourcePortRange
+        [string]$st = $rule.SourcePortRange
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "SourcePortRange" -Value $st
 
-        [string]$st = $Rules.DestinationPortRange
+        [string]$st = $rule.DestinationPortRange
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "DestinationPortRange" -Value $st
 
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Protocol" -Value $Rules.Protocol
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Protocol" -Value $rule.Protocol
 
-        [string]$st = $Rules.SourceAddressPrefix
+        [string]$st = $rule.SourceAddressPrefix
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "SourceAddressPrefix" -Value $st
 
-        [string]$st = $Rules.DestinationAddressPrefix
+        [string]$st = $rule.DestinationAddressPrefix
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "DestinationAddressPrefix" -Value $st
     } else {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "HasCustomRule" -Value "No"
@@ -110,7 +110,7 @@ function Add-Record {
     }
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "Tags" -Value $TagsList
     
-    # Store to Array
+    # Save to Array
     $Global:ResultArray += $obj
 }
 
@@ -130,14 +130,13 @@ foreach ($Subscription in $Subscriptions) {
     $nsgs = Get-AzNetworkSecurityGroup
 
     foreach ($nsg in $nsgs) {
-
-        $nsgRules = $nsg | Get-AzNetworkSecurityRuleConfig
-        if ($nsgRules.Count -eq 0) {
-            Add-Record -nsg $nsg -Rules "" -HasCustomRule:$false
+        $NsgRules = $nsg | Get-AzNetworkSecurityRuleConfig
+        if ($NsgRules.Count -eq 0) {
+            Add-Record -nsg $nsg -rule "" -HasCustomRule:$false
         } else {
-            $nsgRules = $nsgRules | sort Direction, Priority
-            foreach ($nsgRule in $nsgRules) {
-                Add-Record -nsg $nsg -Rules $nsgRule -HasCustomRule:$true
+            $NsgRules = $NsgRules | sort Direction, Priority
+            foreach ($NsgRule in $NsgRules) {
+                Add-Record -nsg $nsg -rule $NsgRule -HasCustomRule:$true
             }
         }
     }
