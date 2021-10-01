@@ -135,7 +135,7 @@ foreach ($Subscription in $Subscriptions) {
         if ($nsgRules.Count -eq 0) {
             Add-Record -nsg $nsg -Rules "" -HasCustomRule:$false
         } else {
-            $nsgRules = $nsgRules | sort Priority
+            $nsgRules = $nsgRules | sort Direction, Priority
             foreach ($nsgRule in $nsgRules) {
                 Add-Record -nsg $nsg -Rules $nsgRule -HasCustomRule:$true
             }
