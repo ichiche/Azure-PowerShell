@@ -5,7 +5,7 @@ $CsvFullPath = "C:\Temp\Azure-NsgCustomRule.csv" # Export Result to CSV file
 
 # Script Variable
 $Global:ResultArray = @()
-[int]$CurrentItem = 0
+[int]$CurrentItem = 1
 
 # Login
 Connect-AzAccount # Comment this line if using Connect-To-Cloud.ps1
