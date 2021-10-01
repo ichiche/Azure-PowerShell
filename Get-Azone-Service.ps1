@@ -21,7 +21,8 @@ function Add-Record {
         $InstanceSize,
         $CurrentRedundancyType,
         $EnabledZoneRedundant,
-        $EnabledAvailabilityZone
+        $EnabledAvailabilityZone,
+        $Remark
     )
 
     # Pre-Configuration
@@ -41,6 +42,7 @@ function Add-Record {
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "CurrentRedundancyType" -Value $CurrentRedundancyType
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledZoneRedundant" -Value $EnabledZoneRedundant
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledAvailabilityZone" -Value $EnabledAvailabilityZone
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "Remark" -Value $Remark
 
     # Save to Array
     $Global:ResultArray += $obj
@@ -59,9 +61,9 @@ foreach ($Subscription in $Subscriptions) {
         [array]$array = $AppGateway.Zones
 
         if ($array.Count -gt 0) {
-            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $AppGateway.ResourceGroupName -Location $AppGateway.Location -InstanceName $AppGateway.Name -InstanceType "Application Gateway" -InstanceSize $AppGateway.Sku.Name -CurrentRedundancyType "Zone Redundant" -EnabledZoneRedundant "Y" -EnabledAvailabilityZone $array
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $AppGateway.ResourceGroupName -Location $AppGateway.Location -InstanceName $AppGateway.Name -InstanceType "Application Gateway" -InstanceSize $AppGateway.Sku.Name -CurrentRedundancyType "Zone Redundant" -EnabledZoneRedundant "Y" -EnabledAvailabilityZone $array -Remark "N/A"
         } else {
-            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $AppGateway.ResourceGroupName -Location $AppGateway.Location -InstanceName $AppGateway.Name -InstanceType "Application Gateway" -InstanceSize $AppGateway.Sku.Name -CurrentRedundancyType "No Redundant" -EnabledZoneRedundant "N" -EnabledAvailabilityZone "N/A"
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $AppGateway.ResourceGroupName -Location $AppGateway.Location -InstanceName $AppGateway.Name -InstanceType "Application Gateway" -InstanceSize $AppGateway.Sku.Name -CurrentRedundancyType "No Redundant" -EnabledZoneRedundant "N" -EnabledAvailabilityZone "N/A" -Remark "N/A"
         }
     }
     #EndRegion Application Gateway
@@ -73,12 +75,36 @@ foreach ($Subscription in $Subscriptions) {
         $BackupStorageRedundancy = Get-AzRecoveryServicesBackupProperty -Vault $RecoveryServicesVault | select -ExpandProperty BackupStorageRedundancy
 
         if ($BackupStorageRedundancy -eq "ZoneRedundant") {
-            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $RecoveryServicesVault.ResourceGroupName -Location $RecoveryServicesVault.Location -InstanceName $RecoveryServicesVault.Name -InstanceType "Recovery Service Vault" -InstanceSize "N/A" -CurrentRedundancyType "Zone Redundant" -EnabledZoneRedundant "Y" -EnabledAvailabilityZone "All Zones"
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $RecoveryServicesVault.ResourceGroupName -Location $RecoveryServicesVault.Location -InstanceName $RecoveryServicesVault.Name -InstanceType "Recovery Services Vault" -InstanceSize "N/A" -CurrentRedundancyType "Zone Redundant" -EnabledZoneRedundant "Y" -EnabledAvailabilityZone "All Zones" -Remark "N/A"
         } else { # GeoRedundant, LocallyRedundant
-            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $RecoveryServicesVault.ResourceGroupName -Location $RecoveryServicesVault.Location -InstanceName $RecoveryServicesVault.Name -InstanceType "Recovery Service Vault" -InstanceSize "N/A" -CurrentRedundancyType $BackupStorageRedundancy -EnabledZoneRedundant "N" -EnabledAvailabilityZone "N/A"
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $RecoveryServicesVault.ResourceGroupName -Location $RecoveryServicesVault.Location -InstanceName $RecoveryServicesVault.Name -InstanceType "Recovery Services Vault" -InstanceSize "N/A" -CurrentRedundancyType $BackupStorageRedundancy -EnabledZoneRedundant "N" -EnabledAvailabilityZone "N/A" -Remark "N/A"
         }
     }
     #EndRegion Recovery Services Vault
+
+    #Region Event Hub
+
+    # 'Event Hub' is actually called AzEventHubNamespace which is Event Hub Namespace, Event Hub Entity is called AzEventHub which is part of AzEventHubNamespace
+    $EventHubs = Get-AzEventHubNamespace
+
+    foreach ($EventHub in $EventHubs) {
+        # SKU
+        $sku = ($EventHub.Sku.Tier + ": " + $EventHub.Sku.Capacity + " Unit")
+
+        # Auto-Inflate
+        if ($EventHub.IsAutoInflateEnabled -eq $true) {
+            $remark = "Auto-Inflate Enabled, Maximum Throughput Units: " + $EventHub.MaximumThroughputUnits
+        } else {
+            $remark = "N/A"
+        }
+
+        if ($EventHub.ZoneRedundant -eq $true) {
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $EventHub.ResourceGroupName -Location $EventHub.Location -InstanceName $EventHub.Name -InstanceType "Event Hub" -InstanceSize $sku -CurrentRedundancyType "Zone Redundant" -EnabledZoneRedundant "Y" -EnabledAvailabilityZone "All Zones" -Remark $remark
+        } else {
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $EventHub.ResourceGroupName -Location $EventHub.Location -InstanceName $EventHub.Name -InstanceType "Event Hub" -InstanceSize $sku -CurrentRedundancyType "No Redundant" -EnabledZoneRedundant "N" -EnabledAvailabilityZone "N/A" -Remark $remark
+        }
+    }
+    #EndRegion Event Hub
 }
 
 # WIP
@@ -87,6 +113,10 @@ foreach ($Subscription in $Subscriptions) {
     Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
     $CurrentItem++
 
-    # Event Hub # Event Hub Namespace 
+    # Event Hub 
     # Deploy to All Zone by default 
 }
+
+
+# AKS
+# Select to single or multiple zone, cannot modify after provision, can add new node pool with new setting instead
