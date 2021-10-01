@@ -3,7 +3,7 @@ All scripts in repository are used for DevTest only.
 
 # Azure Services Naming Principle
 - Alphanumeric Characters
-- Not allow characters: ` ~ ! @ # $ % ^ & * ( ) = + _ [ ] { } \ | ; : . ' " , < > / ?.
+- Not allow characters: ` ~ ! @ # $ % ^ & * ( ) = + [ ] { } \ | ; : . ' " , < > / ?.
 - Azure VM name is up to 15 characters long
 
 # Prior to Run the Script
