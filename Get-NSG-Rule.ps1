@@ -123,10 +123,11 @@ if ($ConnectSpecificTenant -eq "Y") {
 
 # Main
 foreach ($Subscription in $Subscriptions) {
-	$AzContext = Set-AzContext -SubscriptionId $Subscription.Id 
-    $CurrentItem++
+    $AzContext = Set-AzContext -SubscriptionId $Subscription.Id 
     Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
+    $CurrentItem++
 
+    # Network Security Group
     $nsgs = Get-AzNetworkSecurityGroup
 
     foreach ($nsg in $nsgs) {
