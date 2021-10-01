@@ -3,7 +3,7 @@ All scripts in repository are used for DevTest only.
 
 # Azure Services Naming Principle
 - Alphanumeric Characters
-- Not allow characters: ` ~ ! @ # $ % ^ & * ( ) = + [ ] { } \ | ; : . ' " , < > / ?
+- Not allow characters: **` ~ ! @ # $ % ^ & * ( ) = + [ ] { } \ | ; : . ' " , < > / ?**
 
 # Prior to Run the Script
 
