@@ -56,14 +56,16 @@ foreach ($Subscription in $Subscriptions) {
 
     #Region Application Gateway
     $AppGateways = Get-AzApplicationGateway
+    $InstanceType = "Application Gateway" 
 
     foreach ($AppGateway in $AppGateways) {
         [array]$array = $AppGateway.Zones
-
+        
         if ($array.Count -gt 0) {
-            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $AppGateway.ResourceGroupName -Location $AppGateway.Location -InstanceName $AppGateway.Name -InstanceType "Application Gateway" -InstanceSize $AppGateway.Sku.Name -CurrentRedundancyType "Zone Redundant" -EnabledZoneRedundant "Y" -EnabledAvailabilityZone $array -Remark "N/A"
+            [string]$AvailabilityZones = $array -join ","
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $AppGateway.ResourceGroupName -Location $AppGateway.Location -InstanceName $AppGateway.Name -InstanceType $InstanceType -InstanceSize $AppGateway.Sku.Name -CurrentRedundancyType "Zone Redundant" -EnabledZoneRedundant "Y" -EnabledAvailabilityZone $AvailabilityZones -Remark "N/A"
         } else {
-            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $AppGateway.ResourceGroupName -Location $AppGateway.Location -InstanceName $AppGateway.Name -InstanceType "Application Gateway" -InstanceSize $AppGateway.Sku.Name -CurrentRedundancyType "No Redundant" -EnabledZoneRedundant "N" -EnabledAvailabilityZone "N/A" -Remark "N/A"
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $AppGateway.ResourceGroupName -Location $AppGateway.Location -InstanceName $AppGateway.Name -InstanceType $InstanceType -InstanceSize $AppGateway.Sku.Name -CurrentRedundancyType "No Redundant" -EnabledZoneRedundant "N" -EnabledAvailabilityZone "N/A" -Remark "N/A"
         }
     }
     #EndRegion Application Gateway
@@ -83,8 +85,8 @@ foreach ($Subscription in $Subscriptions) {
     #EndRegion Recovery Services Vault
 
     #Region Event Hub
-
-    # 'Event Hub' is actually called AzEventHubNamespace which is Event Hub Namespace, Event Hub Entity is called AzEventHub which is part of AzEventHubNamespace
+    # 'Event Hub' is actually called AzEventHubNamespace which is Event Hub Namespace
+    # Event Hub Entity is called AzEventHub which is part of AzEventHubNamespace
     $EventHubs = Get-AzEventHubNamespace
 
     foreach ($EventHub in $EventHubs) {
@@ -105,18 +107,25 @@ foreach ($Subscription in $Subscriptions) {
         }
     }
     #EndRegion Event Hub
-}
 
-# WIP
-foreach ($Subscription in $Subscriptions) {
-	$AzContext = Set-AzContext -SubscriptionId $Subscription.Id 
-    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
-    $CurrentItem++
+    #Region Azure Kubernetes Service (AKS)
+    $AksClusters = Get-AzAksCluster
 
-    # Event Hub 
-    # Deploy to All Zone by default 
-}
-
-
-# AKS
-# Select to single or multiple zone, cannot modify after provision, can add new node pool with new setting instead
+    foreach ($AksCluster in $AksClusters) {
+        foreach ($AgentPool in $AksClusters.AgentPoolProfiles) {
+            $ResourceGroupName = $AksCluster.NodeResourceGroup.Substring($AksCluster.NodeResourceGroup.IndexOf("_") + 1)
+            $ResourceGroupName = $ResourceGroupName.Substring(0, $ResourceGroupName.IndexOf("_"))
+            $InstanceType = ("Kubernetes Service - " + $AgentPool.Mode + " Pool")
+            $remark = ("Agent Pool Name: " + $AgentPool.Name)
+            [array]$array = $AgentPool.AvailabilityZones  
+            
+            if ($array.Count -gt 0) {
+                [string]$AvailabilityZones = $array -join ","
+                Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $ResourceGroupName -Location $AksCluster.Location -InstanceName $AksCluster.Name -InstanceType $InstanceType -InstanceSize $AgentPool.VmSize -CurrentRedundancyType "Zone Redundant" -EnabledZoneRedundant "Y" -EnabledAvailabilityZone $AvailabilityZones -Remark $remark
+            } else {
+                Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $ResourceGroupName -Location $AksCluster.Location -InstanceName $AksCluster.Name -InstanceType $InstanceType -InstanceSize $AgentPool.VmSize -CurrentRedundancyType "No Redundant" -EnabledZoneRedundant "N" -EnabledAvailabilityZone "N/A" -Remark $remark
+            }
+        }
+    }
+    #EndRegion Azure Kubernetes Service (AKS)
+} 
