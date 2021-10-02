@@ -195,14 +195,14 @@ foreach ($Subscription in $Subscriptions) {
             } else {
                 $CurrentRedundancyType = "Zone Redundant"
             }
-            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $ResourceGroupName -Location $vng.Location -InstanceName $vng.Name -InstanceType $InstanceType -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant "Y" -EnabledAvailabilityZone $AvailabilityZones -Remark $remark
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $vng.ResourceGroupName -Location $vng.Location -InstanceName $vng.Name -InstanceType $InstanceType -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant "Y" -EnabledAvailabilityZone $AvailabilityZones -Remark $remark
         } else {
             if ($vng.ActiveActive) {
                 $CurrentRedundancyType = "Active-Active"
             } else {
                 $CurrentRedundancyType = "No Redundant"
             }
-            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $ResourceGroupName -Location $vng.Location -InstanceName $vng.Name -InstanceType $InstanceType -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant "N" -EnabledAvailabilityZone "N/A" -Remark $remark
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $vng.ResourceGroupName -Location $vng.Location -InstanceName $vng.Name -InstanceType $InstanceType -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant "N" -EnabledAvailabilityZone "N/A" -Remark $remark
         }
     }
     #EndRegion Virtual Network Gateway
