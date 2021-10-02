@@ -78,9 +78,9 @@ foreach ($Subscription in $Subscriptions) {
         $BackupStorageRedundancy = Get-AzRecoveryServicesBackupProperty -Vault $RecoveryServicesVault | select -ExpandProperty BackupStorageRedundancy
 
         if ($BackupStorageRedundancy -eq "ZoneRedundant") {
-            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $RecoveryServicesVault.ResourceGroupName -Location $RecoveryServicesVault.Location -InstanceName $RecoveryServicesVault.Name -InstanceType "Recovery Services Vault" -InstanceSize "N/A" -CurrentRedundancyType "Zone Redundant" -EnabledZoneRedundant "Y" -EnabledAvailabilityZone "All Zones" -Remark "N/A"
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $RecoveryServicesVault.ResourceGroupName -Location $RecoveryServicesVault.Location -InstanceName $RecoveryServicesVault.Name -InstanceType "Recovery Services Vault" -InstanceSize "N/A" -CurrentRedundancyType "Zone Redundant" -EnabledZoneRedundant "Y" -EnabledAvailabilityZone "All Zones" -Remark ""
         } else { # GeoRedundant, LocallyRedundant
-            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $RecoveryServicesVault.ResourceGroupName -Location $RecoveryServicesVault.Location -InstanceName $RecoveryServicesVault.Name -InstanceType "Recovery Services Vault" -InstanceSize "N/A" -CurrentRedundancyType $BackupStorageRedundancy -EnabledZoneRedundant "N" -EnabledAvailabilityZone "N/A" -Remark "N/A"
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $RecoveryServicesVault.ResourceGroupName -Location $RecoveryServicesVault.Location -InstanceName $RecoveryServicesVault.Name -InstanceType "Recovery Services Vault" -InstanceSize "N/A" -CurrentRedundancyType $BackupStorageRedundancy -EnabledZoneRedundant "N" -EnabledAvailabilityZone "N/A" -Remark ""
         }
     }
     #EndRegion Recovery Services Vault
@@ -97,7 +97,9 @@ foreach ($Subscription in $Subscriptions) {
         # Auto-Inflate
         if ($EventHub.IsAutoInflateEnabled -eq $true) {
             $remark = "Auto-Inflate Enabled, Maximum Throughput Units: " + $EventHub.MaximumThroughputUnits
-        } 
+        } else {
+            $remark = ""
+        }
 
         # Geo-Recovery
         $GeoDR = $null
@@ -108,22 +110,24 @@ foreach ($Subscription in $Subscriptions) {
 
         }
 
-        if ($GeoDR -ne $null -and $GeoDR.Role -ne "PrimaryNotReplicating") {
-            $PartnerNamespace = $GeoDR.PartnerNamespace.Substring($GeoDR.PartnerNamespace.IndexOf("/namespaces/") + ("/namespaces/".Length))
-            $remark += ("; Geo-Recovery Partner Namespace: " + $PartnerNamespace)
+        if ($GeoDR -ne $null) {
+            if ($GeoDR.Role -ne "PrimaryNotReplicating") {
+                $PartnerNamespace = $GeoDR.PartnerNamespace.Substring($GeoDR.PartnerNamespace.IndexOf("/namespaces/") + ("/namespaces/".Length))
+                $remark += ("; Geo-Recovery Partner Namespace: " + $PartnerNamespace)
+            }
         }
 
         # Add-Record 
         if ($EventHub.ZoneRedundant -eq $true) {
-            if ($PartnerNamespace -ne $null) {
-                $CurrentRedundancyType = "Zone Redundant with Geo-Recovery"
+            if ($GeoDR -ne $null) {
+                $CurrentRedundancyType = "Zone Redundant with Geo-Recovery (" + $GeoDR.Role + ")"
             } else {
                 $CurrentRedundancyType = "Zone Redundant"
             }
             Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $EventHub.ResourceGroupName -Location $EventHub.Location -InstanceName $EventHub.Name -InstanceType "Event Hub" -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant "Y" -EnabledAvailabilityZone "All Zones" -Remark $remark
         } else {
-            if ($PartnerNamespace -ne $null) {
-                $CurrentRedundancyType = "Geo-Recovery"
+            if ($GeoDR -ne $null) {
+                $CurrentRedundancyType = "Geo-Recovery (" + $GeoDR.Role + ")"
             } else {
                 $CurrentRedundancyType = "No Redundant"
             }
@@ -204,4 +208,5 @@ foreach ($Subscription in $Subscriptions) {
     #EndRegion Virtual Network Gateway
 }
 
-$Global:ResultArray | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force
+# Export Result to CSV file 
+$Global:ResultArray | sort SubscriptionName, InstanceType | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force
