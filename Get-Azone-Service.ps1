@@ -1,6 +1,7 @@
 # Global Parameter
 $ConnectSpecificTenant = "" # "Y" or "N"
 $TenantId = "" # Enter Tenant ID
+$CsvFullPath = "C:\Temp\Azure-AzoneService-Assessment.csv" # Export Result to CSV file 
 
 # Script Variable
 $Global:ResultArray = @()
@@ -96,14 +97,37 @@ foreach ($Subscription in $Subscriptions) {
         # Auto-Inflate
         if ($EventHub.IsAutoInflateEnabled -eq $true) {
             $remark = "Auto-Inflate Enabled, Maximum Throughput Units: " + $EventHub.MaximumThroughputUnits
-        } else {
-            $remark = "N/A"
+        } 
+
+        # Geo-Recovery
+        $GeoDR = $null
+
+        try {
+            $GeoDR = Get-AzEventHubGeoDRConfiguration -ResourceGroupName $EventHub.ResourceGroupName -Namespace $EventHub.Name -ErrorAction SilentlyContinue
+        } catch {
+
         }
 
+        if ($GeoDR -ne $null -and $GeoDR.Role -ne "PrimaryNotReplicating") {
+            $PartnerNamespace = $GeoDR.PartnerNamespace.Substring($GeoDR.PartnerNamespace.IndexOf("/namespaces/") + ("/namespaces/".Length))
+            $remark += ("; Geo-Recovery Partner Namespace: " + $PartnerNamespace)
+        }
+
+        # Add-Record 
         if ($EventHub.ZoneRedundant -eq $true) {
-            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $EventHub.ResourceGroupName -Location $EventHub.Location -InstanceName $EventHub.Name -InstanceType "Event Hub" -InstanceSize $sku -CurrentRedundancyType "Zone Redundant" -EnabledZoneRedundant "Y" -EnabledAvailabilityZone "All Zones" -Remark $remark
+            if ($PartnerNamespace -ne $null) {
+                $CurrentRedundancyType = "Zone Redundant with Geo-Recovery"
+            } else {
+                $CurrentRedundancyType = "Zone Redundant"
+            }
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $EventHub.ResourceGroupName -Location $EventHub.Location -InstanceName $EventHub.Name -InstanceType "Event Hub" -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant "Y" -EnabledAvailabilityZone "All Zones" -Remark $remark
         } else {
-            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $EventHub.ResourceGroupName -Location $EventHub.Location -InstanceName $EventHub.Name -InstanceType "Event Hub" -InstanceSize $sku -CurrentRedundancyType "No Redundant" -EnabledZoneRedundant "N" -EnabledAvailabilityZone "N/A" -Remark $remark
+            if ($PartnerNamespace -ne $null) {
+                $CurrentRedundancyType = "Geo-Recovery"
+            } else {
+                $CurrentRedundancyType = "No Redundant"
+            }
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $EventHub.ResourceGroupName -Location $EventHub.Location -InstanceName $EventHub.Name -InstanceType "Event Hub" -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant "N" -EnabledAvailabilityZone "N/A" -Remark $remark
         }
     }
     #EndRegion Event Hub
@@ -128,4 +152,56 @@ foreach ($Subscription in $Subscriptions) {
         }
     }
     #EndRegion Azure Kubernetes Service (AKS)
-} 
+
+    #Region Virtual Network Gateway
+    $vngs = Get-AzResourceGroup | Get-AzVirtualNetworkGateway
+    $InstanceType = ("Virtual Network Gateway")
+
+    foreach ($vng in $vngs) {
+        # SKU
+        $sku = ($vng.Sku.Tier + ": " + $vng.Sku.Capacity + " Unit")
+
+        # Primary Public IP Address
+        $PrimaryIpConfig = $vng.IpConfigurations | ? {$_.Name -eq "default"}
+        $PublicIpResourceId = $PrimaryIpConfig.PublicIpAddress.Id
+        $PublicIpRg = $PublicIpResourceId.Substring($PublicIpResourceId.IndexOf("resourceGroups/") + ("resourceGroups/".Length))
+        $PublicIpRg = $PublicIpRg.Substring(0, $PublicIpRg.IndexOf("/providers/Microsoft.Network/"))
+        $PublicIpName = $PublicIpResourceId.Substring($PublicIpResourceId.IndexOf("/publicIPAddresses/") + ("/publicIPAddresses/".Length))
+        $PublicIp = Get-AzPublicIpAddress -ResourceGroupName $PublicIpRg -ResourceName $PublicIpName
+        [array]$array = $PublicIp.Zones
+        [string]$AvailabilityZones = ("First: " + $array -join ",")
+        $remark = ("First PIP Name: " + $PublicIpName)
+        
+        # Active-Active Design
+        if ($vng.ActiveActive) {
+            $SecondIpConfig = $vng.IpConfigurations | ? {$_.Name -eq "activeActive"}
+            $SecondIpResourceId = $SecondIpConfig.PublicIpAddress.Id
+            $SecondIpRg = $SecondIpResourceId.Substring($SecondIpResourceId.IndexOf("resourceGroups/") + ("resourceGroups/".Length))
+            $SecondIpRg = $SecondIpRg.Substring(0, $SecondIpRg.IndexOf("/providers/Microsoft.Network/"))
+            $SecondIpName = $SecondIpResourceId.Substring($SecondIpResourceId.IndexOf("/publicIPAddresses/") + ("/publicIPAddresses/".Length))
+            $SecondIp = Get-AzPublicIpAddress -ResourceGroupName $SecondIpRg -ResourceName $SecondIpName
+            [array]$SecondArray = $SecondIp.Zones
+            $AvailabilityZones += ("; Second: " + $SecondArray -join ",")
+            $remark += ("; Second PIP Name: " + $SecondIpName)
+        } 
+
+        if ($array.Count -gt 0) {
+            if ($vng.ActiveActive) {
+                $CurrentRedundancyType = "Zone Redundant with Active-Active"
+            } else {
+                $CurrentRedundancyType = "Zone Redundant"
+            }
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $ResourceGroupName -Location $vng.Location -InstanceName $vng.Name -InstanceType $InstanceType -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant "Y" -EnabledAvailabilityZone $AvailabilityZones -Remark $remark
+        } else {
+            if ($vng.ActiveActive) {
+                $CurrentRedundancyType = "Active-Active"
+            } else {
+                $CurrentRedundancyType = "No Redundant"
+            }
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $ResourceGroupName -Location $vng.Location -InstanceName $vng.Name -InstanceType $InstanceType -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant "N" -EnabledAvailabilityZone "N/A" -Remark $remark
+        }
+    }
+    #EndRegion Virtual Network Gateway
+}
+
+$Global:ResultArray | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force
