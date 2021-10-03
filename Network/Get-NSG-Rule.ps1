@@ -1,6 +1,6 @@
 # Global Parameter
-$ConnectSpecificTenant = "" # "Y" or "N"
-$TenantId = "" # Enter Tenant ID
+$SpecificTenant = "" # "Y" or "N"
+$TenantId = "" # Enter Tenant ID if $SpecificTenant is "Y"
 $CsvFullPath = "C:\Temp\Azure-NsgCustomRule.csv" # Export Result to CSV file 
 
 # Script Variable
@@ -115,7 +115,7 @@ function Add-Record {
 }
 
 # Get Azure Subscription
-if ($ConnectSpecificTenant -eq "Y") {
+if ($SpecificTenant -eq "Y") {
     $Subscriptions = Get-AzSubscription -TenantId $TenantId
 } else {
     $Subscriptions = Get-AzSubscription
