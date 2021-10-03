@@ -10,13 +10,15 @@ Retrieve the instance information includes pricing tier, current redundancy meth
 - Virtual Machine
 - Virtual Machine Scale Set
 - Managed Disk
+- Azure SQL Database (Preview for General Purpose service tier)
+- Azure SQL Managed Instance
 
 # Limitation
 App Service with Zone Redundant is supported to be created by ARM template at this moment. Zone redundant status is shown on Azure Portal only. Az Module and Azure CLI are not able to retrieve the Zone redundant status.
 
 **Reference**
-https://docs.microsoft.com/en-us/azure/app-service/how-to-zone-redundancy#how-to-deploy-a-zone-redundant-app-service
 
+https://docs.microsoft.com/en-us/azure/app-service/how-to-zone-redundancy#how-to-deploy-a-zone-redundant-app-service
 
 # Regions and Availability Zones in Azure
 https://docs.microsoft.com/en-us/azure/availability-zones/az-overview#services-by-category
