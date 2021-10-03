@@ -21,4 +21,5 @@ All scripts in repository are used for DevTest only.
 | 3 | Create-Image-FromDisk.ps1 | | Create Azure VM Image from Managed Disk |
 | 1 | Encrypt-Password-Embed.ps1 | | Specify the password in script file, converting to **SecureString** and output to text file finally |
 | 2 | Encrypt-Password-ReadHost.ps1 | | Enter the password at PowerShell session for Converting to **SecureString** and output to text file finally |
+| 5 | ps1 | Recovery Service | Get Site Recovery Replication Protected Items |
 
