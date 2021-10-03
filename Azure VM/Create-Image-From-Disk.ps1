@@ -1,5 +1,5 @@
 #Region Global Parameter
-$NewImageName = ""
+$NewImageName = "" # Enter the Name of new created Azure Image 
 $osDiskName = "" # Enter OS Disk Name of VM
 $rgName = "" # Enter Resource Group Name
 $location = "" # Enter Azure Resource Location, e.g. "East Asia"
