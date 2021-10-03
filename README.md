@@ -5,7 +5,14 @@ All scripts in repository are used for DevTest only.
 - Alphanumeric Characters
 - Not allow characters: **` ~ ! @ # $ % ^ & * ( ) = + [ ] { } \ | ; : . ' " , < > / ?**
 
-# Prior to Run the Script
+
+# Installation
+| Item | Name | Version |
+| - | - | - | 
+| 1 | Az Module | 6.4.0 |
+| 2 | Azure CLI | 2.28.0 |
+
+# Script Configuration
 
 - Variable under **# Global Parameter** is expected to modify
 - Variable under **# Script Variable** is expected NOT to modify
