@@ -1,4 +1,4 @@
-Retrieve the instance information includes pricing tier, current redundancy method, verifying zone redundancy configuration of follow Azure Services:
+Retrieve the instance information includes pricing tier, current redundancy method, zone redundancy configuration and etc. of follow Azure Services:
 
 - Application Gateway
 - Event Hub (Namespace)
