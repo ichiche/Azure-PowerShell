@@ -1,4 +1,5 @@
-Retrieve the instance information includes pricing tier, current redundancy method, verifying zone redundancy configuration of follow Azure Services:
+# Scope of functionalities
+Retrieve the instance information includes pricing tier, current redundancy method, zone redundancy configuration of follow Azure Services:
 
 - Application Gateway
 - Event Hub (Namespace)
@@ -10,3 +11,5 @@ Retrieve the instance information includes pricing tier, current redundancy meth
 - Virtual Machine Scale Set
 - Managed Disk
 
+# Regions and Availability Zones in Azure
+https://docs.microsoft.com/en-us/azure/availability-zones/az-overview#services-by-category
