@@ -10,23 +10,25 @@ $Global:ResultArray = @()
 # Login
 #Connect-AzAccount # Comment this line if using Connect-To-Cloud.ps1
 
-# Function 1
+# Get the Latest Location Name and Display Name
+$Global:NameReference = Get-AzLocation
+
+# Function to align the Display Name
 function Rename-Location {
     param (
         [string]$Location
     )
-    if ($Location -eq "eastasia") { $Location = "East Asia" }
-    if ($Location -eq "southeastasia") { $Location = "Southeast Asia" }
-    if ($Location -eq "eastus") { $Location = "East US" }
-    if ($Location -eq "eastus2") { $Location = "East US 2" }
-    if ($Location -eq "centralus") { $Location = "Central US" }
-    if ($Location -eq "westus") { $Location = "West US" }
-    if ($Location -eq "westus2") { $Location = "West US 2" }
-    
+
+    foreach ($item in $Global:NameReference) {
+        if ($item.Location -eq $Location) {
+            $Location = $item.DisplayName
+        }
+    }
+
     return $Location
 }
 
-# Function 2
+# Function to save the information to Result Array 
 function Add-Record {
     param (
         $SubscriptionName,
@@ -153,7 +155,7 @@ foreach ($Subscription in $Subscriptions) {
     
     foreach ($AksCluster in $AksClusters) {
         foreach ($AgentPool in $AksClusters.AgentPoolProfiles) {
-            $ResourceGroupName = $AksCluster.NodeResourceGroup.Substring($AksCluster.NodeResourceGroup.IndexOf("_") + 1)
+            $ResourceGroupName = $AksCluster.NodeResourceGroup.Substring($AksCluster.NodeResourceGroup.IndexOf("_") + 1) # Assume NodeResourceGroup is default name
             $ResourceGroupName = $ResourceGroupName.Substring(0, $ResourceGroupName.IndexOf("_"))
             $InstanceTypeDetail = ($AgentPool.Mode + " Pool")
             $remark = ("Agent Pool Name: " + $AgentPool.Name)
@@ -271,7 +273,6 @@ foreach ($Subscription in $Subscriptions) {
     #EndRegion Storage Account
 
     #Region Virtual Machine
-    # 'Region Disaster Recovery' & 'Zone to Zone Disaster Recovery' are not enabled to be verified by this script due to potential permission problem
     $vms = Get-AzVM
     $InstanceType = "Virtual Machine"
 
@@ -471,12 +472,44 @@ foreach ($Subscription in $Subscriptions) {
             }
         } else {
             $CurrentRedundancyType = "Single Region"
+            if ($EnabledZoneRedundant -eq "N") { $DeployedZoneRedundant = "N/A" }
         }
 
         # Add-Record
         Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $apim.ResourceGroupName -Location $Location -InstanceName $apim.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant $EnabledZoneRedundant -DeployedZoneRedundant $DeployedZoneRedundant -Remark ""
     }
     #EndRegion Api Management
+
+    #Region Azure Firewall
+    $firewalls = Get-AzFirewall
+    $InstanceType = "Azure Firewall"
+    $remark = ""
+
+    foreach ($firewall in $firewalls) {
+        if ($firewall.Sku.Name -eq "AZFW_Hub") {
+            $InstanceTypeDetail = "Azure Firewall with Secured Virtual Hub"
+        } 
+        
+        # SKU
+        $sku = $firewall.Sku.Tier
+
+        # Zone
+        [array]$array = $firewall.Zones
+
+        if ($array.Count -gt 0) {
+            $CurrentRedundancyType = "Zone Redundant"
+            $EnabledZoneRedundant = "Y"
+            [string]$DeployedZoneRedundant = $array -join ","
+        } else {
+            $CurrentRedundancyType = "No Redundant"
+            $EnabledZoneRedundant = "N"
+            $DeployedZoneRedundant = "N/A"
+        }
+
+        # Add-Record
+        Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $firewall.ResourceGroupName -Location $firewall.Location -InstanceName $firewall.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant $EnabledZoneRedundant -DeployedZoneRedundant $DeployedZoneRedundant -Remark $remark
+    }
+    #EndRegion Azure Firewall
 }
 
 # Export Result to CSV file 
