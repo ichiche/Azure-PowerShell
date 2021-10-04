@@ -1,11 +1,12 @@
 # Script Variable
 $ReplicationProtectedItems = @()
 
+# Get Azure Subscription
 $Subscriptions = Get-AzSubscription
 
+# Main
 Write-Host "`nCollecting detail of Site Recovery Replication Protected Items`n" -ForegroundColor Yellow
 
-# Main
 foreach ($Subscription in $Subscriptions) {
     $AzContext = Set-AzContext -SubscriptionId $Subscription.Id
     $RecoveryServicesVaults = Get-AzRecoveryServicesVault
