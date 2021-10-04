@@ -24,11 +24,11 @@ Retrieve the instance information includes pricing tier, current redundancy meth
 
 # Limitation
 
-## App Service
+#### App Service
 
 Zone Redundant is supported to be created by ARM template at this moment. Zone redundant status is shown on Azure Portal only. Az Module and Azure CLI are not able to retrieve the Zone redundant status.
 
-## Virtual Machine
+#### Virtual Machine
 
 1. It is supported to verify the status of **Region Disaster Recovery** and **Zone to Zone Disaster Recovery** using Azure Portal.
 
