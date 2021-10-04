@@ -10,7 +10,23 @@ $Global:ResultArray = @()
 # Login
 #Connect-AzAccount # Comment this line if using Connect-To-Cloud.ps1
 
-# Function
+# Function 1
+function Rename-Location {
+    param (
+        [string]$Location
+    )
+    if ($Location -eq "eastasia") { $Location = "East Asia" }
+    if ($Location -eq "southeastasia") { $Location = "Southeast Asia" }
+    if ($Location -eq "eastus") { $Location = "East US" }
+    if ($Location -eq "eastus2") { $Location = "East US 2" }
+    if ($Location -eq "centralus") { $Location = "Central US" }
+    if ($Location -eq "westus") { $Location = "West US" }
+    if ($Location -eq "westus2") { $Location = "West US 2" }
+    
+    return $Location
+}
+
+# Function 2
 function Add-Record {
     param (
         $SubscriptionName,
@@ -23,18 +39,11 @@ function Add-Record {
         $InstanceSize,
         $CurrentRedundancyType,
         $EnabledZoneRedundant,
-        $DeployedAvailabilityZone,
+        $DeployedZoneRedundant,
         $Remark
     )
 
-    # Pre-Configuration
-    if ($Location -eq "eastasia") { $Location = "East Asia" }
-    if ($Location -eq "southeastasia") { $Location = "Southeast Asia" }
-    if ($Location -eq "eastus") { $Location = "East US" }
-    if ($Location -eq "centralus") { $Location = "Central US" }
-    if ($Location -eq "westus") { $Location = "West US" }
-    if ($Location -eq "westus2") { $Location = "West US 2" }
-    
+    $Location = Rename-Location -Location $Location
 
     # Save to Temp Object
     $obj = New-Object -TypeName PSobject
@@ -48,7 +57,7 @@ function Add-Record {
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "InstanceSize" -Value $InstanceSize
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "CurrentRedundancyType" -Value $CurrentRedundancyType
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledZoneRedundant" -Value $EnabledZoneRedundant
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "DeployedAvailabilityZone" -Value $DeployedAvailabilityZone
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "DeployedZoneRedundant" -Value $DeployedZoneRedundant
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "Remark" -Value $Remark
 
     # Save to Array
@@ -77,10 +86,10 @@ foreach ($Subscription in $Subscriptions) {
         
         # Add-Record
         if ($array.Count -gt 0) {
-            [string]$DeployedAvailabilityZone = $array -join ","
-            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $AppGateway.ResourceGroupName -Location $AppGateway.Location -InstanceName $AppGateway.Name -InstanceType $InstanceType -InstanceTypeDetail "" -InstanceSize $AppGateway.Sku.Name -CurrentRedundancyType "Zone Redundant" -EnabledZoneRedundant "Y" -DeployedAvailabilityZone $DeployedAvailabilityZone -Remark ""
+            [string]$DeployedZoneRedundant = $array -join ","
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $AppGateway.ResourceGroupName -Location $AppGateway.Location -InstanceName $AppGateway.Name -InstanceType $InstanceType -InstanceTypeDetail "" -InstanceSize $AppGateway.Sku.Name -CurrentRedundancyType "Zone Redundant" -EnabledZoneRedundant "Y" -DeployedZoneRedundant $DeployedZoneRedundant -Remark ""
         } else {
-            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $AppGateway.ResourceGroupName -Location $AppGateway.Location -InstanceName $AppGateway.Name -InstanceType $InstanceType -InstanceTypeDetail "" -InstanceSize $AppGateway.Sku.Name -CurrentRedundancyType "No Redundant" -EnabledZoneRedundant "N" -DeployedAvailabilityZone "N/A" -Remark ""
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $AppGateway.ResourceGroupName -Location $AppGateway.Location -InstanceName $AppGateway.Name -InstanceType $InstanceType -InstanceTypeDetail "" -InstanceSize $AppGateway.Sku.Name -CurrentRedundancyType "No Redundant" -EnabledZoneRedundant "N" -DeployedZoneRedundant "N/A" -Remark ""
         }
     }
     #EndRegion Application Gateway
@@ -126,14 +135,14 @@ foreach ($Subscription in $Subscriptions) {
             } else {
                 $CurrentRedundancyType = "Zone Redundant"
             }
-            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $EventHub.ResourceGroupName -Location $EventHub.Location -InstanceName $EventHub.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant "Y" -DeployedAvailabilityZone "All Zones" -Remark $remark
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $EventHub.ResourceGroupName -Location $EventHub.Location -InstanceName $EventHub.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant "Y" -DeployedZoneRedundant "All Zones" -Remark $remark
         } else {
             if ($GeoDR -ne $null) {
                 $CurrentRedundancyType = "Geo-Recovery (" + $GeoDR.Role + ")"
             } else {
                 $CurrentRedundancyType = "No Redundant"
             }
-            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $EventHub.ResourceGroupName -Location $EventHub.Location -InstanceName $EventHub.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant "N" -DeployedAvailabilityZone "N/A" -Remark $remark
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $EventHub.ResourceGroupName -Location $EventHub.Location -InstanceName $EventHub.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant "N" -DeployedZoneRedundant "N/A" -Remark $remark
         }
     }
     #EndRegion Event Hub
@@ -152,10 +161,10 @@ foreach ($Subscription in $Subscriptions) {
             
             # Add-Record
             if ($array.Count -gt 0) {
-                [string]$DeployedAvailabilityZone = $array -join ","
-                Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $ResourceGroupName -Location $AksCluster.Location -InstanceName $AksCluster.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $AgentPool.VmSize -CurrentRedundancyType "Zone Redundant" -EnabledZoneRedundant "Y" -DeployedAvailabilityZone $DeployedAvailabilityZone -Remark $remark
+                [string]$DeployedZoneRedundant = $array -join ","
+                Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $ResourceGroupName -Location $AksCluster.Location -InstanceName $AksCluster.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $AgentPool.VmSize -CurrentRedundancyType "Zone Redundant" -EnabledZoneRedundant "Y" -DeployedZoneRedundant $DeployedZoneRedundant -Remark $remark
             } else {
-                Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $ResourceGroupName -Location $AksCluster.Location -InstanceName $AksCluster.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $AgentPool.VmSize -CurrentRedundancyType "No Redundant" -EnabledZoneRedundant "N" -DeployedAvailabilityZone "N/A" -Remark $remark
+                Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $ResourceGroupName -Location $AksCluster.Location -InstanceName $AksCluster.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $AgentPool.VmSize -CurrentRedundancyType "No Redundant" -EnabledZoneRedundant "N" -DeployedZoneRedundant "N/A" -Remark $remark
             }
         }
     }
@@ -180,7 +189,7 @@ foreach ($Subscription in $Subscriptions) {
         $PublicIpName = $PublicIpResourceId.Substring($PublicIpResourceId.IndexOf("/publicIPAddresses/") + ("/publicIPAddresses/".Length))
         $PublicIp = Get-AzPublicIpAddress -ResourceGroupName $PublicIpRg -ResourceName $PublicIpName
         [array]$array = $PublicIp.Zones
-        [string]$DeployedAvailabilityZone = ("First: " + $array -join ",")
+        [string]$DeployedZoneRedundant = ("First: " + $array -join ",")
         $remark = ("First PIP Name: " + $PublicIpName)
         
         # Active-Active Design
@@ -192,7 +201,7 @@ foreach ($Subscription in $Subscriptions) {
             $SecondIpName = $SecondIpResourceId.Substring($SecondIpResourceId.IndexOf("/publicIPAddresses/") + ("/publicIPAddresses/".Length))
             $SecondIp = Get-AzPublicIpAddress -ResourceGroupName $SecondIpRg -ResourceName $SecondIpName
             [array]$SecondArray = $SecondIp.Zones
-            $DeployedAvailabilityZone += ("; Second: " + $SecondArray -join ",")
+            $DeployedZoneRedundant += ("; Second: " + $SecondArray -join ",")
             $remark += ("; Second PIP Name: " + $SecondIpName)
         } 
         
@@ -203,14 +212,14 @@ foreach ($Subscription in $Subscriptions) {
             } else {
                 $CurrentRedundancyType = "Zone Redundant"
             }
-            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $vng.ResourceGroupName -Location $vng.Location -InstanceName $vng.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant "Y" -DeployedAvailabilityZone $DeployedAvailabilityZone -Remark $remark
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $vng.ResourceGroupName -Location $vng.Location -InstanceName $vng.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant "Y" -DeployedZoneRedundant $DeployedZoneRedundant -Remark $remark
         } else {
             if ($vng.ActiveActive) {
                 $CurrentRedundancyType = "Active-Active"
             } else {
                 $CurrentRedundancyType = "No Redundant"
             }
-            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $vng.ResourceGroupName -Location $vng.Location -InstanceName $vng.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant "N" -DeployedAvailabilityZone "N/A" -Remark $remark
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $vng.ResourceGroupName -Location $vng.Location -InstanceName $vng.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant "N" -DeployedZoneRedundant "N/A" -Remark $remark
         }
     }
     #EndRegion Virtual Network Gateway
@@ -226,14 +235,14 @@ foreach ($Subscription in $Subscriptions) {
         if ($BackupStorageRedundancy -eq "ZoneRedundant") {
             $CurrentRedundancyType = "Zone Redundant"
             $EnabledZoneRedundant = "Y" 
-            $DeployedAvailabilityZone = "All Zones" 
+            $DeployedZoneRedundant = "All Zones" 
             
         } else { 
             $CurrentRedundancyType = $BackupStorageRedundancy # GeoRedundant, LocallyRedundant
             $EnabledZoneRedundant = "N" 
-            $DeployedAvailabilityZone = "N/A"
+            $DeployedZoneRedundant = "N/A"
         }
-        Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $RecoveryServicesVault.ResourceGroupName -Location $RecoveryServicesVault.Location -InstanceName $RecoveryServicesVault.Name -InstanceType $InstanceType -InstanceTypeDetail "" -InstanceSize "N/A" -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant $EnabledZoneRedundant -DeployedAvailabilityZone $DeployedAvailabilityZone -Remark ""
+        Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $RecoveryServicesVault.ResourceGroupName -Location $RecoveryServicesVault.Location -InstanceName $RecoveryServicesVault.Name -InstanceType $InstanceType -InstanceTypeDetail "" -InstanceSize "N/A" -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant $EnabledZoneRedundant -DeployedZoneRedundant $DeployedZoneRedundant -Remark ""
     }
     #EndRegion Recovery Services Vault
 
@@ -251,13 +260,13 @@ foreach ($Subscription in $Subscriptions) {
         if ($sku -like "*ZRS*") {
             $CurrentRedundancyType = $sku.Substring($sku.IndexOf("_") + 1)
             $EnabledZoneRedundant = "Y" 
-            $DeployedAvailabilityZone = "All Zones" 
+            $DeployedZoneRedundant = "All Zones" 
         } else {
             $CurrentRedundancyType = $sku.Substring($sku.IndexOf("_") + 1)
             $EnabledZoneRedundant = "N" 
-            $DeployedAvailabilityZone = "N/A"
+            $DeployedZoneRedundant = "N/A"
         }
-        Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $StorageAccount.ResourceGroupName -Location $StorageAccount.Location -InstanceName $StorageAccount.StorageAccountName -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant $EnabledZoneRedundant -DeployedAvailabilityZone $DeployedAvailabilityZone -Remark ""
+        Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $StorageAccount.ResourceGroupName -Location $StorageAccount.Location -InstanceName $StorageAccount.StorageAccountName -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant $EnabledZoneRedundant -DeployedZoneRedundant $DeployedZoneRedundant -Remark ""
     }
     #EndRegion Storage Account
 
@@ -268,7 +277,16 @@ foreach ($Subscription in $Subscriptions) {
 
     foreach ($vm in $vms) {
         $InstanceTypeDetail = "Standalone"
+        
+        # Location
         [array]$array = $vm.Zones
+        $RenamedLocation = Rename-Location -Location $vm.Location 
+
+        if ($array.Count -gt 0) {
+            $Location = $RenamedLocation + " (Zone: " + ($array -join ",") + ")"
+        } else {
+            $Location = $RenamedLocation
+        }
 
         # SKU
         $sku = $vm.HardwareProfile.VmSize
@@ -283,17 +301,13 @@ foreach ($Subscription in $Subscriptions) {
             $InstanceTypeDetail = "Virtual Machine Scale Set"
         }
 
+        # Zone
+        $CurrentRedundancyType = "N/A"
+        $EnabledZoneRedundant = "N/A"
+        $DeployedZoneRedundant = "N/A"
+
         # Add-Record
-        if ($array.Count -gt 0) {
-            $CurrentRedundancyType = "N/A"
-            $EnabledZoneRedundant = "N/A"
-            [string]$DeployedAvailabilityZone = $array -join ","
-        } else {
-            $CurrentRedundancyType = "N/A"
-            $EnabledZoneRedundant = "N/A"
-            $DeployedAvailabilityZone = "N/A"
-        }
-        Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $vm.ResourceGroupName -Location $vm.Location -InstanceName $vm.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant $EnabledZoneRedundant -DeployedAvailabilityZone $DeployedAvailabilityZone -Remark ""
+        Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $vm.ResourceGroupName -Location $Location -InstanceName $vm.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant $EnabledZoneRedundant -DeployedZoneRedundant $DeployedZoneRedundant -Remark ""
     }
     #EndRegion Virtual Machine
 
@@ -308,17 +322,19 @@ foreach ($Subscription in $Subscriptions) {
         # SKU
         $sku = ($vmss.Sku.Name + ": " + $vmss.Sku.Capacity + " Unit")
     
-        # Add-Record
+        # Zone
         if ($array.Count -gt 0) {
             $CurrentRedundancyType = "Zone Redundant"
             $EnabledZoneRedundant = "Y"
-            [string]$DeployedAvailabilityZone = $array -join ","
+            [string]$DeployedZoneRedundant = $array -join ","
         } else {
             $CurrentRedundancyType = "N/A"
             $EnabledZoneRedundant = "N"
-            $DeployedAvailabilityZone = "N/A"
+            $DeployedZoneRedundant = "N/A"
         }
-        Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $vmss.ResourceGroupName -Location $vmss.Location -InstanceName $vmss.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant $EnabledZoneRedundant -DeployedAvailabilityZone $DeployedAvailabilityZone -Remark ""
+        
+        # Add-Record
+        Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $vmss.ResourceGroupName -Location $vmss.Location -InstanceName $vmss.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant $EnabledZoneRedundant -DeployedZoneRedundant $DeployedZoneRedundant -Remark ""
 
         # Instance OS Disk
         $sku = $vmss.VirtualMachineProfile.StorageProfile.OsDisk.ManagedDisk.StorageAccountType
@@ -327,12 +343,12 @@ foreach ($Subscription in $Subscriptions) {
 
         if ($CurrentRedundancyType -like "*ZRS*" ) {
             $EnabledZoneRedundant = "Y"
-            $DeployedAvailabilityZone = "All Zones"
+            $DeployedZoneRedundant = "All Zones"
         } else {
             $EnabledZoneRedundant = "N"
-            $DeployedAvailabilityZone = "N/A"
+            $DeployedZoneRedundant = "N/A"
         }
-        Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $vmss.ResourceGroupName -Location $vmss.Location -InstanceName $vmss.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant $EnabledZoneRedundant -DeployedAvailabilityZone $DeployedAvailabilityZone -Remark ""
+        Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $vmss.ResourceGroupName -Location $vmss.Location -InstanceName $vmss.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant $EnabledZoneRedundant -DeployedZoneRedundant $DeployedZoneRedundant -Remark ""
 
         # Instance Data Disk
         $DataDisks = $vmss.VirtualMachineProfile.StorageProfile.DataDisks
@@ -344,12 +360,12 @@ foreach ($Subscription in $Subscriptions) {
     
             if ($CurrentRedundancyType -like "*ZRS*" ) {
                 $EnabledZoneRedundant = "Y"
-                $DeployedAvailabilityZone = "All Zones"
+                $DeployedZoneRedundant = "All Zones"
             } else {
                 $EnabledZoneRedundant = "N"
-                $DeployedAvailabilityZone = "N/A"
+                $DeployedZoneRedundant = "N/A"
             }
-            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $vmss.ResourceGroupName -Location $vmss.Location -InstanceName $vmss.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant $EnabledZoneRedundant -DeployedAvailabilityZone $DeployedAvailabilityZone -Remark ""
+            Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $vmss.ResourceGroupName -Location $vmss.Location -InstanceName $vmss.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant $EnabledZoneRedundant -DeployedZoneRedundant $DeployedZoneRedundant -Remark ""
         }
     }
     #EndRegion Virtual Machine Scale Set (VMSS)
@@ -359,8 +375,16 @@ foreach ($Subscription in $Subscriptions) {
     $InstanceType = "Managed Disk"
 
     foreach ($disk in $disks) {
+        # Location
         [array]$array = $disk.Zones
+        $RenamedLocation = Rename-Location -Location $disk.Location 
 
+        if ($array.Count -gt 0) {
+            $Location = $RenamedLocation + " (Zone: " + ($array -join ",") + ")"
+        } else {
+            $Location = $RenamedLocation
+        }
+        
         # SKU
         $sku = $disk.Sku.Name
     
@@ -378,20 +402,81 @@ foreach ($Subscription in $Subscriptions) {
             $remark = ""
         }
 
-        # Add-Record
+        # Zone
         $CurrentRedundancyType = $sku.Substring($sku.IndexOf("_") + 1)
     
         if ($sku -like "*ZRS*" ) {
             $EnabledZoneRedundant = "Y"
-            $DeployedAvailabilityZone = "All Zones"
+            $DeployedZoneRedundant = "All Zones"
         } else {
             $EnabledZoneRedundant = "N"
-            $DeployedAvailabilityZone = "N/A"
+            $DeployedZoneRedundant = "N/A"
         }
 
-        Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $disk.ResourceGroupName -Location $disk.Location -InstanceName $disk.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant $EnabledZoneRedundant -DeployedAvailabilityZone $DeployedAvailabilityZone -Remark $remark
+        # Add-Record
+        Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $disk.ResourceGroupName -Location $Location -InstanceName $disk.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant $EnabledZoneRedundant -DeployedZoneRedundant $DeployedZoneRedundant -Remark $remark
     }
     #EndRegion Managed Disk
+
+    #Region Api Management
+    $apims = Get-AzApiManagement
+    $InstanceType = "Api Management"
+    $InstanceTypeDetail = ""
+
+    foreach ($apim in $apims) {
+        # Primary Location
+        [string]$Location = $apim.Location
+
+        # SKU
+        $sku = ($Location + " (" + $apim.Sku.ToString() + ": " + $apim.Capacity.ToString() + " Unit" + ")")
+        
+        # Zone
+        [array]$array = $apim.Zone
+        if ($array.Count -gt 0) {
+            $EnabledZoneRedundant = "Y"
+            [string]$DeployedZoneRedundant = ($Location + " (" + ($array -join ",") + ")")
+        } else {
+            $EnabledZoneRedundant = "N"
+            [string]$DeployedZoneRedundant = ""
+        }
+
+        # Additional Region
+        [array]$AdditionalRegions = $apim.AdditionalRegions
+
+        if ($AdditionalRegions.Count -gt 0) {
+            $CurrentRedundancyType = "Multiple Region"
+
+            foreach ($AdditionalRegion in $AdditionalRegions) {
+                # Location
+                if ($InstanceTypeDetail -eq "") {
+                    $InstanceTypeDetail = "Additional Region: " + $AdditionalRegion.Location
+                } else {
+                    $InstanceTypeDetail += ", " + $AdditionalRegion.Location
+                }
+
+                # SKU
+                $sku += ("; " + $AdditionalRegion.Location + " (" + $AdditionalRegion.Sku.ToString() + ": " + $AdditionalRegion.Capacity.ToString() + " Unit" + ")")
+
+                # Zone
+                [array]$AdditionalRegionZone = $AdditionalRegion.Zone
+                if ($AdditionalRegionZone.Count -gt 0) {
+                    $EnabledZoneRedundant = "Y"
+
+                    if ($DeployedZoneRedundant -eq "") {
+                        $DeployedZoneRedundant += ($AdditionalRegion.Location + " (" + ($AdditionalRegionZone -join ",") + ")")
+                    } else {
+                        $DeployedZoneRedundant += (", " + $AdditionalRegion.Location + " (" + ($AdditionalRegionZone -join ",") + ")")
+                    }
+                }
+            }
+        } else {
+            $CurrentRedundancyType = "Single Region"
+        }
+
+        # Add-Record
+        Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $apim.ResourceGroupName -Location $Location -InstanceName $apim.Name -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledZoneRedundant $EnabledZoneRedundant -DeployedZoneRedundant $DeployedZoneRedundant -Remark ""
+    }
+    #EndRegion Api Management
 }
 
 # Export Result to CSV file 
