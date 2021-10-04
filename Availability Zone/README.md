@@ -30,11 +30,13 @@ Zone Redundant is supported to be created by ARM template at this moment. Zone r
 
 #### Virtual Machine
 
-1. It is supported to verify the status of **Region Disaster Recovery** and **Zone to Zone Disaster Recovery** using Azure Portal.
+For verifying the status of **Region Disaster Recovery** and **Zone to Zone Disaster Recovery**
 
-1. Az Module require additional permission to perform action 'Microsoft.RecoveryServices/vaults/extendedInformation/write', reader role is not enough. 
+1. Azure Portal (Supported)
 
-1. Azure CLI does not support.
+1. Az Module is supported but require additional permission to perform action 'Microsoft.RecoveryServices/vaults/extendedInformation/write', reader role is not enough. 
+
+1. Azure CLI (Not Supported)
 
 **Reference**
 
