@@ -8,7 +8,14 @@ $Global:ResultArray = @()
 [int]$CurrentItem = 1
 
 # Login
-#Connect-AzAccount
+Connect-AzAccount
+
+# Get Azure Subscription
+if ($SpecificTenant -eq "Y") {
+    $Subscriptions = Get-AzSubscription -TenantId $TenantId
+} else {
+    $Subscriptions = Get-AzSubscription
+}
 
 # Get the Latest Location Name and Display Name
 $Global:NameReference = Get-AzLocation
@@ -64,13 +71,6 @@ function Add-Record {
 
     # Save to Array
     $Global:ResultArray += $obj
-}
-
-# Get Azure Subscription
-if ($SpecificTenant -eq "Y") {
-    #$Subscriptions = Get-AzSubscription -TenantId $TenantId
-} else {
-    #$Subscriptions = Get-AzSubscription
 }
 
 # Main
@@ -513,7 +513,7 @@ foreach ($Subscription in $Subscriptions) {
 }
 
 # Export Result to CSV file 
-$Global:ResultArray | sort SubscriptionName, InstanceType | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force
+$Global:ResultArray | sort InstanceType, SubscriptionName | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force
 
 # End
 Write-Host "`nCompleted`n" -ForegroundColor Yellow

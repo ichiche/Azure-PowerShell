@@ -5,6 +5,7 @@ $CsvFullPath = "C:\Temp\Azure-Unmanaged-Disk-List.csv" # Export Result to CSV fi
 
 # Script Variable
 $Global:UnmanagedDisks = @()
+$CurrentItem = 1
 
 # Login
 az login # For Azure CLI
@@ -27,12 +28,13 @@ foreach ($Subscription in $Subscriptions) {
     az account set --subscription $Subscription.Id
 
     # Main
-    Write-Host ("`nSubscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
-    $vms = Get-AzVM
+    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
+    $CurrentItem++
     $CurrentVMItem = 1
+    $vms = Get-AzVM
 
     foreach ($vm in $vms) {
-        Write-Host ("`nProcessing Azure VM (" + $CurrentVMItem + " out of " + $vms.Count + ") for Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("("))) -ForegroundColor White
+        Write-Host ("`nProcessing Azure VM (" + $CurrentVMItem + " out of " + $vms.Count + ") of Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("("))) -ForegroundColor White
         $CurrentVMItem++
 
         # OS Disk
@@ -76,8 +78,9 @@ foreach ($Subscription in $Subscriptions) {
 # Export Result to CSV file
 $Global:UnmanagedDisks | sort SubscriptionName, ResourceGroup, VM | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force 
 
+# End
 Write-Host "`nCompleted" -ForegroundColor Yellow
-Write-Host ("`nCount of Unmanaged Disks: " + $Global:UnmanagedDisks.Count + "`n") -ForegroundColor Yellow
+Write-Host ("`nCount of Unmanaged Disks: " + $Global:UnmanagedDisks.Count + "`n") -ForegroundColor Cyan
 
 # Logout
 Disconnect-AzAccount

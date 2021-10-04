@@ -1,0 +1,66 @@
+# Global Parameter
+$SpecificTenant = "" # "Y" or "N"
+$TenantId = "" # Enter Tenant ID if $SpecificTenant is "Y"
+$CsvFullPath = "C:\Temp\Azure-ClassicVM-List.csv" # Export Result to CSV file 
+
+# Script Variable
+$Global:ClassicVMList = @()
+[int]$CurrentItem = 1
+
+# Login
+Connect-AzAccount
+
+# Get Azure Subscription
+if ($SpecificTenant -eq "Y") {
+    $Subscriptions = Get-AzSubscription -TenantId $TenantId
+} else {
+    $Subscriptions = Get-AzSubscription
+}
+
+# Get the Latest Location Name and Display Name
+$Global:NameReference = Get-AzLocation
+
+# Function to align the Display Name
+function Rename-Location {
+    param (
+        [string]$Location
+    )
+
+    foreach ($item in $Global:NameReference) {
+        if ($item.Location -eq $Location) {
+            $Location = $item.DisplayName
+        }
+    }
+
+    return $Location
+}
+
+# Main
+foreach ($Subscription in $Subscriptions) {
+    # Set current subscription for Az Module
+	$AzContext = Set-AzContext -SubscriptionId $Subscription.Id
+    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
+    $CurrentItem++
+
+    # Get Az Resource List
+    $classicVMResource = Get-AzResource | ? {$_.ResourceId -like "*Microsoft.ClassicCompute*" -and $_.ResourceType -eq "Microsoft.ClassicCompute/virtualMachines"}
+    
+    $Location = Rename-Location -Location $classicVMResource.Location
+
+    # Save to Temp Object
+    $obj = New-Object -TypeName PSobject
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value $Subscription.Name
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionId" -Value $Subscription.Id
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceGroup" -Value $classicVMResource.ResourceGroupName
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "InstanceName" -Value $classicVMResource.Name
+
+    # Save to Array
+    $Global:ClassicVMList   += $obj
+}
+
+# Export Result to CSV file
+$Global:ClassicVMList  | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force
+
+# End
+Write-Host "`nCompleted" -ForegroundColor Yellow
