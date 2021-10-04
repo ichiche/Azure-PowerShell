@@ -43,24 +43,26 @@ foreach ($Subscription in $Subscriptions) {
     $CurrentItem++
 
     # Get Az Resource List
-    $classicVMResource = Get-AzResource | ? {$_.ResourceId -like "*Microsoft.ClassicCompute*" -and $_.ResourceType -eq "Microsoft.ClassicCompute/virtualMachines"}
+    $ClassicVMs = Get-AzResource | ? {$_.ResourceId -like "*Microsoft.ClassicCompute*" -and $_.ResourceType -eq "Microsoft.ClassicCompute/virtualMachines"}
     
-    $Location = Rename-Location -Location $classicVMResource.Location
+    foreach ($ClassicVM in $ClassicVMs) {
+        $Location = Rename-Location -Location $ClassicVM.Location
 
-    # Save to Temp Object
-    $obj = New-Object -TypeName PSobject
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value $Subscription.Name
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionId" -Value $Subscription.Id
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceGroup" -Value $classicVMResource.ResourceGroupName
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "InstanceName" -Value $classicVMResource.Name
-
-    # Save to Array
-    $Global:ClassicVMList   += $obj
+        # Save to Temp Object
+        $obj = New-Object -TypeName PSobject
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value $Subscription.Name
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionId" -Value $Subscription.Id
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceGroup" -Value $ClassicVM.ResourceGroupName
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "InstanceName" -Value $ClassicVM.Name
+    
+        # Save to Array
+        $Global:ClassicVMList   += $obj
+    }
 }
 
 # Export Result to CSV file
 $Global:ClassicVMList  | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force
 
 # End
-Write-Host "`nCompleted" -ForegroundColor Yellow
+Write-Host "`nCompleted`n" -ForegroundColor Yellow

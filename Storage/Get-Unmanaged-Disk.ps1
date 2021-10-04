@@ -79,8 +79,8 @@ foreach ($Subscription in $Subscriptions) {
 $Global:UnmanagedDisks | sort SubscriptionName, ResourceGroup, VM | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force 
 
 # End
-Write-Host "`nCompleted" -ForegroundColor Yellow
-Write-Host ("`nCount of Unmanaged Disks: " + $Global:UnmanagedDisks.Count + "`n") -ForegroundColor Cyan
+Write-Host "`nCompleted`n" -ForegroundColor Yellow
+Write-Host ("Count of Unmanaged Disks: " + $Global:UnmanagedDisks.Count + "`n") -ForegroundColor Cyan
 
 # Logout
 Disconnect-AzAccount
