@@ -8,7 +8,7 @@ $Global:ResultArray = @()
 [int]$CurrentItem = 1
 
 # Login
-Connect-AzAccount # Comment this line if using Connect-To-Cloud.ps1
+Connect-AzAccount
 
 # Function
 function Add-Record {
