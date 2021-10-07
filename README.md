@@ -5,7 +5,6 @@
 - Set VM Static Private IP
 - Get Diagnostic Setting of core component
 - Update Azone Script to support more services
-- Update Connection README.md to indicate the powershell scope and the proper way to re-use the section
 - Get vNet Peering Status and Route Table, then draw relationship diagram
 - Get Service Endpoint Status
 - Get Resource Lock 
