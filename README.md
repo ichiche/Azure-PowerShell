@@ -17,8 +17,9 @@ All scripts in repository are used for DevTest only.
 # Installation
 | Item | Name | Version |
 | - | - | - | 
-| 1 | Az Module | 6.4.0 |
-| 2 | Azure CLI | 2.28.0 |
+| 1 | PowerShell | 5.1 or above |
+| 2 | Az Module | 6.4.0 |
+| 3 | Azure CLI | 2.28.0 |
 
 # Script Configuration
 - Variable under **# Global Parameter** is expected to modify
