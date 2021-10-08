@@ -13,11 +13,12 @@
 - Not indicate the Peering State
 - Associated ExpressRoute Circuit is not shown
 - Support up to 3 Layer vNet Peering
+- Subnet(s) of Virtual Network is not displayed
 
 # Procedure
 
 1. Modify Global Parameter if necessary
-1. Collect the CSV File
+1. Collect the Text File
 1. Login https://app.diagrams.net/
 1. From the Web Console, click Arrange > Insert > Advanced > CSV
 1. Copy the content of CSV File and overwrite the input field in Web Console
