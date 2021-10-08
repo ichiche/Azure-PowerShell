@@ -7,7 +7,7 @@
 
 # Procedure
 
-1 Review **README.md** in **Connection**
-1 Fork a repository or download the necessary script to local computer
-1 Modify **Global Parameter**
-1 Execute the script from Windows PowerShell
+1. Review **README.md** in **Connection**
+1. Fork a repository or download the necessary script to local computer
+1. Modify **Global Parameter** in the script
+1. Execute the script from Windows PowerShell
