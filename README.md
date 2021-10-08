@@ -19,7 +19,3 @@ All scripts in repository are used for DevTest only.
 | 6 | Create-Image-From-Disk.ps1 | Virtual Machine | Create Azure VM Image from **Managed Disk** |
 | 7 | Get-Unmanaged-Disk.ps1 | Storage | List **Unmanaged Disk** attached to a VM |
 | 8 | Get-ASR-ReplicationProtectedItem.ps1 | Recovery Service | Get Site Recovery Replication Protected Items |
-
-# Azure Services Naming Principle
-- Alphanumeric Characters
-- Not allow characters: **` ~ ! @ # $ % ^ & * ( ) = + [ ] { } \ | ; : . ' " , < > / ?**
