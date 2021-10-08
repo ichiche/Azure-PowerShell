@@ -1,28 +1,7 @@
-# To Do List
-```
-- Get App Service vNet Peering
-- Get Classic Resources includes Cloud Service
-- Check resource group that contain no resource
-- Set VM Static Private IP
-- Get Diagnostic Setting of core component
-- Update Azone Script to support more services
-- Get vNet Peering Status and Route Table, draw relationship diagram
-- Get Service Endpoint Status
-- Get Resource Lock 
-- Get Service Health Alert configuration
-```
-
 # Contributing
 ```
 All scripts in repository are used for DevTest only.
 ```
-
-# Installation
-| Item | Name | Version |
-| - | - | - | 
-| 1 | PowerShell | 5.1 or above |
-| 2 | Az Module | 6.4.0 |
-| 3 | Azure CLI | 2.28.0 |
 
 # Script Configuration
 - Variable under **# Global Parameter** is expected to modify
