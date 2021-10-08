@@ -1,18 +1,21 @@
 # To Do List
+```
 - Get App Service vNet Peering
 - Get Classic Resources includes Cloud Service
 - Check resource group that contain no resource
 - Set VM Static Private IP
 - Get Diagnostic Setting of core component
 - Update Azone Script to support more services
-- Get vNet Peering Status and Route Table, then draw relationship diagram
+- Get vNet Peering Status and Route Table, draw relationship diagram
 - Get Service Endpoint Status
 - Get Resource Lock 
 - Get Service Health Alert configuration
-
+```
 
 # Contributing
+```
 All scripts in repository are used for DevTest only.
+```
 
 # Installation
 | Item | Name | Version |
@@ -23,9 +26,7 @@ All scripts in repository are used for DevTest only.
 
 # Script Configuration
 - Variable under **# Global Parameter** is expected to modify
-
 - Variable under **# Script Variable** is expected NOT to modify
-
 - Modify **# Login** if you would like to leverage **Connect-To-Cloud.ps1** to login Azure
 
 # File List
@@ -43,4 +44,3 @@ All scripts in repository are used for DevTest only.
 # Azure Services Naming Principle
 - Alphanumeric Characters
 - Not allow characters: **` ~ ! @ # $ % ^ & * ( ) = + [ ] { } \ | ; : . ' " , < > / ?**
-
