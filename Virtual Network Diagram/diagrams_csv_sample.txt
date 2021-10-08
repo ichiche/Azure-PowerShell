@@ -1,0 +1,28 @@
+## Supply chain tracking
+# label: %name%
+# stylename: shapeType
+# styles: {"vNetWithVPNGateway": "rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;", \
+#		   "vNetWithERGateway": "rounded=1;fillColor=#c4bbf0;strokeColor=#9f87e8;", \
+#          "vNet":"shape=ellipse;fillColor=#f5f5f5;strokeColor=#666666;perimeter=ellipsePerimeter;", \
+#          "vNetWithNoPeering":"shape=ellipse;fillColor=#f8cecc;strokeColor=#b85450;perimeter=ellipsePerimeter"}
+# namespace: csvimport-
+# connect: {"from":"supplier", "to":"id", "invert":true, "style":"curved=0;endArrow=none;startArrow=none;strokeColor=#999999;endFill=1;"}
+# width: auto
+# height: auto
+# padding: 40
+# ignore: id,shapeType,supplier
+# nodespacing: 50
+# levelspacing: 50
+# edgespacing: 50
+# layout: horizontalflow
+## CSV starts below this line
+id,name,supplier,shapeType
+fa,Hub vNet with ER Gateway,,vNetWithERGateway
+fb,Hub vNet with VPN Gateway,,vNetWithVPNGateway
+fc,Hub vNet with VPN Gateway,"fa",vNetWithVPNGateway
+man1,Spoke 1,fb,vNet
+man2,Spoke 2,fa,vNet
+man3,Spoke 3,fa,vNet
+man4,Spoke 4,fc,vNet
+man5,Transitive Site,man1,vNet
+ca,No vNet Peering,,vNetWithNoPeering
