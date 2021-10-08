@@ -5,8 +5,8 @@
 - Set VM Static Private IP
 - Get Diagnostic Setting of core component
 - Update Azone Script to support more services
-- Get vNet Peering Status and Route Table, draw relationship diagram
 - Get Service Endpoint Status
 - Get Resource Lock 
 - Get Service Health Alert configuration
+- All-In-One Script to perform CAF Landing Zone Assessment, and generate the report in Excel format
 ```
