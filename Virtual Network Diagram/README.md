@@ -1,6 +1,6 @@
 # Baseline 
 
-**The flow follow the sequence shown below:**
+**The network flow diagram follow the sequence shown below:**
 1. Virtual Network with ExpressRoute Gateway
 1. Virtual Network with VPN Gateway
 1. Highest Peering Count
