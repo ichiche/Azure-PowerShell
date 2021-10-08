@@ -1,4 +1,5 @@
 # Prerequisites
+
 | Item | Name | Version |
 | - | - | - | 
 | 1 | PowerShell | 5.1 or above |
@@ -6,10 +7,11 @@
 | 3 | Azure CLI | 2.28.0 |
 
 # Script Modification
+
 - Variable under **# Global Parameter** is expected to modify
 - Variable under **# Script Variable** is expected NOT to modify
 - Modify **# Login** if you would like to leverage **Connect-To-Cloud.ps1** to login Azure
-- 
+
 # Procedure
 
 1. Review **README.md** in **Connection**
