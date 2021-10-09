@@ -25,15 +25,14 @@ PowerShell support following scopes:
 # Troubleshooting
 
 ```
-WARNING: Unable to acquire token for tenant 'Tenant Id XXX' with error 'You must use multi-factor authentication to access tenant **Tenant Id XXX**, please rerun 'Connect-AzAccount' with additional parameter '-TenantId Tenant Id XXX'.'
+WARNING: Unable to acquire token for tenant 'Tenant Id XXX' with error 'You must use multi-factor authentication to access tenant 'Tenant Id XXX', please rerun 'Connect-AzAccount' with additional parameter '-TenantId Tenant Id XXX'.'
 ```
 
 If encounter above warning message every time you connect using Az Module or set current subscription context, suggest to run Connect-AzAccount with -TenantId during initial connection. 
 
-## Execute for each TenantId
-
 ```PowerShell
 Connect-AzAccount
+Connect-AzAccount -TenantId "Tenant Id" # Execute for each TenantId
 Connect-AzAccount -TenantId "Tenant Id"
 ```
 
