@@ -3,11 +3,6 @@
 All scripts in repository are used for DevTest only.
 ```
 
-# Script Configuration
-- Variable under **# Global Parameter** is expected to modify
-- Variable under **# Script Variable** is expected NOT to modify
-- Modify **# Login** if you would like to leverage **Connect-To-Cloud.ps1** to login Azure
-
 # File List
 | Id | File Name | Folder | Description |
 | - | - | - | - |

@@ -1,6 +1,6 @@
 # Baseline 
 
-**The flow follow the sequence shown below:**
+**The network flow diagram follow the sequence shown below:**
 1. Virtual Network with ExpressRoute Gateway
 1. Virtual Network with VPN Gateway
 1. Highest Peering Count
@@ -21,9 +21,10 @@
 
 - Partially automatic for generate the diagram
 - Peering State is not shown
-- Gateway transit Status is not shown
+- Gateway Transit Status is not shown
 - Associated ExpressRoute Circuit is not shown
-- Subnet(s) of Virtual Network is not displayed
+- Subnet(s) of Virtual Network is not shown
+- IP Addresses are not shown
 - Subscription or Resource not found message could be ignore if the user account do not have access to all peered virtual network
 
 # Procedure
