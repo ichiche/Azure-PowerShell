@@ -21,3 +21,18 @@ PowerShell support following scopes:
 - **Connect-AzAccount** within each script is an individual connection section that unable to share with other script
 
 - If you would like to reuse the connection section for multiple, open a **Windows PowerShell**, explicitly login once, then copy the content of each script and paste into this **Windows PowerShell**
+
+#
+
+Connect-AzAccount -UseDeviceAuthentication
+
+Connect-AzAccount
+Connect-AzAccount -TenantId 181265e1-8750-4e0b-b127-6c709ea91d9d
+Connect-AzAccount -TenantId 988687c9-cef9-453f-9b1d-0e3ffe89fe50
+
+WARNING: Unable to acquire token for tenant '181265e1-8750-4e0b-b127-6c709ea91d9d' with error 'You must use
+multi-factor authentication to access tenant 181265e1-8750-4e0b-b127-6c709ea91d9d, please rerun 'Connect-AzAccount'
+with additional parameter '-TenantId 181265e1-8750-4e0b-b127-6c709ea91d9d'.'
+WARNING: Unable to acquire token for tenant '988687c9-cef9-453f-9b1d-0e3ffe89fe50' with error 'You must use
+multi-factor authentication to access tenant 988687c9-cef9-453f-9b1d-0e3ffe89fe50, please rerun 'Connect-AzAccount'
+with additional parameter '-TenantId 988687c9-cef9-453f-9b1d-0e3ffe89fe50'.'
