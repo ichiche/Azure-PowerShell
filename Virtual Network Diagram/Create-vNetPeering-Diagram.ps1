@@ -66,7 +66,6 @@ function Find-vNetPeeringRecord {
             $IsExist = $true
         }
     }
-
     return $IsExist
 }
 
@@ -161,6 +160,8 @@ foreach ($vn in $Global:vNet) {
                     $DestinationEndpointUniqueId = ConvertTo-UniqueId -ResourceId $peering.RemoteVirtualNetwork.Id
 
                     # Check if already added to Peering Array List
+                    $IsExist = Find-vNetPeeringRecord -StartEndpointId $vn.VirtualNetworkId -DestinationEndpointId $peering.RemoteVirtualNetwork.Id
+                    <#
                     $IsExist = $false
                     foreach ($item in $Global:vNetPeering) {
 
@@ -171,7 +172,7 @@ foreach ($vn in $Global:vNet) {
                         if ($item.StartEndpointUniqueId -eq $DestinationEndpointUniqueId -and $item.DestinationEndpointUniqueId -eq $StartEndpointUniqueId) {
                             $IsExist = $true
                         }
-                    }
+                    }#>
 
                     if ($IsExist -eq $false) {
                         $DestinationEndpointSubscriptionId = $peering.RemoteVirtualNetwork.Id.Substring(("/subscriptions/".Length))
@@ -221,7 +222,8 @@ if ($Global:vNetPeering.Count -ne 0) {
                     $DestinationEndpointUniqueId = ConvertTo-UniqueId -ResourceId $peering.RemoteVirtualNetwork.Id
 
                     # Check if already added to Peering Array List
-                    $IsExist = $false
+                    $IsExist = Find-vNetPeeringRecord -StartEndpointId $vNetWithGateway.DestinationEndpointId -DestinationEndpointId $peering.RemoteVirtualNetwork.Id
+                    <#$IsExist = $false
                     foreach ($item in $Global:vNetPeering) {
 
                         if ($item.StartEndpointUniqueId -eq $StartEndpointUniqueId -and $item.DestinationEndpointUniqueId -eq $DestinationEndpointUniqueId) {
@@ -231,7 +233,7 @@ if ($Global:vNetPeering.Count -ne 0) {
                         if ($item.StartEndpointUniqueId -eq $DestinationEndpointUniqueId -and $item.DestinationEndpointUniqueId -eq $StartEndpointUniqueId) {
                             $IsExist = $true
                         }
-                    }
+                    }#>
 
                     if ($IsExist -eq $false) {
                         $DestinationEndpointSubscriptionId = $peering.RemoteVirtualNetwork.Id.Substring(("/subscriptions/".Length))
@@ -284,7 +286,8 @@ foreach ($vn in $Global:vNet) {
                     $DestinationEndpointUniqueId = ConvertTo-UniqueId -ResourceId $peering.RemoteVirtualNetwork.Id
 
                     # Check if already added to Peering Array List
-                    $IsExist = $false
+                    $IsExist = Find-vNetPeeringRecord -StartEndpointId $vn.VirtualNetworkId -DestinationEndpointId $peering.RemoteVirtualNetwork.Id
+                    <#$IsExist = $false
                     foreach ($item in $Global:vNetPeering) {
 
                         if ($item.StartEndpointUniqueId -eq $StartEndpointUniqueId -and $item.DestinationEndpointUniqueId -eq $DestinationEndpointUniqueId) {
@@ -294,7 +297,7 @@ foreach ($vn in $Global:vNet) {
                         if ($item.StartEndpointUniqueId -eq $DestinationEndpointUniqueId -and $item.DestinationEndpointUniqueId -eq $StartEndpointUniqueId) {
                             $IsExist = $true
                         }
-                    }
+                    }#>
 
                     if ($IsExist -eq $false) {
                         $DestinationEndpointSubscriptionId = $peering.RemoteVirtualNetwork.Id.Substring(("/subscriptions/".Length))
@@ -343,7 +346,8 @@ for ($i = $vNetPeeringCurrentIndex; $i -lt $Global:vNetPeering.Count; $i++) {
                 $DestinationEndpointUniqueId = ConvertTo-UniqueId -ResourceId $peering.RemoteVirtualNetwork.Id
 
                 # Check if already added to Peering Array List
-                $IsExist = $false
+                $IsExist = Find-vNetPeeringRecord -StartEndpointId $Global:vNetPeering[$i].DestinationEndpointId -DestinationEndpointId $peering.RemoteVirtualNetwork.Id
+                <#$IsExist = $false
                 foreach ($item in $Global:vNetPeering) {
 
                     if ($item.StartEndpointUniqueId -eq $StartEndpointUniqueId -and $item.DestinationEndpointUniqueId -eq $DestinationEndpointUniqueId) {
@@ -353,7 +357,7 @@ for ($i = $vNetPeeringCurrentIndex; $i -lt $Global:vNetPeering.Count; $i++) {
                     if ($item.StartEndpointUniqueId -eq $DestinationEndpointUniqueId -and $item.DestinationEndpointUniqueId -eq $StartEndpointUniqueId) {
                         $IsExist = $true
                     }
-                }
+                }#>
 
                 if ($IsExist -eq $false) {
                     $DestinationEndpointSubscriptionId = $peering.RemoteVirtualNetwork.Id.Substring(("/subscriptions/".Length))
@@ -423,7 +427,7 @@ foreach ($item in $Global:vNetPeering) {
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "VirtualNetworkGateway" -Value "N/A"
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "VirtualNetworkGatewayType" -Value "N/A"
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "UniqueId" -Value $item.DestinationEndpointUniqueId
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "PeeringCount" -Value "N/A"
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "PeeringCount" -Value 1
             $Global:vNet  += $obj
         }
     }
