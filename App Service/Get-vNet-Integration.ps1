@@ -1,46 +1,77 @@
-#az login
-$AppServiceList = Import-Csv C:\Temp\Azuresites.csv
-$ResultArray = @()
+# Global Parameter
+$SpecificTenant = "" # "Y" or "N"
+$TenantId = "" # Enter Tenant ID if $SpecificTenant is "Y"
+$CsvFullPath = "C:\Temp\Azure-AppService-vNetIntegration.csv" # Export Result to CSV file 
 
+# Script Variable
+$Global:ResultArray = @()
+[int]$CurrentItem = 1
 
-az webapp list
+# Login
+az login # For Azure CLI
+Start-Sleep -Seconds 10
+Connect-AzAccount
 
-foreach ($item in $AppServiceList) {
-
-    if ($CurrentSubscription -ne $item.Subscription) {
-        $CurrentSubscription = $item.Subscription
-        az account set --subscription $CurrentSubscription
-    }
-
-    $Subscriptions = az account list
-    $Subscriptions = $Subscriptions | ConvertFrom-Json
-    az account set --subscription $Subscriptions[2].id
-    
- 
-
-    $obj = New-Object -TypeName PSobject
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "App Name" -Value $item.AppService
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "App Service Plan" -Value $item.AppServicePlan
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceGroup" -Value $item.ResourceGroup
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subscription" -Value $item.Subscription
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "Type" -Value $item.Type
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "Sku" -Value $item.Sku
-
-    $WebApp = az webapp vnet-integration list --name $item.AppService --resource-group $item.ResourceGroup
-
-    if ($WebApp -eq "[]") {
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "vNet Integration" -Value "No"
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "VirtualNetwork" -Value "N/A"
-    } else {
-        $vNetInfo = $WebApp | ConvertFrom-Json
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "vNet Integration" -Value "Yes"
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "VirtualNetwork" -Value $vNetInfo.Name
-    }
-
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $item.Location
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "Tags" -Value $item.Tags
-
-    $ResultArray += $obj
+# Get Azure Subscription
+if ($SpecificTenant -eq "Y") {
+    $Subscriptions = Get-AzSubscription -TenantId $TenantId
+} else {
+    $Subscriptions = Get-AzSubscription
 }
 
-$ResultArray | Export-Csv -Path C:\Temp\AppService-vNetIntegration.csv -NoTypeInformation -Confirm:$false -Force 
+# Main
+Write-Host "`nThe process has been started" -ForegroundColor Yellow
+Write-Host "`nThis may take more than 10 minutes to complete" -ForegroundColor Yellow
+
+foreach ($Subscription in $Subscriptions) {
+	$AzContext = Set-AzContext -SubscriptionId $Subscription.Id
+    $AzAccountSet = az account set --subscription $Subscription.Id
+    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
+    $CurrentItem++
+
+    # App Service
+    $AppServices = Get-AzWebApp
+    Write-Host ("Number of App Service: " + $AppServices.Count)
+
+    foreach ($AppService in $AppServices) {
+        # App Service Plan
+        $AppServicePlan = $AppService.ServerFarmId.Substring($AppService.ServerFarmId.IndexOf("/serverfarms/") + "/serverfarms/".Length)
+        $AppServicePlanRG = $AppService.ServerFarmId.Substring($AppService.ServerFarmId.IndexOf("/resourceGroups/") + "/resourceGroups/".Length)
+        $AppServicePlanRG = $AppServicePlanRG.Substring(0, $AppServicePlanRG.IndexOf("/"))
+        $AppServicePlanInstance = Get-AzAppServicePlan -ResourceGroupName $AppServicePlanRG -Name $AppServicePlan
+        $sku = ($AppServicePlanInstance.Sku.Name + ": " + $AppServicePlanInstance.Sku.Capacity + " Unit")
+
+        # Get vNet Integration
+        $WebAppvNetIntegration = az webapp vnet-integration list --resource-group $AppService.ResourceGroup --name $AppService.Name
+        
+        # Save to Temp Object
+        $obj = New-Object -TypeName PSobject
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value $Subscription.Name
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionId" -Value $Subscription.Id
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "AppService" -Value $AppService.Name
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "AppServiceResourceGroup" -Value $AppService.ResourceGroup
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Type" -Value $AppService.Kind
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $AppService.Location
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "AppServicePlan" -Value $AppServicePlan
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "AppServicePlanResourceGroup" -Value $AppServicePlanRG
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Sku" -Value $sku
+    
+        if ($WebAppvNetIntegration -eq "[]") {
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "vNetIntegration" -Value "N"
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "VirtualNetworkId" -Value "N/A"
+        } else {
+            $vNetInfo = $WebAppvNetIntegration | ConvertFrom-Json
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "vNetIntegration" -Value "Y"
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "VirtualNetworkId" -Value $vNetInfo.vnetResourceId
+        }
+
+        # Save to Array
+        $Global:ResultArray += $obj
+    }
+}
+
+# Export Result to CSV file 
+$Global:ResultArray | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force
+
+# End
+Write-Host "`nCompleted`n" -ForegroundColor Yellow
