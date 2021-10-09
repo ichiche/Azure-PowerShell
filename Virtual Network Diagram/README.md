@@ -15,6 +15,7 @@
     - vNet With VPN Gateway: Blue
     - vNet with Peering: Grey
     - vNet With No Peering: Red
+- Exclude Databricks Virtual Network 
 - Optionally import the sample **diagrams_csv_sample.txt** to **Diagrams.net** for demonstration
 
 # Constraints

@@ -161,18 +161,6 @@ foreach ($vn in $Global:vNet) {
 
                     # Check if already added to Peering Array List
                     $IsExist = Find-vNetPeeringRecord -StartEndpointId $vn.VirtualNetworkId -DestinationEndpointId $peering.RemoteVirtualNetwork.Id
-                    <#
-                    $IsExist = $false
-                    foreach ($item in $Global:vNetPeering) {
-
-                        if ($item.StartEndpointUniqueId -eq $StartEndpointUniqueId -and $item.DestinationEndpointUniqueId -eq $DestinationEndpointUniqueId) {
-                            $IsExist = $true
-                        }
-
-                        if ($item.StartEndpointUniqueId -eq $DestinationEndpointUniqueId -and $item.DestinationEndpointUniqueId -eq $StartEndpointUniqueId) {
-                            $IsExist = $true
-                        }
-                    }#>
 
                     if ($IsExist -eq $false) {
                         $DestinationEndpointSubscriptionId = $peering.RemoteVirtualNetwork.Id.Substring(("/subscriptions/".Length))
@@ -223,17 +211,6 @@ if ($Global:vNetPeering.Count -ne 0) {
 
                     # Check if already added to Peering Array List
                     $IsExist = Find-vNetPeeringRecord -StartEndpointId $vNetWithGateway.DestinationEndpointId -DestinationEndpointId $peering.RemoteVirtualNetwork.Id
-                    <#$IsExist = $false
-                    foreach ($item in $Global:vNetPeering) {
-
-                        if ($item.StartEndpointUniqueId -eq $StartEndpointUniqueId -and $item.DestinationEndpointUniqueId -eq $DestinationEndpointUniqueId) {
-                            $IsExist = $true
-                        }
-
-                        if ($item.StartEndpointUniqueId -eq $DestinationEndpointUniqueId -and $item.DestinationEndpointUniqueId -eq $StartEndpointUniqueId) {
-                            $IsExist = $true
-                        }
-                    }#>
 
                     if ($IsExist -eq $false) {
                         $DestinationEndpointSubscriptionId = $peering.RemoteVirtualNetwork.Id.Substring(("/subscriptions/".Length))
@@ -287,17 +264,6 @@ foreach ($vn in $Global:vNet) {
 
                     # Check if already added to Peering Array List
                     $IsExist = Find-vNetPeeringRecord -StartEndpointId $vn.VirtualNetworkId -DestinationEndpointId $peering.RemoteVirtualNetwork.Id
-                    <#$IsExist = $false
-                    foreach ($item in $Global:vNetPeering) {
-
-                        if ($item.StartEndpointUniqueId -eq $StartEndpointUniqueId -and $item.DestinationEndpointUniqueId -eq $DestinationEndpointUniqueId) {
-                            $IsExist = $true
-                        }
-
-                        if ($item.StartEndpointUniqueId -eq $DestinationEndpointUniqueId -and $item.DestinationEndpointUniqueId -eq $StartEndpointUniqueId) {
-                            $IsExist = $true
-                        }
-                    }#>
 
                     if ($IsExist -eq $false) {
                         $DestinationEndpointSubscriptionId = $peering.RemoteVirtualNetwork.Id.Substring(("/subscriptions/".Length))
@@ -347,17 +313,6 @@ for ($i = $vNetPeeringCurrentIndex; $i -lt $Global:vNetPeering.Count; $i++) {
 
                 # Check if already added to Peering Array List
                 $IsExist = Find-vNetPeeringRecord -StartEndpointId $Global:vNetPeering[$i].DestinationEndpointId -DestinationEndpointId $peering.RemoteVirtualNetwork.Id
-                <#$IsExist = $false
-                foreach ($item in $Global:vNetPeering) {
-
-                    if ($item.StartEndpointUniqueId -eq $StartEndpointUniqueId -and $item.DestinationEndpointUniqueId -eq $DestinationEndpointUniqueId) {
-                        $IsExist = $true
-                    }
-
-                    if ($item.StartEndpointUniqueId -eq $DestinationEndpointUniqueId -and $item.DestinationEndpointUniqueId -eq $StartEndpointUniqueId) {
-                        $IsExist = $true
-                    }
-                }#>
 
                 if ($IsExist -eq $false) {
                     $DestinationEndpointSubscriptionId = $peering.RemoteVirtualNetwork.Id.Substring(("/subscriptions/".Length))
@@ -400,23 +355,24 @@ $vNetPeeringCurrentIndex = $Global:vNetPeering.Count
 foreach ($item in $Global:vNetPeering) {
     if ($item.DestinationEndpointUniqueId -eq $null -or $item.DestinationEndpointUniqueId -eq "") {
 
-        # Add Unique ID
-        [string]$TempId = $UniqueId.ToString()
-        $UniqueId++
-
-        if ($TempId.Length -eq 1) {
-            $TempId = "unknown00" + $TempId 
-        } elseif ($TempId.Length -eq 2) {
-            $TempId = "unknown0" + $TempId 
-        } else {
-            $TempId = "unknown" + $TempId 
-        }
-        
-        $item.DestinationEndpointUniqueId = $TempId
-
         # Add Virtual Network info to vNet Array
-
         if ($Global:vNet.VirtualNetworkId -notcontains $item.DestinationEndpointId) {
+
+            # Add Unique ID
+            [string]$TempId = $UniqueId.ToString()
+            $UniqueId++
+
+            if ($TempId.Length -eq 1) {
+                $TempId = "unknown00" + $TempId 
+            } elseif ($TempId.Length -eq 2) {
+                $TempId = "unknown0" + $TempId 
+            } else {
+                $TempId = "unknown" + $TempId 
+            }
+            
+            $item.DestinationEndpointUniqueId = $TempId
+
+            # Add to Virtual Network List
             $obj = New-Object -TypeName PSobject
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value "N/A"
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionId" -Value $item.DestinationEndpointSubscriptionId
@@ -429,6 +385,8 @@ foreach ($item in $Global:vNetPeering) {
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "UniqueId" -Value $item.DestinationEndpointUniqueId
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "PeeringCount" -Value 1
             $Global:vNet  += $obj
+        } else {
+            $item.DestinationEndpointUniqueId = $Global:vNet | ? {$_.VirtualNetworkId -eq $item.DestinationEndpointId} | select -ExpandProperty UniqueId
         }
     }
 }
