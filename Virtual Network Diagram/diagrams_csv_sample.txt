@@ -3,7 +3,7 @@
 # stylename: shapeType
 # styles: {"vNetWithVPNGateway": "rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;", \
 #		   "vNetWithERGateway": "rounded=1;fillColor=#c4bbf0;strokeColor=#9f87e8;", \
-#          "vNet":"shape=ellipse;fillColor=#f5f5f5;strokeColor=#666666;perimeter=ellipsePerimeter;", \
+#          "vNet":"shape=ellipse;fillColor=#f5f5f5;strokeColor=#5e5e5e;perimeter=ellipsePerimeter;", \
 #          "vNetWithNoPeering":"shape=ellipse;fillColor=#f8cecc;strokeColor=#b85450;perimeter=ellipsePerimeter"}
 # namespace: csvimport-
 # connect: {"from":"supplier", "to":"id", "invert":true, "style":"curved=0;endArrow=none;startArrow=none;strokeColor=#999999;endFill=1;"}
