@@ -71,7 +71,7 @@ foreach ($Subscription in $Subscriptions) {
 }
 
 # Export Result to CSV file 
-$Global:ResultArray | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force
+$Global:ResultArray | sort @{e='vNetIntegration';desc=$true}, AppService | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force
 
 # End
 Write-Host "`nCompleted`n" -ForegroundColor Yellow
