@@ -38,7 +38,7 @@ function Rename-Location {
 }
 
 # Convert Resource ID to Virtual Network Unique ID
-function Convert-To-UniqueId {
+function ConvertTo-UniqueId {
     param (
         [string]$ResourceId
     )
@@ -47,6 +47,14 @@ function Convert-To-UniqueId {
 
     return $UniqueId
 }
+
+function Update-vNetArray-Ordering {
+    $Global:vNet = $Global:vNet | sort @{e='VirtualNetworkGateway';desc=$true}, VirtualNetworkGatewayType,  @{e='PeeringCount';desc=$true}, VirtualNetwork
+}
+
+# Main
+Write-Host "`nThe process has been started" -ForegroundColor Yellow
+Write-Host "`nThis should take less than 10 minutes to complete" -ForegroundColor Yellow
 
 # Get Virtual Network
 foreach ($Subscription in $Subscriptions) {
@@ -57,13 +65,19 @@ foreach ($Subscription in $Subscriptions) {
     foreach ($vn in $vns) {
         if ($vn.ResourceGroupName -notlike "databricks-rg*") {
             $GatewayInstance = $null
-            $GatewayInstance = $vn.Subnets.IpConfigurations.Id | ? {$_ -like "*providers/Microsoft.Network/virtualNetworkGateways/*"}
+            $GatewayInstance = $vn.Subnets.IpConfigurations.Id | ? {$_ -like "*providers/Microsoft.Network/virtualNetworkGateways/*"} | select -First 1
 
             if ($GatewayInstance -ne $null) {
+
+                Write-Host ($vn.Name + " is deployed with Virtual Network Gateway`n")
                 $IsGateway = "Y"
                 $GatewayName = $GatewayInstance.Substring($GatewayInstance.IndexOf("providers/Microsoft.Network/virtualNetworkGateways/") + "providers/Microsoft.Network/virtualNetworkGateways/".Length)
                 $GatewayName = $GatewayName.Substring(0, $GatewayName.IndexOf("/ipConfigurations"))
                 $GatewayType = $vngs | ? {$_.Name -eq $GatewayName} | select -ExpandProperty GatewayType
+
+                if ($GatewayType -eq $null) {
+                    $GatewayType = "NoAccessRight"
+                }
             } else {
                 $IsGateway = "N"
                 $GatewayType = "N/A"
@@ -106,7 +120,9 @@ foreach ($Subscription in $Subscriptions) {
 }
 
 # Ordering
-$Global:vNet = $Global:vNet | sort @{e='VirtualNetworkGateway';desc=$true}, VirtualNetworkGatewayType,  @{e='PeeringCount';desc=$true}, VirtualNetwork
+Update-vNetArray-Ordering
+
+Write-Host "Ignore the error message about Set-AzContext and Get-AzVirtualNetworkPeering`n" -ForegroundColor Yellow
 
 # Get Virtual Network Peering for Virtual Network with Virtual Network Gateway deployed
 foreach ($vn in $Global:vNet) {
@@ -118,8 +134,8 @@ foreach ($vn in $Global:vNet) {
 
         if ($peerings -ne $null -and $peerings.Count -gt 0) {
             foreach ($peering in $peerings) {
-                    $StartEndpointUniqueId = Convert-To-UniqueId -ResourceId $vn.VirtualNetworkId
-                    $DestinationEndpointUniqueId = Convert-To-UniqueId -ResourceId $peering.RemoteVirtualNetwork.Id
+                    $StartEndpointUniqueId = ConvertTo-UniqueId -ResourceId $vn.VirtualNetworkId
+                    $DestinationEndpointUniqueId = ConvertTo-UniqueId -ResourceId $peering.RemoteVirtualNetwork.Id
 
                     # Check if already added to Peering Array List
                     $IsExist = $false
@@ -137,9 +153,16 @@ foreach ($vn in $Global:vNet) {
                     if ($IsExist -eq $false) {
                         $DestinationEndpointSubscriptionId = $peering.RemoteVirtualNetwork.Id.Substring(("/subscriptions/".Length))
                         $DestinationEndpointSubscriptionId = $DestinationEndpointSubscriptionId.Substring(0, $DestinationEndpointSubscriptionId.IndexOf("/resourceGroups/"))
-                        $DestinationEndpointVirtualNetworkRG = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/resourceGroups/") + "/resourceGroups/".Length)
-                        $DestinationEndpointVirtualNetworkRG = $DestinationEndpointVirtualNetworkRG.Substring(0, $DestinationEndpointVirtualNetworkRG.IndexOf("/providers/Microsoft.Network/virtualNetworks/"))
-                        $DestinationEndpointVirtualNetwork = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/Microsoft.Network/virtualNetworks/") + "/Microsoft.Network/virtualNetworks/".Length)
+
+                        if ($peering.RemoteVirtualNetwork.Id -like "*/providers/Microsoft.ClassicNetwork/virtualNetworks*") {
+                            $DestinationEndpointVirtualNetworkRG = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/resourceGroups/") + "/resourceGroups/".Length)
+                            $DestinationEndpointVirtualNetworkRG = $DestinationEndpointVirtualNetworkRG.Substring(0, $DestinationEndpointVirtualNetworkRG.IndexOf("/providers/Microsoft.ClassicNetwork/virtualNetworks/"))
+                            $DestinationEndpointVirtualNetwork = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/providers/Microsoft.ClassicNetwork/virtualNetworks/") + "/providers/Microsoft.ClassicNetwork/virtualNetworks/".Length)
+                        } else {
+                            $DestinationEndpointVirtualNetworkRG = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/resourceGroups/") + "/resourceGroups/".Length)
+                            $DestinationEndpointVirtualNetworkRG = $DestinationEndpointVirtualNetworkRG.Substring(0, $DestinationEndpointVirtualNetworkRG.IndexOf("/providers/Microsoft.Network/virtualNetworks/"))
+                            $DestinationEndpointVirtualNetwork = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/Microsoft.Network/virtualNetworks/") + "/Microsoft.Network/virtualNetworks/".Length)
+                        }
 
                         # Save to Temp Object
                         $obj = New-Object -TypeName PSobject
@@ -170,7 +193,7 @@ if ($Global:vNetPeering.Count -ne 0) {
         if ($peerings -ne $null -and $peerings.Count -gt 0) {
             foreach ($peering in $peerings) {
                     $StartEndpointUniqueId = $vNetWithGateway.DestinationEndpointUniqueId
-                    $DestinationEndpointUniqueId = Convert-To-UniqueId -ResourceId $peering.RemoteVirtualNetwork.Id
+                    $DestinationEndpointUniqueId = ConvertTo-UniqueId -ResourceId $peering.RemoteVirtualNetwork.Id
 
                     # Check if already added to Peering Array List
                     $IsExist = $false
@@ -188,9 +211,16 @@ if ($Global:vNetPeering.Count -ne 0) {
                     if ($IsExist -eq $false) {
                         $DestinationEndpointSubscriptionId = $peering.RemoteVirtualNetwork.Id.Substring(("/subscriptions/".Length))
                         $DestinationEndpointSubscriptionId = $DestinationEndpointSubscriptionId.Substring(0, $DestinationEndpointSubscriptionId.IndexOf("/resourceGroups/"))
-                        $DestinationEndpointVirtualNetworkRG = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/resourceGroups/") + "/resourceGroups/".Length)
-                        $DestinationEndpointVirtualNetworkRG = $DestinationEndpointVirtualNetworkRG.Substring(0, $DestinationEndpointVirtualNetworkRG.IndexOf("/providers/Microsoft.Network/virtualNetworks/"))
-                        $DestinationEndpointVirtualNetwork = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/Microsoft.Network/virtualNetworks/") + "/Microsoft.Network/virtualNetworks/".Length)
+
+                        if ($peering.RemoteVirtualNetwork.Id -like "*/providers/Microsoft.ClassicNetwork/virtualNetworks*") {
+                            $DestinationEndpointVirtualNetworkRG = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/resourceGroups/") + "/resourceGroups/".Length)
+                            $DestinationEndpointVirtualNetworkRG = $DestinationEndpointVirtualNetworkRG.Substring(0, $DestinationEndpointVirtualNetworkRG.IndexOf("/providers/Microsoft.ClassicNetwork/virtualNetworks/"))
+                            $DestinationEndpointVirtualNetwork = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/providers/Microsoft.ClassicNetwork/virtualNetworks/") + "/providers/Microsoft.ClassicNetwork/virtualNetworks/".Length)
+                        } else {
+                            $DestinationEndpointVirtualNetworkRG = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/resourceGroups/") + "/resourceGroups/".Length)
+                            $DestinationEndpointVirtualNetworkRG = $DestinationEndpointVirtualNetworkRG.Substring(0, $DestinationEndpointVirtualNetworkRG.IndexOf("/providers/Microsoft.Network/virtualNetworks/"))
+                            $DestinationEndpointVirtualNetwork = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/Microsoft.Network/virtualNetworks/") + "/Microsoft.Network/virtualNetworks/".Length)
+                        }
 
                         # Save to Temp Object
                         $obj = New-Object -TypeName PSobject
@@ -223,8 +253,8 @@ foreach ($vn in $Global:vNet) {
 
         if ($peerings -ne $null -and $peerings.Count -gt 0) {
             foreach ($peering in $peerings) {
-                    $StartEndpointUniqueId = Convert-To-UniqueId -ResourceId $vn.VirtualNetworkId
-                    $DestinationEndpointUniqueId = Convert-To-UniqueId -ResourceId $peering.RemoteVirtualNetwork.Id
+                    $StartEndpointUniqueId = ConvertTo-UniqueId -ResourceId $vn.VirtualNetworkId
+                    $DestinationEndpointUniqueId = ConvertTo-UniqueId -ResourceId $peering.RemoteVirtualNetwork.Id
 
                     # Check if already added to Peering Array List
                     $IsExist = $false
@@ -242,9 +272,16 @@ foreach ($vn in $Global:vNet) {
                     if ($IsExist -eq $false) {
                         $DestinationEndpointSubscriptionId = $peering.RemoteVirtualNetwork.Id.Substring(("/subscriptions/".Length))
                         $DestinationEndpointSubscriptionId = $DestinationEndpointSubscriptionId.Substring(0, $DestinationEndpointSubscriptionId.IndexOf("/resourceGroups/"))
-                        $DestinationEndpointVirtualNetworkRG = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/resourceGroups/") + "/resourceGroups/".Length)
-                        $DestinationEndpointVirtualNetworkRG = $DestinationEndpointVirtualNetworkRG.Substring(0, $DestinationEndpointVirtualNetworkRG.IndexOf("/providers/Microsoft.Network/virtualNetworks/"))
-                        $DestinationEndpointVirtualNetwork = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/Microsoft.Network/virtualNetworks/") + "/Microsoft.Network/virtualNetworks/".Length)
+                        
+                        if ($peering.RemoteVirtualNetwork.Id -like "*/providers/Microsoft.ClassicNetwork/virtualNetworks*") {
+                            $DestinationEndpointVirtualNetworkRG = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/resourceGroups/") + "/resourceGroups/".Length)
+                            $DestinationEndpointVirtualNetworkRG = $DestinationEndpointVirtualNetworkRG.Substring(0, $DestinationEndpointVirtualNetworkRG.IndexOf("/providers/Microsoft.ClassicNetwork/virtualNetworks/"))
+                            $DestinationEndpointVirtualNetwork = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/providers/Microsoft.ClassicNetwork/virtualNetworks/") + "/providers/Microsoft.ClassicNetwork/virtualNetworks/".Length)
+                        } else {
+                            $DestinationEndpointVirtualNetworkRG = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/resourceGroups/") + "/resourceGroups/".Length)
+                            $DestinationEndpointVirtualNetworkRG = $DestinationEndpointVirtualNetworkRG.Substring(0, $DestinationEndpointVirtualNetworkRG.IndexOf("/providers/Microsoft.Network/virtualNetworks/"))
+                            $DestinationEndpointVirtualNetwork = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/Microsoft.Network/virtualNetworks/") + "/Microsoft.Network/virtualNetworks/".Length)
+                        }
 
                         # Save to Temp Object
                         $obj = New-Object -TypeName PSobject
@@ -274,7 +311,7 @@ for ($i = $vNetPeeringCurrentIndex; $i -lt $Global:vNetPeering.Count; $i++) {
     if ($peerings -ne $null -and $peerings.Count -gt 0) {
         foreach ($peering in $peerings) {
                 $StartEndpointUniqueId = $Global:vNetPeering[$i].DestinationEndpointUniqueId
-                $DestinationEndpointUniqueId = Convert-To-UniqueId -ResourceId $peering.RemoteVirtualNetwork.Id
+                $DestinationEndpointUniqueId = ConvertTo-UniqueId -ResourceId $peering.RemoteVirtualNetwork.Id
 
                 # Check if already added to Peering Array List
                 $IsExist = $false
@@ -292,9 +329,16 @@ for ($i = $vNetPeeringCurrentIndex; $i -lt $Global:vNetPeering.Count; $i++) {
                 if ($IsExist -eq $false) {
                     $DestinationEndpointSubscriptionId = $peering.RemoteVirtualNetwork.Id.Substring(("/subscriptions/".Length))
                     $DestinationEndpointSubscriptionId = $DestinationEndpointSubscriptionId.Substring(0, $DestinationEndpointSubscriptionId.IndexOf("/resourceGroups/"))
-                    $DestinationEndpointVirtualNetworkRG = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/resourceGroups/") + "/resourceGroups/".Length)
-                    $DestinationEndpointVirtualNetworkRG = $DestinationEndpointVirtualNetworkRG.Substring(0, $DestinationEndpointVirtualNetworkRG.IndexOf("/providers/Microsoft.Network/virtualNetworks/"))
-                    $DestinationEndpointVirtualNetwork = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/Microsoft.Network/virtualNetworks/") + "/Microsoft.Network/virtualNetworks/".Length)
+                    
+                    if ($peering.RemoteVirtualNetwork.Id -like "*/providers/Microsoft.ClassicNetwork/virtualNetworks*") {
+                        $DestinationEndpointVirtualNetworkRG = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/resourceGroups/") + "/resourceGroups/".Length)
+                        $DestinationEndpointVirtualNetworkRG = $DestinationEndpointVirtualNetworkRG.Substring(0, $DestinationEndpointVirtualNetworkRG.IndexOf("/providers/Microsoft.ClassicNetwork/virtualNetworks/"))
+                        $DestinationEndpointVirtualNetwork = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/providers/Microsoft.ClassicNetwork/virtualNetworks/") + "/providers/Microsoft.ClassicNetwork/virtualNetworks/".Length)
+                    } else {
+                        $DestinationEndpointVirtualNetworkRG = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/resourceGroups/") + "/resourceGroups/".Length)
+                        $DestinationEndpointVirtualNetworkRG = $DestinationEndpointVirtualNetworkRG.Substring(0, $DestinationEndpointVirtualNetworkRG.IndexOf("/providers/Microsoft.Network/virtualNetworks/"))
+                        $DestinationEndpointVirtualNetwork = $peering.RemoteVirtualNetwork.Id.Substring($peering.RemoteVirtualNetwork.Id.IndexOf("/Microsoft.Network/virtualNetworks/") + "/Microsoft.Network/virtualNetworks/".Length)
+                    }
 
                     # Save to Temp Object
                     $obj = New-Object -TypeName PSobject
@@ -313,8 +357,48 @@ for ($i = $vNetPeeringCurrentIndex; $i -lt $Global:vNetPeering.Count; $i++) {
     }
 }
 
+# Reserve 
 # Record the current index of peering list for n-tier peering lookup
 $vNetPeeringCurrentIndex = $Global:vNetPeering.Count
+
+# Supplement the Unique ID for the Virtual Network that has no access permission
+foreach ($item in $Global:vNetPeering) {
+    if ($item.DestinationEndpointUniqueId -eq $null -or $item.DestinationEndpointUniqueId -eq "") {
+
+        # Add Unique ID
+        [string]$TempId = $UniqueId.ToString()
+        $UniqueId++
+
+        if ($TempId.Length -eq 1) {
+            $TempId = "unknown00" + $TempId 
+        } elseif ($TempId.Length -eq 2) {
+            $TempId = "unknown0" + $TempId 
+        } else {
+            $TempId = "unknown" + $TempId 
+        }
+        
+        $item.DestinationEndpointUniqueId = $TempId
+
+        # Add Virtual Network info to vNet Array
+        $VirtualNetwork 
+
+        $obj = New-Object -TypeName PSobject
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value "N/A"
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionId" -Value $item.DestinationEndpointSubscriptionId
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceGroup" -Value $item.DestinationEndpointVirtualNetworkRG
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value "N/A"
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "VirtualNetwork" -Value $item.DestinationEndpointVirtualNetwork
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "VirtualNetworkId" -Value $item.DestinationEndpointUniqueId
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "VirtualNetworkGateway" -Value "N/A"
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "VirtualNetworkGatewayType" -Value "N/A"
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "UniqueId" -Value $TempId 
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "PeeringCount" -Value "N/A"
+        $Global:vNet  += $obj
+    }
+}
+
+# Ordering
+Update-vNetArray-Ordering
 
 # Export to Text File for uploading to Diagrams.net
 $CsvFileContent = @"
@@ -323,7 +407,7 @@ $CsvFileContent = @"
 # stylename: shapeType
 # styles: {"vNetWithVPNGateway": "rounded=1;fillColor=#dae8fc;strokeColor=#6c8ebf;", \
 #		   "vNetWithERGateway": "rounded=1;fillColor=#c4bbf0;strokeColor=#9f87e8;", \
-#          "vNet":"shape=ellipse;fillColor=#f5f5f5;strokeColor=#666666;perimeter=ellipsePerimeter;", \
+#          "vNet":"shape=ellipse;fillColor=#f5f5f5;strokeColor=#5e5e5e;perimeter=ellipsePerimeter;", \
 #          "vNetWithNoPeering":"shape=ellipse;fillColor=#f8cecc;strokeColor=#b85450;perimeter=ellipsePerimeter"}
 # namespace: csvimport-
 # connect: {"from":"supplier", "to":"id", "invert":true, "style":"curved=0;endArrow=none;startArrow=none;strokeColor=#999999;endFill=1;"}
@@ -345,14 +429,14 @@ foreach ($vn in $Global:vNet) {
     $name = $vn.VirtualNetwork
     $supplier = ""
 
-    foreach ($PeeringItem in $Global:vNetPeering) {
-        if ($PeeringItem.DestinationEndpointUniqueId -eq $vn.UniqueId) {
+    foreach ($item in $Global:vNetPeering) {
+        if ($item.DestinationEndpointUniqueId -eq $vn.UniqueId) {
                 if ($supplier -ne "") {
                     $supplier += ","
                 } else {
                     $supplier += '"'
                 }
-                $supplier += $PeeringItem.StartEndpointUniqueId
+                $supplier += $item.StartEndpointUniqueId
         }
     }
 
@@ -376,3 +460,6 @@ foreach ($vn in $Global:vNet) {
 }
 
 $CsvFileContent | Out-File -FilePath $TextFileFullPath -Confirm:$false -Force
+
+# End
+Write-Host "`nCompleted`n" -ForegroundColor Yellow
