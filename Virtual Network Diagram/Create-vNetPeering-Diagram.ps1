@@ -51,18 +51,18 @@ function ConvertTo-UniqueId {
 # Check if already added to Peering Array List
 function Find-vNetPeeringRecord {
     param (
-        [string]$StartEndpointUniqueId,
-        [string]$DestinationEndpointUniqueId
+        [string]$StartEndpointId,
+        [string]$DestinationEndpointId
     )
 
     $IsExist = $false
     foreach ($item in $Global:vNetPeering) {
 
-        if ($item.StartEndpointUniqueId -eq $StartEndpointUniqueId -and $item.DestinationEndpointUniqueId -eq $DestinationEndpointUniqueId) {
+        if ($item.StartEndpointId -eq $StartEndpointId -and $item.DestinationEndpointId -eq $DestinationEndpointId) {
             $IsExist = $true
         }
 
-        if ($item.StartEndpointUniqueId -eq $DestinationEndpointUniqueId -and $item.DestinationEndpointUniqueId -eq $StartEndpointUniqueId) {
+        if ($item.StartEndpointId -eq $DestinationEndpointId -and $item.DestinationEndpointId -eq $StartEndpointId) {
             $IsExist = $true
         }
     }
@@ -190,6 +190,7 @@ foreach ($vn in $Global:vNet) {
                         # Save to Temp Object
                         $obj = New-Object -TypeName PSobject
                         Add-Member -InputObject $obj -MemberType NoteProperty -Name "StartEndpointUniqueId" -Value $StartEndpointUniqueId
+                        Add-Member -InputObject $obj -MemberType NoteProperty -Name "StartEndpointId" -Value $vn.VirtualNetworkId
                         Add-Member -InputObject $obj -MemberType NoteProperty -Name "StartEndpointVirtualNetwork" -Value $peering.VirtualNetworkName
                         Add-Member -InputObject $obj -MemberType NoteProperty -Name "DestinationEndpointUniqueId" -Value $DestinationEndpointUniqueId
                         Add-Member -InputObject $obj -MemberType NoteProperty -Name "DestinationEndpointId" -Value $peering.RemoteVirtualNetwork.Id
@@ -249,6 +250,7 @@ if ($Global:vNetPeering.Count -ne 0) {
                         # Save to Temp Object
                         $obj = New-Object -TypeName PSobject
                         Add-Member -InputObject $obj -MemberType NoteProperty -Name "StartEndpointUniqueId" -Value $StartEndpointUniqueId
+                        Add-Member -InputObject $obj -MemberType NoteProperty -Name "StartEndpointId" -Value $vNetWithGateway.DestinationEndpointId
                         Add-Member -InputObject $obj -MemberType NoteProperty -Name "StartEndpointVirtualNetwork" -Value $peering.VirtualNetworkName
                         Add-Member -InputObject $obj -MemberType NoteProperty -Name "DestinationEndpointUniqueId" -Value $DestinationEndpointUniqueId
                         Add-Member -InputObject $obj -MemberType NoteProperty -Name "DestinationEndpointId" -Value $peering.RemoteVirtualNetwork.Id
@@ -311,6 +313,7 @@ foreach ($vn in $Global:vNet) {
                         # Save to Temp Object
                         $obj = New-Object -TypeName PSobject
                         Add-Member -InputObject $obj -MemberType NoteProperty -Name "StartEndpointUniqueId" -Value $StartEndpointUniqueId
+                        Add-Member -InputObject $obj -MemberType NoteProperty -Name "StartEndpointId" -Value $vn.VirtualNetworkId
                         Add-Member -InputObject $obj -MemberType NoteProperty -Name "StartEndpointVirtualNetwork" -Value $peering.VirtualNetworkName
                         Add-Member -InputObject $obj -MemberType NoteProperty -Name "DestinationEndpointUniqueId" -Value $DestinationEndpointUniqueId
                         Add-Member -InputObject $obj -MemberType NoteProperty -Name "DestinationEndpointId" -Value $peering.RemoteVirtualNetwork.Id
@@ -369,6 +372,7 @@ for ($i = $vNetPeeringCurrentIndex; $i -lt $Global:vNetPeering.Count; $i++) {
                     # Save to Temp Object
                     $obj = New-Object -TypeName PSobject
                     Add-Member -InputObject $obj -MemberType NoteProperty -Name "StartEndpointUniqueId" -Value $StartEndpointUniqueId
+                    Add-Member -InputObject $obj -MemberType NoteProperty -Name "StartEndpointId" -Value $Global:vNetPeering[$i].DestinationEndpointId
                     Add-Member -InputObject $obj -MemberType NoteProperty -Name "StartEndpointVirtualNetwork" -Value $peering.VirtualNetworkName
                     Add-Member -InputObject $obj -MemberType NoteProperty -Name "DestinationEndpointUniqueId" -Value $DestinationEndpointUniqueId
                     Add-Member -InputObject $obj -MemberType NoteProperty -Name "DestinationEndpointId" -Value $peering.RemoteVirtualNetwork.Id
@@ -407,20 +411,21 @@ foreach ($item in $Global:vNetPeering) {
         $item.DestinationEndpointUniqueId = $TempId
 
         # Add Virtual Network info to vNet Array
-        $VirtualNetwork 
 
-        $obj = New-Object -TypeName PSobject
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value "N/A"
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionId" -Value $item.DestinationEndpointSubscriptionId
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceGroup" -Value $item.DestinationEndpointVirtualNetworkRG
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value "N/A"
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "VirtualNetwork" -Value $item.DestinationEndpointVirtualNetwork
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "VirtualNetworkId" -Value $item.DestinationEndpointUniqueId
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "VirtualNetworkGateway" -Value "N/A"
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "VirtualNetworkGatewayType" -Value "N/A"
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "UniqueId" -Value $TempId 
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "PeeringCount" -Value "N/A"
-        $Global:vNet  += $obj
+        if ($Global:vNet.VirtualNetworkId -notcontains $item.DestinationEndpointId) {
+            $obj = New-Object -TypeName PSobject
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value "N/A"
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionId" -Value $item.DestinationEndpointSubscriptionId
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceGroup" -Value $item.DestinationEndpointVirtualNetworkRG
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value "N/A"
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "VirtualNetwork" -Value $item.DestinationEndpointVirtualNetwork
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "VirtualNetworkId" -Value $item.DestinationEndpointId
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "VirtualNetworkGateway" -Value "N/A"
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "VirtualNetworkGatewayType" -Value "N/A"
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "UniqueId" -Value $item.DestinationEndpointUniqueId
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "PeeringCount" -Value "N/A"
+            $Global:vNet  += $obj
+        }
     }
 }
 
