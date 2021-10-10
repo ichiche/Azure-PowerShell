@@ -42,7 +42,7 @@
 
 Detail of Virtual Network and Peering are stored to below variable
 
-```PowerShell
+```
 $Global:vNet | Export-Csv -Path "C:\Temp\vNet-Detail.csv -NoTypeInformation -Confirm:$false -Force
 $Global:vNetPeering | Export-Csv -Path "C:\Temp\vNetPeering-Detail.csv" -NoTypeInformation -Confirm:$false -Force
 ```
