@@ -1,7 +1,7 @@
 # Global Parameter
 $SpecificTenant = "" # "Y" or "N"
 $TenantId = "" # Enter Tenant ID if $SpecificTenant is "Y"
-$CsvFullPath = "C:\Temp\Azure-Unmanaged-Disk-List.csv" # Export Result to CSV file 
+$CsvFullPath = "C:\Temp\Azure-Unmanaged-Disk.csv" # Export Result to CSV file 
 
 # Script Variable
 $Global:UnmanagedDisks = @()

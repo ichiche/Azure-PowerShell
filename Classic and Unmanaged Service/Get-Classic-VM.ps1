@@ -1,7 +1,7 @@
 # Global Parameter
 $SpecificTenant = "" # "Y" or "N"
 $TenantId = "" # Enter Tenant ID if $SpecificTenant is "Y"
-$CsvFullPath = "C:\Temp\Azure-ClassicVM-List.csv" # Export Result to CSV file 
+$CsvFullPath = "C:\Temp\Azure-Classic-VM.csv" # Export Result to CSV file 
 
 # Script Variable
 $Global:ClassicVMList = @()
@@ -53,8 +53,8 @@ foreach ($Subscription in $Subscriptions) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value $Subscription.Name
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionId" -Value $Subscription.Id
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceGroup" -Value $ClassicVM.ResourceGroupName
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "InstanceName" -Value $ClassicVM.Name
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
     
         # Save to Array
         $Global:ClassicVMList   += $obj
