@@ -36,7 +36,7 @@
 1. From the Web Console, click Arrange > Insert > Advanced > CSV
 1. Copy the content of CSV File and overwrite the input field in Web Console
 1. Click Import
-1. For exporting the diagram in other format, Click File > Export as  
+1. If you would like to save as other format, Click File > Export as  
 
 # Additional Information
 
