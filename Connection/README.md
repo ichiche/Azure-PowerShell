@@ -20,7 +20,7 @@ PowerShell support following scopes:
 
 - **Connect-AzAccount** within each script is an individual connection section that unable to share with other script
 
-- If you would like to reuse the connection section for multiple, open a **Windows PowerShell**, explicitly login once, then copy the content of each script and paste into this **Windows PowerShell**
+- If you would like to reuse the connection section for multiple, open a **Windows PowerShell**, explicitly login once, then either run the script or copy the content of each script and paste into this **Windows PowerShell**
 
 # Troubleshooting
 
