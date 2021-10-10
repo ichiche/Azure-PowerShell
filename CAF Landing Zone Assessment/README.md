@@ -1,4 +1,6 @@
-# Scope of functionalities
+# Get-Azone-Service.ps1
+
+## Scope of functionalities
 
 Retrieve the instance information includes pricing tier, current redundancy method, zone redundancy configuration of follow Azure Services:
 
@@ -22,15 +24,15 @@ Retrieve the instance information includes pricing tier, current redundancy meth
 - Azure Database for MySQL
 - Azure Database for PostgreSQL
 
-# Limitation
+### Limitation
 
-#### App Service
+##### App Service
 
 Zone Redundant is supported to be created by ARM template at this moment. Zone redundant status is shown on Azure Portal only. Az Module and Azure CLI are not able to retrieve the Zone redundant status.
 
 - https://docs.microsoft.com/en-us/azure/app-service/how-to-zone-redundancy#how-to-deploy-a-zone-redundant-app-service
 
-#### Virtual Machine
+##### Virtual Machine
 
 For verifying the status of **Region Disaster Recovery** and **Zone to Zone Disaster Recovery**
 
