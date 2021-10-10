@@ -77,7 +77,7 @@ foreach ($Subscription in $Subscriptions) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceId" -Value $ClassicResource.ResourceId
     
         # Save to Array
-        $Global:ClassicList   += $obj
+        $Global:ClassicList += $obj
     }
 }
 
