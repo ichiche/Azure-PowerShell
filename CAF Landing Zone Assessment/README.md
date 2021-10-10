@@ -1,12 +1,15 @@
 # Run.ps1
 
-- Download all scripts to same local directory
-- Modify **Global Parameter**
-- Open a PowerShell Windows and locate to that directory
-- Execute Run.ps1 or copy the content and paste into PowerShell Windows 
+## Instruction
 
-## Support to get Diagnostic Setting of most core Azure Services
-## Refer to To-Do-List.md for upcoming enhancement
+1. Download all scripts to same local directory
+1. Modify **Global Parameter**
+1. Open a PowerShell Windows and locate to that directory
+1. Execute Run.ps1 or copy the content and paste into PowerShell Windows 
+
+## Remark
+- Support to get Diagnostic Setting of most core Azure Services
+- Refer to To-Do-List.md for upcoming enhancement
 
 # Get-Azone-Service.ps1
 
