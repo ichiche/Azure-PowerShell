@@ -13,7 +13,7 @@
 - Variable under **# Script Variable** is expected NOT to modify
 - Modify **# Login** if you would like to leverage **Connect-To-Cloud.ps1** to login Azure
 
-# Procedure
+# Instruction
 
 1. Review **README.md** in **Connection**
 1. Fork a repository or download the necessary script to local computer
