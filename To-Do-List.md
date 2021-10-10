@@ -1,12 +1,14 @@
 ```
-- Get App Service vNet Peering
-- Get Classic Resources includes Cloud Service
-- Check resource group that contain no resource
-- Set VM Static Private IP
+# Virtual Machine
+- Set VM Static Private IP 
+
+# CAF
+- Get Service Endpoint Status
+- Get Pricate Endpoint Status
 - Get Diagnostic Setting of core component
 - Update Azone Script to support more services
-- Get Service Endpoint Status
-- Get Resource Lock 
+- Get Resource Lock
+- Check resource group that contain no resource
 - Get Service Health Alert configuration
 - All-In-One Script to perform CAF Landing Zone Assessment, and generate the report in Excel format
 ```
