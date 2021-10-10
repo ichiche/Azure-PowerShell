@@ -24,6 +24,7 @@ PowerShell support following scopes:
 
 # Troubleshooting
 
+## Az Module
 ```
 WARNING: Unable to acquire token for tenant 'Tenant Id XXX' with error 'You must use multi-factor authentication to access tenant 'Tenant Id XXX', please rerun 'Connect-AzAccount' with additional parameter '-TenantId Tenant Id XXX'.'
 ```
@@ -36,4 +37,18 @@ Connect-AzAccount -TenantId "Tenant Id" # Execute for each TenantId
 Connect-AzAccount -TenantId "Tenant Id"
 ```
 
+## Azure CLI
 
+```
+WARNING: You have logged in. Now let us find all the subscriptions to which you have access...
+WARNING: The following tenants require Multi-Factor Authentication (MFA). Use 'az login --tenant TENANT_ID' to explicitly login to a tenant.
+WARNING: <Subscription ID> 'Subscription Name'
+```
+
+If encounter above warning message every time you connect using Azure CLI, suggest to run az login with -TenantId during initial connection. 
+
+```Bash
+az login
+az login --tenant "Tenant Id" # Execute for each TenantId
+az login --tenant "Tenant Id"
+```
