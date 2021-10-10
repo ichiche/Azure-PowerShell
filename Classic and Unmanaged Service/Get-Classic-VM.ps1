@@ -62,7 +62,9 @@ foreach ($Subscription in $Subscriptions) {
 }
 
 # Export Result to CSV file
-$Global:ClassicVMList  | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force
+$Global:ClassicVMList | sort SubscriptionName, ResourceGroup, InstanceName | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force
 
 # End
-Write-Host "`nCompleted`n" -ForegroundColor Yellow
+Write-Host "`nCompleted" -ForegroundColor Yellow
+Write-Host ("`nCount of Classic VM: " + $Global:ClassicVMList.Count) -ForegroundColor Cyan
+Write-Host "`n"

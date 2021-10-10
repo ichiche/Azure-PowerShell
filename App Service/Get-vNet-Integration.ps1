@@ -74,4 +74,6 @@ foreach ($Subscription in $Subscriptions) {
 $Global:ResultArray | sort @{e='vNetIntegration';desc=$true}, AppService | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force
 
 # End
-Write-Host "`nCompleted`n" -ForegroundColor Yellow
+Write-Host "`nCompleted" -ForegroundColor Yellow
+Write-Host ("`nCount of App Service: " + $Global:ResultArray.Count) -ForegroundColor Cyan
+Write-Host "`n"
