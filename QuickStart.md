@@ -1,8 +1,8 @@
 # Prerequisites
 
 | Item | Name | Version | Installation | 
-| - | - | - | 
-| 1 | PowerShell | 5.1 or above | Windows 10 Native | 
+| - | - | - | - | 
+| 1 | PowerShell | 5.1 or above | https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows | 
 | 2 | Az Module | 6.4.0 | https://www.powershellgallery.com/packages/Az |
 | 3 | Azure CLI | 2.28.0 | https://docs.microsoft.com/en-us/cli/azure/install-azure-cli |
 | 4 | ImportExcel | 7.3.0 | https://www.powershellgallery.com/packages/ImportExcel |
