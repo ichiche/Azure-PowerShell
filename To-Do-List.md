@@ -5,7 +5,6 @@
 # CAF
 - Get Service Endpoint Status
 - Get Pricate Endpoint Status
-- Get Diagnostic Setting of core component
 - Update Azone Script to support more services
 - Get Resource Lock
 - Check resource group that contain no resource
