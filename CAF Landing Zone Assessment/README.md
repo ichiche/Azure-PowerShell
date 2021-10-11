@@ -2,6 +2,7 @@
 
 ## Run.ps1
 
+### QuickStart
 1. Download all scripts to same local directory
 1. Modify **Global Parameter**
 1. Open a **Windows PowerShell** and locate to that directory
