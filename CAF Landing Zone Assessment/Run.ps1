@@ -1,7 +1,7 @@
 # Global Parameter
 $SpecificTenant = "" # "Y" or "N"
 $TenantId = "" # Enter Tenant ID if $SpecificTenant is "Y"
-$Global:ExcelFullPath = "C:\Temp\CAF-Assessment.xlsx" # Export Result to CSV file 
+$Global:ExcelFullPath = "C:\Temp\CAF-Assessment.xlsx" # Export Result to Excel file 
 
 # Run Script Configuration
 $GetDiagnosticSetting = $true
