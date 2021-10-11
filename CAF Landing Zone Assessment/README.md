@@ -6,7 +6,10 @@
 1. Download all scripts to same local directory
 1. Modify **Global Parameter**
 1. Open a **Windows PowerShell** and locate to that directory
-1. Execute Run.ps1 or copy the content and paste into **Windows PowerShell**
+1. Run the script either one of below method
+   1. Directly execute **Run.ps1**
+   1. Copy the content of **Run.ps1** and paste into **Windows PowerShell**
+1. [Optional] Separately Login Azure using Az Module and Azure CLI in **Windows PowerShell** and retrieve the list of subscriptions
 
 ### Remark
 - Support to get Diagnostic Setting of most core Azure Services

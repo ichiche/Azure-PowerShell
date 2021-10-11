@@ -16,7 +16,7 @@
     - vNet with Peering: Grey
     - vNet With No Peering: Red
 - Exclude Databricks Virtual Network 
-- Optionally import the sample **diagrams_csv_sample.txt** to **Diagrams.net** for demonstration
+- [Optional] import the sample **diagrams_csv_sample.txt** to **Diagrams.net** for demonstration
 
 # Constraints
 
@@ -28,7 +28,7 @@
 - IP Addresses are not shown
 - Subscription or Resource not found message could be ignore if the user account do not have access to all peered virtual network
 
-# Procedure
+# Instruction
 
 1. Modify Global Parameter if necessary
 1. Collect the Text File
