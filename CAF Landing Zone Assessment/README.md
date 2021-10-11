@@ -1,19 +1,19 @@
-# Run.ps1
+# Instruction
 
-## Instruction
+## Run.ps1
 
 1. Download all scripts to same local directory
 1. Modify **Global Parameter**
-1. Open a PowerShell Windows and locate to that directory
-1. Execute Run.ps1 or copy the content and paste into PowerShell Windows 
+1. Open a **Windows PowerShell** and locate to that directory
+1. Execute Run.ps1 or copy the content and paste into **Windows PowerShell**
 
-## Remark
+### Remark
 - Support to get Diagnostic Setting of most core Azure Services
 - Refer to To-Do-List.md for upcoming enhancement
 
-# Get-Azone-Service.ps1
+## Get-Azone-Service.ps1
 
-## Scope of functionalities
+### Scope of functionalities
 
 Retrieve the instance information includes pricing tier, current redundancy method, zone redundancy configuration of follow Azure Services:
 
@@ -41,8 +41,9 @@ Retrieve the instance information includes pricing tier, current redundancy meth
 
 ##### App Service
 
-Zone Redundant is supported to be created by ARM template at this moment. Zone redundant status is shown on Azure Portal only. Az Module and Azure CLI are not able to retrieve the Zone redundant status.
-
+- Zone Redundant is supported to be created by ARM template at this moment. 
+- Zone redundant status is shown on Azure Portal only. 
+- Az Module and Azure CLI are not able to retrieve the Zone redundant status.
 - https://docs.microsoft.com/en-us/azure/app-service/how-to-zone-redundancy#how-to-deploy-a-zone-redundant-app-service
 
 ##### Virtual Machine
@@ -55,6 +56,6 @@ For verifying the status of **Region Disaster Recovery** and **Zone to Zone Disa
 
 1. Azure CLI (Not Supported)
 
-# Regions and Availability Zones in Azure
+### Regions and Availability Zones in Azure
 
 - https://docs.microsoft.com/en-us/azure/availability-zones/az-overview#services-by-category
