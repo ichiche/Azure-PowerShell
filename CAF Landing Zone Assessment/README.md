@@ -19,7 +19,7 @@
 
 ### Scope of functionalities
 
-Retrieve the instance information includes pricing tier, current redundancy method, zone redundancy configuration of follow Azure Services:
+Get the Azure Services supporting **Availability Zones** in the subscription includes pricing tier, current redundancy method, zone redundancy configuration of follow Azure Services:
 
 - Application Gateway
 - Event Hub (Namespace)

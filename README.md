@@ -1,4 +1,5 @@
 # Contributing
+
 ```
 All scripts in repository are used for DevTest only.
 ```
@@ -25,18 +26,25 @@ All scripts in repository are used for DevTest only.
 1. Modify the script if necessary
 1. Execute the script from **Windows PowerShell**
 
-# File List
+# CAF Landing Zone Assessment
+
+Refer to README.md in corresponding folder for instruction
+
+# General Script List
+
 | Id | File Name | Folder | Description |
 | - | - | - | - |
 | 1 | Encrypt-Password-Embed.ps1 | Connection | Specify the password in script file, converting to **SecureString** and export to text file |
 | 2 | Encrypt-Password-ReadHost.ps1 | Connection | Enter the password at PowerShell session for Converting to **SecureString** and export to text file |
 | 3 | Connect-To-Cloud.ps1 | Connection | Login Azure with pre-encrypted credential using PowerShell  |
-| 4 | Get-Azone-Service.ps1 | CAF Landing Zone Assessment | Get the Azure Services supporting **Availability Zones** in the subscription |
-| 5 | Get-NSG-Rule.ps1 | Security | Get Custom Rule and Association of **Network Security Group (NSG)** in the subscription |
-| 6 | Create-Image-From-Disk.ps1 | Virtual Machine | Create Azure VM Image from **Managed Disk** |
-| 7 | Get-ASR-ReplicationProtectedItem.ps1 | Recovery Service | Get the Site Recovery Replication Protected Items of Recovery Service Vault |
-| 8 | Get-Classic-Resource.ps1 | Classic and Unmanaged Service | Get **Classic Resource (ASM)**  in the subscription |
-| 9 | Get-Classic-VM.ps1 | Classic and Unmanaged Service | Get **Classic Virtual Machine (ASM)**  in the subscription |
+| 4 | Get-NSG-Rule.ps1 | Security | Get Custom Rule and Association of **Network Security Group (NSG)** in the subscription |
+| 5 | Create-Image-From-Disk.ps1 | Virtual Machine | Create Azure VM Image from **Managed Disk** |
+| 6 | Set-Static-Private-IpAddress.ps1 | Set the allocation type Private IP of Virtual Machine in the subscription to Static |
+| 7 | Get-ASR-ReplicationProtectedItem.ps1 | Recovery Service | Get the Site Recovery Replication Protected Items of a Recovery Service Vault |
+| 8 | Get-Classic-Resource.ps1 | Classic and Unmanaged Service | Get **Classic Resource (ASM)** in the subscription |
+| 9 | Get-Classic-VM.ps1 | Classic and Unmanaged Service | Get **Classic Virtual Machine (ASM)** in the subscription |
 | 10 | Get-Unmanaged-Disk.ps1 | Classic and Unmanaged Service | Get **Unmanaged Disk** attached to VM |
-| 11 | | App Service | |
-| 12 |  | Virtual Network Diagram | |
+| 11 | Get-vNet-Integration.ps1 | App Service | Get the information of App Service includes status of **Virtual Network Integration** and associated vNet if exist |
+| 12 | Create-vNetPeering-Diagram.ps1 | Virtual Network Diagram | Generate Virtual Network Diagram using **Diagrams.net** |
+
+
