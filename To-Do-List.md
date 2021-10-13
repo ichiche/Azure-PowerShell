@@ -1,10 +1,8 @@
 ```
-# Virtual Machine
-- Set VM Static Private IP 
-
 # CAF
+- Check the allowed endpoint status of Redis 
+- Get Private Endpoint Status
 - Get Service Endpoint Status
-- Get Pricate Endpoint Status
 - Update Azone Script to support more services
 - Get Resource Lock
 - Check resource group that contain no resource
