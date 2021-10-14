@@ -1,4 +1,6 @@
 ```
+# Az Module is primary, Azure CLI is secondary
+
 # CAF
 - Check the allowed endpoint status of Redis 
 - Get Private Endpoint Status
