@@ -2,6 +2,10 @@
 # Az Module is primary, Azure CLI is secondary
 
 # CAF
+- Check VM backup
+- Get-AzManagementGroup structure
+- Get-AzDdosProtectionPlan Get Azure DDoS Standard enabled in all VNET
+- Get-AzSecurityPricing Gets the Azure Defender plans for a subscription in Azure Security Center
 - Check the allowed endpoint status of Redis 
 - Get Private Endpoint Status
 - Get Service Endpoint Status
