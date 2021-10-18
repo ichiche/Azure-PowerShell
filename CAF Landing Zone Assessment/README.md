@@ -15,6 +15,15 @@
 - Support to get Diagnostic Setting of most core Azure Services
 - Refer to To-Do-List.md for upcoming enhancement
 
+### Scope of functionalities
+- Collect Diagnostic Setting
+- Collect Azure Cache for Redis Network Configuration
+
+### Reference
+- https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-network-isolation
+
+
+
 ## Get-Azone-Service.ps1
 
 ### Scope of functionalities

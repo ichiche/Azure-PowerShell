@@ -3,8 +3,9 @@ $SpecificTenant = "" # "Y" or "N"
 $TenantId = "" # Enter Tenant ID if $SpecificTenant is "Y"
 $Global:ExcelFullPath = "C:\Temp\CAF-Assessment.xlsx" # Export Result to Excel file 
 
-# Run Script Configuration
+# Run-Script Configuration
 $GetDiagnosticSetting = $true
+$GetRedisNetworkIsolation = $true
 
 # Script Variable
 $Global:Assessment = @()
@@ -32,7 +33,13 @@ Write-Host "`nThis process may take more than 15 minutes ..." -ForegroundColor Y
 Write-Host "`nPlease wait until it finishes ..." -ForegroundColor Yellow
 
 if ($GetDiagnosticSetting) {
+    Write-Host "`nCollecting Diagnostic Setting" -ForegroundColor Cyan
     & .\Get-DiagnosticSetting.ps1
+}
+
+if ($GetRedisNetworkIsolation) {
+    Write-Host "`nCollecting Azure Cache for Redis Network Configuration" -ForegroundColor Cyan
+    & .\Get-Redis-NetworkIsolation.ps1
 }
 
 # End
