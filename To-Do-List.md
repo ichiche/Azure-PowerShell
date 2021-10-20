@@ -1,6 +1,8 @@
 ```
 # Az Module is primary, Azure CLI is secondary
 
+# Add PowerShell Multi-threading to CAF Assessment for better performance on log collection
+
 # CAF
 - Check VM backup
 - Get-AzManagementGroup structure
