@@ -6,14 +6,13 @@
 
 # CAF
 - Check VM backup
-- Get-AzDdosProtectionPlan Get Azure DDoS Standard enabled in all VNET
-- Get-AzSecurityPricing Gets the Azure Defender plans for a subscription in Azure Security Center
-- Get-AzManagementGroup structure
+- Get-AzDdosProtectionPlan > Get Azure DDoS Standard enabled in all VNET
+- Get-AzSecurityPricing > Get the Azure Defender plans for a subscription in Azure Security Center
+- Get-AzManagementGroup > structure
+- Get Resource Lock of subscription and resource group level
+- Check resource group that contain no resource
+- Get Service Health Alert configuration
 - Get Private Endpoint Status
 - Get Service Endpoint Status
 - Update Azone Script to support more services
-- Get Resource Lock of subscription adn resource group level
-- Check resource group that contain no resource
-- Get Service Health Alert configuration
-- All-In-One Script to perform CAF Landing Zone Assessment, and generate the report in Excel format
 ```
