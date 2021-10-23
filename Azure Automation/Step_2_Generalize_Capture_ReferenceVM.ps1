@@ -22,6 +22,7 @@ Param(
 
 # Script Variable
 $connectionName = "AzureRunAsConnection"
+$error.Clear()
 
 switch ($OSVersion) {
     WS2016 { 
@@ -48,11 +49,16 @@ switch ($OSVersion) {
 
 # Login
 try {
-    # Get the connection "AzureRunAsConnection "  
+    # Get connection "AzureRunAsConnection"  
     $servicePrincipalConnection = Get-AutomationConnection -Name $ConnectionName
     $ApplicationId = $servicePrincipalConnection.ApplicationId
     $CertificateThumbprint = $servicePrincipalConnection.CertificateThumbprint
     $TenantId = $servicePrincipalConnection.TenantId                
+
+    # Get credential "SendGrid"
+    $SendGrid = Get-AutomationPSCredential -Name "SendGrid"
+    $SendGridAplKey = $SendGrid.Password
+    $SendGridPlainAplKey = $SendGrid.GetNetworkCredential().Password
 
     # Connect to Azure  
     Write-Output "`nConnecting to Azure using Az PowerShell Module"    
@@ -75,7 +81,9 @@ $PowerStatus = $vm.Statuses | ? {$_.Code -like "PowerState*"} | select -ExpandPr
 
 if ($PowerStatus -ne "PowerState/running") {
     Start-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Confirm:$false
-    Start-Sleep -Seconds 30
+
+    # Wait for a certain time to ensure Guest OS has completed the start up process
+    Start-Sleep -Seconds 180
 }
 
 # Prepare Script
@@ -92,35 +100,37 @@ if ($OSVersion -like "WS*") {
         Start-Sleep -Seconds 60
         $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Status
         $PowerStatus = $vm.Statuses | ? {$_.Code -like "PowerState*"} | select -ExpandProperty Code
-        Start-Sleep -Seconds 5
     }
     Write-Output "`nSysprep is completed"    
 
     # Deallocate Reference VM
     Write-Output "`nDeallocating Reference VM" 
     Stop-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Force -Confirm:$false
-    Start-Sleep -Seconds 5
+    Start-Sleep -Seconds 10
     Write-Output "`nReference VM is deallocated" 
 } else { # Generalize RHEL Reference VM
 
 }
 
-# Get Latest Image Version from Shared Image Gallery
-$Gallery = Get-AzGallery -ResourceGroupName $GalleryRG -Name $GalleryName
+# Create Gallery Image Version only if no error occur before
+if ($error.Count -eq 0) {
+    # Get Gallery Image Definition 
+    $GalleryImageDefinition = Get-AzGalleryImageDefinition -ResourceGroupName $GalleryRG -GalleryName $GalleryName -Name $GalleryImageDefinitionName
 
-# New Gallery Image Version
-$GalleryImageVersionName = (Get-Date -Format "yyyy.MM.dd").ToString()
-$region_eastus = @{Name = 'East US'}
-$region_eastasia = @{Name = 'East Asia'}
-$region_southeastasia = @{Name = 'Southeast Asia'}
-$targetRegions = @($region_eastus, $region_eastasia, $region_southeastasia)
-$StorageAccountType = "Premium_LRS"
-$ReplicaCount = 1
+    # New Gallery Image Version
+    $GalleryImageVersionName = (Get-Date -Format "yyyy.MM.dd").ToString()
+    $region_eastus = @{Name = 'East US'}
+    $region_eastasia = @{Name = 'East Asia'}
+    $region_southeastasia = @{Name = 'Southeast Asia'}
+    $targetRegions = @($region_eastus, $region_eastasia, $region_southeastasia)
+    $StorageAccountType = "Premium_LRS"
+    $ReplicaCount = 1
 
-# Create Gallery Image Version sourcing from VM
-Write-Output "`nCreating Gallery Image Version" 
-$SetAzVm = Set-AzVm -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Generalized
-$vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName
-$SourceImageId = $vm.Id
-New-AzGalleryImageVersion -ResourceGroupName $GalleryRG -GalleryName $GalleryName -GalleryImageDefinitionName $GalleryImageDefinitionName -Name $GalleryImageVersionName -Location $Gallery.Location -TargetRegion $targetRegions -ReplicaCount $ReplicaCount -StorageAccountType $StorageAccountType -SourceImageId $SourceImageId
-Write-Output "`nGallery Image Version is created" 
+    # Create Gallery Image Version sourcing from VM
+    Write-Output "`nCreating Gallery Image Version" 
+    $SetAzVm = Set-AzVm -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Generalized
+    $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName
+    $SourceImageId = $vm.Id
+    New-AzGalleryImageVersion -ResourceGroupName $GalleryRG -GalleryName $GalleryName -GalleryImageDefinitionName $GalleryImageDefinitionName -Name $GalleryImageVersionName -Location $GalleryImageDefinition.Location -TargetRegion $targetRegions -ReplicaCount $ReplicaCount -StorageAccountType $StorageAccountType -SourceImageId $SourceImageId
+    Write-Output "`nGallery Image Version is created" 
+}
