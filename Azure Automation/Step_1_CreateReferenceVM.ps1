@@ -78,11 +78,18 @@ switch ($OSVersion) {
 
 # Login
 try {
-    # Get the connection "AzureRunAsConnection "  
+    # Get connection "AzureRunAsConnection"  
     $servicePrincipalConnection = Get-AutomationConnection -Name $ConnectionName
     $ApplicationId = $servicePrincipalConnection.ApplicationId
     $CertificateThumbprint = $servicePrincipalConnection.CertificateThumbprint
     $TenantId = $servicePrincipalConnection.TenantId                
+
+    # Get credential "TempLocalAdmin"
+    $TempLocalAdmin = Get-AutomationPSCredential -Name "TempLocalAdmin"
+    $TempAdminAccountName = $TempLocalAdmin.UserName
+    $TempAdminAccountPassword = $TempLocalAdmin.Password
+    $TempAdminAccountPlainPassword = $TempLocalAdmin.GetNetworkCredential().Password
+    $TempAdminCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $TempAdminAccountName, $TempAdminAccountPassword
 
     # Connect to Azure  
     Write-Output "`nConnecting to Azure using Az PowerShell Module"    
@@ -108,12 +115,14 @@ $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -ErrorAc
 if($vm -ne $null) {
     Write-Output "`nDeleting existing Reference VM" 
     $RemoveAzVM = Remove-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Force -Confirm:$false
-    Start-Sleep -Seconds 10
+    Start-Sleep -Seconds 30
 
     $RefVMResource = Get-AzResource -ResourceGroupName $ReferenceVMRG | ? {$_.Name -like "$ReferenceVMName*"} | Remove-AzResource -Force -Confirm:$false
+    Start-Sleep -Seconds 5
+    Write-Output "`nExisting Reference VM is deleted" 
 }
 
-# Get Latest Image Version from Shared Image Gallery
+# Get Image Version from Shared Image Gallery
 Write-Output "`nRetrieving Image Version" 
 $GalleryImageDefinition = Get-AzGalleryImageDefinition -ResourceGroupName $GalleryRG -GalleryName $GalleryName -Name $GalleryImageDefinitionName
 $Location = Rename-Location -Location $GalleryImageDefinition.Location
@@ -122,6 +131,7 @@ $GalleryImageVersion = Get-AzGalleryImageVersion -ResourceGroupName $GalleryRG -
 for ($i = 0; $i -lt $GalleryImageVersion.Count; $i++) {
     if ($i -eq 0) { 
         [DateTime]$LastVersionDate = $GalleryImageVersion[$i].PublishingProfile.PublishedDate
+        [int]$LastVersionIndex = 0
     }
 
     if ($LastVersionDate -lt $GalleryImageVersion[$i].PublishingProfile.PublishedDate) {
@@ -129,6 +139,8 @@ for ($i = 0; $i -lt $GalleryImageVersion.Count; $i++) {
         $LastVersionIndex = $i
     }
 }
+Write-Output "`nImage Version is retrieved" 
+Write-Output ("`nImage Version: " + $GalleryImageVersion[$LastVersionIndex].Name + " is selected")
 
 # Create Reference VM from Shared Image Gallery
 Write-Output "`nCreating Reference VM" 
@@ -146,10 +158,10 @@ $DataDisk0Name = "$ReferenceVMName-Data-Drive-0"
 Add-AzVMDataDisk -VM $vm -Name $DataDisk0Name -StorageAccountType $DiskType -DiskSizeInGB $DataDisk0SizeInGb -Lun 0 -CreateOption FromImage -Caching ReadWrite
 
 # OS Setting
-$LocalSupportName = "tempadm"
-$LocalSupportPassword = "lab@2015P@ssw0rd"
-$LocalSupportCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $LocalSupportName, ($LocalSupportPassword | ConvertTo-SecureString -AsPlainText -Force)
-$vm = Set-AzVMOperatingSystem -VM $vm -Windows -ComputerName $ReferenceVMName -Credential $LocalSupportCredential -ProvisionVMAgent -TimeZone $TimeZone
+$TempAdminAccountName = "tempadm"
+$TempAdminAccountPassword = "lab@2015P@ssw0rd"
+$TempAdminCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $TempAdminAccountName, ($TempAdminAccountPassword | ConvertTo-SecureString -AsPlainText -Force)
+$vm = Set-AzVMOperatingSystem -VM $vm -Windows -ComputerName $ReferenceVMName -Credential $TempAdminCredential -ProvisionVMAgent -TimeZone $TimeZone
 
 # Network Interface
 $NICName = "$ReferenceVMName-Ethernet0"
@@ -165,15 +177,24 @@ Set-AzVMBootDiagnostic -VM $vm -Disable
 
 # Deploy VM
 New-AzVM -VM $vm -ResourceGroupName $ReferenceVMRG -Location $Location -LicenseType $LicenseType
-Start-Sleep -Seconds 10
+Start-Sleep -Seconds 5
 Write-Output "`nReference VM is created" 
+
+# Wait for a certain time to ensure Guest OS has completed the initial setup process
+[int]$minute = 30
+while ($minute -ne 0) {
+    if ($minute % 10 -eq 0 -or $minute -le 5 ) {
+        Write-Output ("`n" + $minute + " minutes remaining before install Windows Update")
+    }
+    Start-Sleep -Seconds 60
+    $minute--
+}
 
 # Prepare Script for Windows Update
 "Import-Module PSWindowsUpdate" | Out-File .\InstallWindowUpdate.ps1 -Force -Confirm:$false
 "Install-WindowsUpdate -AcceptAll -AutoReboot -Silent" | Out-File .\InstallWindowUpdate.ps1 -Append -Confirm:$false
 
 # Run Windows Update and restart computer after patch installation
-Start-Sleep -Seconds 180 # Wait for a while to ensure Guest OS has completed the start up process
 Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunPowerShellScript" -ScriptPath InstallWindowUpdate.ps1
-Start-Sleep -Seconds 10
+Start-Sleep -Seconds 5
 Write-Output ("`nWindows Update is Installed" + $ResourceGroup.ResourceGroupName)
