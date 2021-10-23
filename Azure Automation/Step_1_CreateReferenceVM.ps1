@@ -45,8 +45,8 @@ function Rename-Location {
 $connectionName = "AzureRunAsConnection"
 $VMSize = "Standard_D2s_v3"
 $DiskType = "StandardSSD_LRS"
-$osDiskSizeInGb = 160
-$DataDisk0SizeInGb = 8
+$osDiskSizeInGb = 200 # 160
+$DataDisk0SizeInGb = 16 # 8
 $TimeZone = "China Standard Time"
 
 switch ($OSVersion) {
@@ -54,24 +54,29 @@ switch ($OSVersion) {
         $GalleryImageDefinitionName = "WindowsServer2016"
         $ReferenceVMRG = "ImageWorkingItem"
         $ReferenceVMName = "WS2016-RefVM"
+        $LicenseType = "Windows_Server"
     }
     WS2019 { 
         $GalleryImageDefinitionName = "WindowsServer2019"
         $ReferenceVMRG = "ImageWorkingItem"
         $ReferenceVMName = "WS2019-RefVM"
+        $LicenseType = "Windows_Server"
     }
     RHEL7 { 
         $GalleryImageDefinitionName = "RHEL7"
         $ReferenceVMRG = "ImageWorkingItem"
         $ReferenceVMName = "RHEL7-RefVM"
+        $LicenseType = "RHEL_BYOS"
     }
     RHEL8 { 
         $GalleryImageDefinitionName = "RHEL8"
         $ReferenceVMRG = "ImageWorkingItem"
         $ReferenceVMName = "RHEL8-RefVM"
+        $LicenseType = "RHEL_BYOS"
     }
 }
 
+# Login
 try {
     # Get the connection "AzureRunAsConnection "  
     $servicePrincipalConnection = Get-AutomationConnection -Name $ConnectionName
@@ -80,7 +85,7 @@ try {
     $TenantId = $servicePrincipalConnection.TenantId                
 
     # Connect to Azure  
-    Write-Output "Logging in to Azure..."         
+    Write-Output "`nConnecting to Azure using Az PowerShell Module"    
     Connect-AzAccount -ApplicationId $ApplicationId -CertificateThumbprint $CertificateThumbprint -Tenant $TenantId -ServicePrincipal
     Set-AzContext -SubscriptionId $SubscriptionId
 } catch {
@@ -97,9 +102,19 @@ try {
 # Get the Latest Location Name and Display Name
 $Global:NameReference = Get-AzLocation
 
-# Delete Existing Reference VM if exist
+# Delete Reference VM if exist
+$vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -ErrorAction SilentlyContinue
+
+if($vm -ne $null) {
+    Write-Output "`nDeleting existing Reference VM" 
+    $RemoveAzVM = Remove-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Force -Confirm:$false
+    Start-Sleep -Seconds 10
+
+    $RefVMResource = Get-AzResource -ResourceGroupName $ReferenceVMRG | ? {$_.Name -like "$ReferenceVMName*"} | Remove-AzResource -Force -Confirm:$false
+}
 
 # Get Latest Image Version from Shared Image Gallery
+Write-Output "`nRetrieving Image Version" 
 $GalleryImageDefinition = Get-AzGalleryImageDefinition -ResourceGroupName $GalleryRG -GalleryName $GalleryName -Name $GalleryImageDefinitionName
 $Location = Rename-Location -Location $GalleryImageDefinition.Location
 $GalleryImageVersion = Get-AzGalleryImageVersion -ResourceGroupName $GalleryRG -GalleryName $GalleryName -GalleryImageDefinitionName $GalleryImageDefinitionName
@@ -115,7 +130,9 @@ for ($i = 0; $i -lt $GalleryImageVersion.Count; $i++) {
     }
 }
 
-# Create Reference VM based on the last version of image from Shared Image Gallery
+# Create Reference VM from Shared Image Gallery
+Write-Output "`nCreating Reference VM" 
+
 # VM Image
 $vm = New-AzVMConfig -VMName $ReferenceVMName -VMSize $VMSize
 $vm = Set-AzVMSourceImage -VM $vm -Id $GalleryImageVersion[$LastVersionIndex].Id
@@ -141,45 +158,22 @@ $SubnetId = $vNet.Subnets.Id | ? {$_ -like "*$RefVM_vNetSubnetName*"}
 $nic = New-AzNetworkInterface -Name $NICName -ResourceGroupName $RefVM_vNetRG -Location $Location -SubnetId $SubnetId -Confirm:$false
 $nic.IpConfigurations[0].PrivateIpAllocationMethod = "Static"
 Set-AzNetworkInterface -NetworkInterface $nic
-#$VMIpAddress = $nic.IpConfigurations[0].PrivateIpAddress
 $vm = Add-AzVMNetworkInterface -VM $vm -Id $nic.Id -Primary
 
 # Disable Boot Diagnostics
 Set-AzVMBootDiagnostic -VM $vm -Disable
 
 # Deploy VM
-New-AzVM -VM $vm -ResourceGroupName $ReferenceVMRG -Location $Location -LicenseType Windows_Server
+New-AzVM -VM $vm -ResourceGroupName $ReferenceVMRG -Location $Location -LicenseType $LicenseType
+Start-Sleep -Seconds 10
+Write-Output "`nReference VM is created" 
 
 # Prepare Script for Windows Update
-'usoclient.exe StartScan' | Out-File .\InstallWindowUpdate.ps1 -Force -Confirm:$false
-'usoclient.exe StartDownload' | Out-File .\InstallWindowUpdate.ps1 -Append -Confirm:$false
-'usoclient.exe StartInstall' | Out-File .\InstallWindowUpdate.ps1 -Append -Confirm:$false
-
-# Prepare Script for restart computer 
-$WindowsUpdateChecking = @'
-while ($true) {
-    Start-Sleep -Seconds 30
-    $TiWorker = Get-Process -Name TiWorker -ErrorAction SilentlyContinue
-    $TrustedInstaller = Get-Process -Name TrustedInstaller -ErrorAction SilentlyContinue
-
-    if ($TiWorker -eq $null -and $TrustedInstaller -eq $null) {
-        Start-Sleep -Seconds 60
-
-        $TiWorker = Get-Process -Name TiWorker -ErrorAction SilentlyContinue
-        $TrustedInstaller = Get-Process -Name TrustedInstaller -ErrorAction SilentlyContinue
-
-        if ($TiWorker -eq $null -and $TrustedInstaller -eq $null) {
-            Restart-Computer -ComputerName localhost -ThrottleLimit 0 -Force -Confirm:$false
-            break;
-        }
-    }
-}
-'@
-
-$WindowsUpdateChecking | Out-File .\RestartVM.ps1 -Force -Confirm:$false
+"Import-Module PSWindowsUpdate" | Out-File .\InstallWindowUpdate.ps1 -Force -Confirm:$false
+"Install-WindowsUpdate -AcceptAll -AutoReboot -Silent" | Out-File .\InstallWindowUpdate.ps1 -Append -Confirm:$false
 
 # Run Windows Update and restart computer after patch installation
+Start-Sleep -Seconds 180 # Wait for a while to ensure Guest OS has completed the start up process
 Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunPowerShellScript" -ScriptPath InstallWindowUpdate.ps1
-Start-Sleep -Seconds 5
-Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunPowerShellScript" -ScriptPath RestartVM.ps1
-Write-Output ("Windows Patching is completed" + $ResourceGroup.ResourceGroupName)
+Start-Sleep -Seconds 10
+Write-Output ("`nWindows Update is Installed" + $ResourceGroup.ResourceGroupName)

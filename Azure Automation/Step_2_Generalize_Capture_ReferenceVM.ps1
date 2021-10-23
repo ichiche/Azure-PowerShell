@@ -1,6 +1,6 @@
 <#
     .DESCRIPTION
-        Create Reference VM
+        Generalize and Capture Reference VM
 
     .NOTES
         AUTHOR: Isaac Cheng, Microsoft Customer Engineer
@@ -46,6 +46,7 @@ switch ($OSVersion) {
     }
 }
 
+# Login
 try {
     # Get the connection "AzureRunAsConnection "  
     $servicePrincipalConnection = Get-AutomationConnection -Name $ConnectionName
@@ -53,8 +54,8 @@ try {
     $CertificateThumbprint = $servicePrincipalConnection.CertificateThumbprint
     $TenantId = $servicePrincipalConnection.TenantId                
 
-    # Connect to Azure   
-    Write-Output "Logging in to Azure..."        
+    # Connect to Azure  
+    Write-Output "`nConnecting to Azure using Az PowerShell Module"    
     Connect-AzAccount -ApplicationId $ApplicationId -CertificateThumbprint $CertificateThumbprint -Tenant $TenantId -ServicePrincipal
     Set-AzContext -SubscriptionId $SubscriptionId
 } catch {
@@ -68,25 +69,39 @@ try {
     }
 }
 
+# Start up Reference VM if necessary
+$vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Status
+$PowerStatus = $vm.Statuses | ? {$_.Code -like "PowerState*"} | select -ExpandProperty Code
+
+if ($PowerStatus -ne "PowerState/running") {
+    Start-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Confirm:$false
+    Start-Sleep -Seconds 30
+}
+
 # Prepare Script
 "C:\Windows\System32\SysPrep\sysprep.exe /generalize /oobe /shutdown /mode:vm /quiet" | Out-File .\Sysprep.ps1 -Force -Confirm:$false
 
-# Generalize Windows VM
+# Generalize Windows Reference VM
 if ($OSVersion -like "WS*") {
-    # Sysprep VM
-    Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunPowerShellScript" -ScriptPath Sysprep.ps1
+    # Sysprep Reference VM
+    Write-Output "`Performing Sysprep"  
+    $InvokeAzVMRunCommand = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunPowerShellScript" -ScriptPath Sysprep.ps1
 
-    while ($true) {
+    # Check Power Status of Reference VM
+    while ($PowerStatus -ne "PowerState/stopped") {
         Start-Sleep -Seconds 60
         $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Status
-        $PowerStatus = $vm.Statuses | ? {$_.Code -like "PowerState*"}
-
-        if ($PowerStatus.Code -eq "PowerState/stopped") {
-            Stop-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Force -Confirm:$false
-            break;
-        }
+        $PowerStatus = $vm.Statuses | ? {$_.Code -like "PowerState*"} | select -ExpandProperty Code
+        Start-Sleep -Seconds 5
     }
-} else { # Generalize RHEL VM
+    Write-Output "`nSysprep is completed"    
+
+    # Deallocate Reference VM
+    Write-Output "`nDeallocating Reference VM" 
+    Stop-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Force -Confirm:$false
+    Start-Sleep -Seconds 5
+    Write-Output "`nReference VM is deallocated" 
+} else { # Generalize RHEL Reference VM
 
 }
 
@@ -102,17 +117,10 @@ $targetRegions = @($region_eastus, $region_eastasia, $region_southeastasia)
 $StorageAccountType = "Premium_LRS"
 $ReplicaCount = 1
 
-# Source from VM
-Set-AzVm -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Generalized
+# Create Gallery Image Version sourcing from VM
+Write-Output "`nCreating Gallery Image Version" 
+$SetAzVm = Set-AzVm -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Generalized
 $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName
 $SourceImageId = $vm.Id
 New-AzGalleryImageVersion -ResourceGroupName $GalleryRG -GalleryName $GalleryName -GalleryImageDefinitionName $GalleryImageDefinitionName -Name $GalleryImageVersionName -Location $Gallery.Location -TargetRegion $targetRegions -ReplicaCount $ReplicaCount -StorageAccountType $StorageAccountType -SourceImageId $SourceImageId
-
-# Source from Managed Disk
-$vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName
-$OsDiskId = $vm.StorageProfile.OsDisk.ManagedDisk.Id
-$OsDisk = @{Source = @{Id = "$OsDiskId"}}
-$DataDisk0Id = $vm.StorageProfile.DataDisks[0].ManagedDisk.Id
-$DataDisk0 = @{Source = @{Id = "$DataDisk0Id" }; Lun = 0; }
-$DataDisks = @($DataDisk0)
-New-AzGalleryImageVersion -ResourceGroupName $GalleryRG -GalleryName $GalleryName -GalleryImageDefinitionName $GalleryImageDefinitionName -Name $GalleryImageVersionName -Location $Gallery.Location -TargetRegion $targetRegions -ReplicaCount $ReplicaCount -StorageAccountType $StorageAccountType -OSDiskImage $OsDisk -DataDiskImage $DataDisks
+Write-Output "`nGallery Image Version is created" 
