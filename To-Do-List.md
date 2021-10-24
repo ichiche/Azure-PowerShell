@@ -1,13 +1,13 @@
-```
-# Az Module is primary, Azure CLI is secondary
-
-# Add PowerShell Multi-threading to CAF Assessment for better performance on log collection
+## PowerShell Multi-threading
+ 
 - https://adamtheautomator.com/powershell-multithreading/
 - https://devblogs.microsoft.com/scripting/beginning-use-of-powershell-runspaces-part-1/
 - https://docs.microsoft.com/en-us/dotnet/api/system.management.automation.runspaces.runspacefactory.createrunspacepool?view=powershellsdk-7.0.0
 - https://gist.github.com/rjmholt/02fe49189540acf0d2650f571f5176db
 
-# CAF
+
+## CAF
+```
 - Check VM backup
 - Get-AzDdosProtectionPlan > Get Azure DDoS Standard enabled in all VNET
 - Get-AzSecurityPricing > Get the Azure Defender plans for a subscription in Azure Security Center
