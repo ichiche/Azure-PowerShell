@@ -3,16 +3,19 @@
 
 # Add PowerShell Multi-threading to CAF Assessment for better performance on log collection
 - https://adamtheautomator.com/powershell-multithreading/
+- https://devblogs.microsoft.com/scripting/beginning-use-of-powershell-runspaces-part-1/
+- https://docs.microsoft.com/en-us/dotnet/api/system.management.automation.runspaces.runspacefactory.createrunspacepool?view=powershellsdk-7.0.0
+- https://gist.github.com/rjmholt/02fe49189540acf0d2650f571f5176db
 
 # CAF
 - Check VM backup
 - Get-AzDdosProtectionPlan > Get Azure DDoS Standard enabled in all VNET
 - Get-AzSecurityPricing > Get the Azure Defender plans for a subscription in Azure Security Center
-- Get-AzManagementGroup > structure
 - Get Resource Lock of subscription and resource group level
 - Check resource group that contain no resource
 - Get Service Health Alert configuration
 - Get Private Endpoint Status
-- Get Service Endpoint Status
 - Update Azone Script to support more services
+- Get Service Endpoint Status (TBC)
+- Get-AzManagementGroup  hierarchy (TBC)
 ```
