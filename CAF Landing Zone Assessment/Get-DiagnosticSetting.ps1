@@ -72,15 +72,28 @@ function Clear-Unsupported-ResourceType {
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Web/staticSites"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Sendgrid.Email/accounts"}
     $AzResources = $AzResources | ? {$_.ResourceType -notlike "*Classic*"}
+
+    $FilteredAzResources = @()
+
+    foreach ($item in $AzResources) {
+        # Exclude Master Database
+        if ($item.ResourceType -eq "Microsoft.Sql/servers/databases") {
+            if ($item.ResourceName -notlike "*/master") {
+                $FilteredAzResources += $item
+            }
+        } else {
+            $FilteredAzResources += $item
+        }
+    }
     
-    return $AzResources
+    return $FilteredAzResources
 }
 
 # Module
 Import-Module ImportExcel
 
 # Main
-Write-Host "`nGetting Diagnostics Setting of Azure Resources have been started" -ForegroundColor Yellow
+Write-Host "`nCollect Diagnostic Setting has been started" -ForegroundColor Yellow
 
 foreach ($Subscription in $Global:Subscriptions) {
     $AzContext = Set-AzContext -SubscriptionId $Subscription.Id
@@ -99,7 +112,6 @@ foreach ($Subscription in $Global:Subscriptions) {
         $Location = Rename-Location -Location $item.Location
 
         if ($TempDiagnosticSettings -eq $null) {
-
             $obj = New-Object -TypeName PSobject
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value $Subscription.Name
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionId" -Value $Subscription.Id
@@ -116,7 +128,6 @@ foreach ($Subscription in $Global:Subscriptions) {
 
         } else {
             foreach ($TempDiagnosticSetting in $TempDiagnosticSettings) {
-                # Save to Temp Object
                 $obj = New-Object -TypeName PSobject
                 Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value $Subscription.Name
                 Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionId" -Value $Subscription.Id
@@ -157,14 +168,14 @@ foreach ($item in $SettingStatus) {
     $ResourceType = $item.Name.Substring(3)
 
     $obj = New-Object -TypeName PSobject
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value $ResourceType 
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledDiagnostic" -Value $EnableStatus
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "Count" -Value $item.Count
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "Resource Type" -Value $ResourceType 
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "Enabled Diagnostic" -Value $EnableStatus
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
     $DiagnosticSettingSummary += $obj
 }
 
 $DiagnosticSettingSummary = $DiagnosticSettingSummary | sort ResourceType
 
 # Export to Excel File
-$DiagnosticSettingSummary | Export-Excel -Path $Global:ExcelFullPath  -WorksheetName "DiagnosticSummary" -TableName "DiagnosticSummary" -TableStyle Medium16 -AutoSize -Append
-$Global:DiagnosticSetting | Export-Excel -Path $Global:ExcelFullPath  -WorksheetName "DiagnosticDetail" -TableName "DiagnosticDetail" -TableStyle Medium16 -AutoSize -Append
+$DiagnosticSettingSummary | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "DiagnosticSummary" -TableName "DiagnosticSummary" -TableStyle Medium16 -AutoSize -Append
+$Global:DiagnosticSetting | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "DiagnosticDetail" -TableName "DiagnosticDetail" -TableStyle Medium16 -AutoSize -Append

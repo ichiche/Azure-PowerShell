@@ -1,8 +1,3 @@
-# TBC
-# Interactive Login for each session
-# Export Result
-# Information Sharing between session
-
 # Global Parameter
 $SpecificTenant = "" # "Y" or "N"
 $TenantId = "" # Enter Tenant ID if $SpecificTenant is "Y"
@@ -29,14 +24,14 @@ $Global:Assessment = @()
 $Global:RunScriptList = @()
 
 # Login
-$AzLogin = az login | Out-Null
-$ConnectAzAccount = Connect-AzAccount | Out-Null
+#$AzLogin = az login | Out-Null
+#$ConnectAzAccount = Connect-AzAccount | Out-Null
 
 # Get Azure Subscription
 if ($SpecificTenant -eq "Y") {
-    $Global:Subscriptions = Get-AzSubscription -TenantId $TenantId
+    #$Global:Subscriptions = Get-AzSubscription -TenantId $TenantId
 } else {
-    $Global:Subscriptions = Get-AzSubscription
+    #$Global:Subscriptions = Get-AzSubscription
 }
 
 # Get the Latest Location Name and Display Name
@@ -75,43 +70,15 @@ Write-Host ("*" + " " * 7 + "Microsoft Cloud Adoption Framework for Azure" + " "
 Write-Host ("*" + " " * 58 + "*")
 Write-Host ("*" + " " * 58 + "*")
 Write-Host ("*" * 60)
-Write-Host "`nThe process may take more than 15 minutes ..." -ForegroundColor Yellow
-Write-Host "`nPlease wait until it finishes ..." -ForegroundColor Yellow
-
-# Create Runspace Pools for Run-Script
-$RunspacePool = [runspacefactory]::CreateRunspacePool(1, $Global:RunScriptList.Count)
-$RunspacePool.Open()
-$Jobs = @()
+Write-Host "`nThe process may take more than 15 minutes ..."
+Write-Host "`nPlease wait until it finishes ..."
 
 # Execute Run Script using RunspacePool
 foreach ($RunScript in $Global:RunScriptList) {
-    $ScriptBlock = {
-        param(
-            [string]$RunScriptName,
-            [string]$RunScriptDirectory
-        )
-
-        Set-Location -Path $RunScriptDirectory
-        Invoke-Expression -Command $RunScriptName
-        #$RunScriptName | Out-File C:\Temp\Test.txt -Force -Confirm:$false
-        #$RunScriptDirectory| Out-File C:\Temp\Test.txt -Append -Confirm:$false
-    }
-    
-    $ps1 = [PowerShell]::Create()
-    $ps1.RunspacePool = $RunspacePool
-    $ps1.AddScript($ScriptBlock).AddArgument($RunScript.Command).AddArgument((Get-Location).Path)
-    [IAsyncResult]$IAsyncResult1 = $ps1.BeginInvoke()
-    $Jobs += $IAsyncResult1
+    Invoke-Expression -Command $RunScript.Command
 }
-
-# Wait for Completion
-while ($Jobs.IsCompleted -contains $false) {
-	Start-Sleep 30
-}
-
-# Export
 
 # End
-Write-Host "`nCAF Landing Zone Assessment have been completed" -ForegroundColor Yellow
-Write-Host ("`nPlease refer to the Assessment Result locate at " + $Global:ExcelFullPath) -ForegroundColor Yellow
+Write-Host "`nCAF Landing Zone Assessment have been completed"
+Write-Host ("`nPlease refer to the Assessment Result locate at " + $Global:ExcelFullPath)
 Write-Host "`n"

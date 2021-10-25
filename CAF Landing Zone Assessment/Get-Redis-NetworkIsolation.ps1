@@ -1,19 +1,16 @@
-# Global Parameter
-$CsvFullPath = "C:\Temp\Azure-Redis-Configuration.csv" # Export Result to CSV file 
-
 # Script Variable
 $Global:RedisCacheSetting = @()
+$Global:RedisCacheSettingSummary = @()
 [int]$CurrentItem = 1
 $ErrorActionPreference = "SilentlyContinue"
 
-# Login
-az login
-
-# Get Azure Subscription
-$Subscriptions = az account list | ConvertFrom-Json
+# Module
+Import-Module ImportExcel
 
 # Main
-foreach ($Subscription in $Subscriptions) {
+Write-Host "`nCollect Azure Cache for Redis Network Configuration has been started" -ForegroundColor Yellow
+
+foreach ($Subscription in $Global:Subscriptions) {
     az account set --subscription $Subscription.Id
     Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Subscriptions.Count + " Subscription: " + $Subscription.name + "`n") -ForegroundColor Yellow
     $CurrentItem++
@@ -35,14 +32,14 @@ foreach ($Subscription in $Subscriptions) {
             $DeployedZoneRedundant = $RedisCache.zones
         }
 
-        # Redis vNet integration 
+        # Redis vNet integration (Not compatible with Redis Private Endpoint)
         if ($RedisCache.sku.name -eq "Premium" -and $RedisCache.subnetId -ne $null) {
             $EnabledVNetIntegration = "Y"
         } else {
             $EnabledVNetIntegration = "N"
         }
 
-        # Redis Private Endpoint
+        # Redis Private Endpoint (Not compatible with Redis vNet integration)
         if ($RedisCache.privateEndpointConnections -ne $null) {
             $EnabledPrivateEndpoint = "Y"
         } else {
@@ -74,8 +71,36 @@ foreach ($Subscription in $Subscriptions) {
     }
 }
 
-# Export Result to CSV file 
-$Global:RedisCacheSetting | sort InstanceType, SubscriptionName | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force
+# Prepare Redis Cache Setting Summary
+$SettingStatus = $Global:RedisCacheSetting
 
-# End
-Write-Host "`nCompleted`n" -ForegroundColor Yellow
+for ($i = 0; $i -lt 3; $i++) {
+
+    switch ($i) {
+        0 { 
+            $CurrentSettingStatus = $SettingStatus | group EnabledZoneRedundant | select Name, Count 
+            $NetworkType = "Zone Redundant"
+        }
+        1 { 
+            $CurrentSettingStatus = $SettingStatus | group EnabledVNetIntegration | select Name, Count 
+            $NetworkType = "VNet Integration"
+        }
+        2 { 
+            $CurrentSettingStatus = $SettingStatus | group EnabledPrivateEndpoint | select Name, Count 
+            $NetworkType = "Private Endpoint"
+        }
+    }
+    
+    foreach ($item in $CurrentSettingStatus) {
+        $obj = New-Object -TypeName PSobject
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Item" -Value $NetworkType
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Enabled" -Value $item.Name
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $Global:RedisCacheSetting.Count
+        $Global:RedisCacheSettingSummary += $obj
+    }
+}
+
+# Export to Excel File
+$Global:RedisCacheSettingSummary | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "RedisCacheSummary" -TableName "RedisCacheSummary" -TableStyle Medium16 -AutoSize -Append
+$Global:RedisCacheSetting | sort InstanceType, SubscriptionName | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "RedisCacheDetail" -TableName "RedisCacheDetail" -TableStyle Medium16 -AutoSize -Append
