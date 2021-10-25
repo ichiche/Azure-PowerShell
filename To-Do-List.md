@@ -8,8 +8,9 @@
 
 ## CAF
 ```
+# Target
 - Get Classic Resource
-- Get VM backup setting
+- Get Azure Backup Status (Azure VM, SQL in Azure VM, Azure Blob)
 - Get-AzDdosProtectionPlan > Get Azure DDoS Standard enabled in all VNET
 - Get-AzSecurityPricing > Get the Azure Defender plans for a subscription in Azure Security Center
 - Get Resource Lock of subscription and resource group level
@@ -19,4 +20,7 @@
 - Update Azone Script to support more services
 - Get Service Endpoint Status (TBC)
 - Get-AzManagementGroup  hierarchy (TBC)
+
+# Remark
+- Can retrieve AzureFiles by running Get-AzRecoveryServicesBackupProtectionPolicy, but unable to list Azure File Share of all storage account without access key
 ```
