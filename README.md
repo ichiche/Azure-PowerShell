@@ -47,4 +47,12 @@ Refer to README.md in corresponding folder for instruction
 | 11 | Get-vNet-Integration.ps1 | App Service | Get the information of App Service includes status of **Virtual Network Integration** and associated vNet if exist |
 | 12 | Create-vNetPeering-Diagram.ps1 | Virtual Network Diagram | Generate Virtual Network Diagram using **Diagrams.net** |
 
+# Disable warning messages in Azure PowerShell
 
+```PowerShell
+# Disable breaking change warning messages
+Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
+```
+
+**Reference**
+- https://docs.microsoft.com/en-us/powershell/azure/faq?view=azps-6.5.0
