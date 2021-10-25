@@ -161,20 +161,22 @@ $Global:DiagnosticSetting = $Global:DiagnosticSetting | sort ResourceType, Subsc
 
 # Prepare Diagnostic Setting Summary
 $SettingStatus = $Global:DiagnosticSetting | select -Unique ResourceGroup, ResourceName, ResourceType, EnabledDiagnostic
-$SettingStatus = $SettingStatus | group EnabledDiagnostic, ResourceType | select Name, Count
 
-foreach ($item in $SettingStatus) {
+foreach ($item in ($SettingStatus | group EnabledDiagnostic, ResourceType | select Name, Count)) {
     $EnableStatus = $item.Name.Substring(0, 1)
     $ResourceType = $item.Name.Substring(3)
+
+    $ResourceTotal = $SettingStatus | group ResourceType | ? {$_.Name -eq $ResourceType} | select -ExpandProperty Count
 
     $obj = New-Object -TypeName PSobject
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "Resource Type" -Value $ResourceType 
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "Enabled Diagnostic" -Value $EnableStatus
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $ResourceTotal
     $DiagnosticSettingSummary += $obj
 }
 
-$DiagnosticSettingSummary = $DiagnosticSettingSummary | sort ResourceType
+$DiagnosticSettingSummary = $DiagnosticSettingSummary | sort "Resource Type"
 
 # Export to Excel File
 $DiagnosticSettingSummary | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "DiagnosticSummary" -TableName "DiagnosticSummary" -TableStyle Medium16 -AutoSize -Append
