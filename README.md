@@ -8,7 +8,7 @@ All scripts in repository are used for DevTest only.
 
 | Item | Name | Version | Installation | 
 | - | - | - | - | 
-| 1 | PowerShell | 5.1 or 7.0 (LTS) | https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows | 
+| 1 | PowerShell | 5.1 <br /> 7.0 (LTS) | https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows | 
 | 2 | Az Module | 6.4.0 | https://www.powershellgallery.com/packages/Az |
 | 3 | Azure CLI | 2.28.0 | https://docs.microsoft.com/en-us/cli/azure/install-azure-cli |
 | 4 | ImportExcel | 7.3.0 | https://www.powershellgallery.com/packages/ImportExcel |
@@ -25,6 +25,16 @@ All scripts in repository are used for DevTest only.
 1. Fork a repository or download the necessary script to local computer
 1. Modify the script if necessary
 1. Execute the script from **Windows PowerShell**
+
+# Disable warning messages in Azure PowerShell
+
+```PowerShell
+# Disable breaking change warning messages
+Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
+```
+
+**Reference**
+- https://docs.microsoft.com/en-us/powershell/azure/faq?view=azps-6.5.0
 
 # CAF Landing Zone Assessment
 
@@ -46,13 +56,3 @@ Refer to README.md in corresponding folder for instruction
 | 10 | Get-Unmanaged-Disk.ps1 | Classic and Unmanaged Service | Get **Unmanaged Disk** attached to VM |
 | 11 | Get-vNet-Integration.ps1 | App Service | Get the information of App Service includes status of **Virtual Network Integration** and associated vNet if exist |
 | 12 | Create-vNetPeering-Diagram.ps1 | Virtual Network Diagram | Generate Virtual Network Diagram using **Diagrams.net** |
-
-# Disable warning messages in Azure PowerShell
-
-```PowerShell
-# Disable breaking change warning messages
-Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
-```
-
-**Reference**
-- https://docs.microsoft.com/en-us/powershell/azure/faq?view=azps-6.5.0
