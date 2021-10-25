@@ -8,7 +8,8 @@
 
 ## CAF
 ```
-- Check VM backup
+- Get Classic Resource
+- Get VM backup setting
 - Get-AzDdosProtectionPlan > Get Azure DDoS Standard enabled in all VNET
 - Get-AzSecurityPricing > Get the Azure Defender plans for a subscription in Azure Security Center
 - Get Resource Lock of subscription and resource group level
