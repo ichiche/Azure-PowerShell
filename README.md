@@ -30,11 +30,18 @@ All scripts in repository are used for DevTest only.
 
 ```PowerShell
 # Disable breaking change warning messages
-Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings "true"
+Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value "true"
 ```
 
 **Reference**
-- https://docs.microsoft.com/en-us/powershell/azure/faq?view=azps-6.5.0
+
+https://docs.microsoft.com/en-us/powershell/azure/faq?view=azps-6.5.0
+
+**Additional Information**
+
+Add to PowerShell profile to execute this command when every PowerShell session start
+
+https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles?view=powershell-7.1#the-profile-files
 
 # CAF Landing Zone Assessment
 
