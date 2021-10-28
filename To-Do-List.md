@@ -11,6 +11,7 @@
 # Target
 - Get Classic Resource
 - Get Azure Backup Status (Azure VM, SQL in Azure VM, Azure Blob)
+- Get Long-term retention of Azure SQL and SQL MI
 - Get-AzDdosProtectionPlan > Get Azure DDoS Standard enabled in all VNET
 - Get-AzSecurityPricing > Get the Azure Defender plans for a subscription in Azure Security Center
 - Get Resource Lock of subscription and resource group level
