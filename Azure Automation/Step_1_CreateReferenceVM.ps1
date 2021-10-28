@@ -191,10 +191,18 @@ while ($minute -ne 0) {
 }
 
 # Prepare Script for Windows Update
-"Import-Module PSWindowsUpdate" | Out-File .\InstallWindowUpdate.ps1 -Force -Confirm:$false
-"Install-WindowsUpdate -AcceptAll -AutoReboot -Silent" | Out-File .\InstallWindowUpdate.ps1 -Append -Confirm:$false
+if ($OSVersion -like "WS*") {
+    "Import-Module PSWindowsUpdate" | Out-File .\InstallWindowUpdate.ps1 -Force -Confirm:$false
+    "Install-WindowsUpdate -AcceptAll -AutoReboot -Silent" | Out-File .\InstallWindowUpdate.ps1 -Append -Confirm:$false
 
-# Run Windows Update and restart computer after patch installation
-Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunPowerShellScript" -ScriptPath InstallWindowUpdate.ps1
-Start-Sleep -Seconds 5
-Write-Output ("`nWindows Update is Installed" + $ResourceGroup.ResourceGroupName)
+    # Run Windows Update and restart computer after patch installation
+    $error.Clear()
+    Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunPowerShellScript" -ScriptPath InstallWindowUpdate.ps1
+    Start-Sleep -Seconds 5
+
+    if ($error.Count -eq 0) {
+        Write-Output ("`nHave triggered Windows Update using PSWindowsUpdate without error")
+    } else {
+        Write-Error ("`nError: PSWindowsUpdate encounter issue")
+    }
+}
