@@ -6,6 +6,7 @@ $Global:ExcelFullPath = "C:\Temp\CAF-Assessment.xlsx" # Export Result to Excel f
 # Run-Script Configuration
 $GetDiagnosticSetting = $true
 $GetRedisNetworkIsolation = $true
+$GetClassicResource = $true
 
 function Update-RunScriptList {
     param(
@@ -59,6 +60,11 @@ if ($GetRedisNetworkIsolation) {
     Update-RunScriptList -RunScript "GetRedisNetworkIsolation" -Command "& .\Get-Redis-NetworkIsolation.ps1"
 }
 
+if ($GetClassicResource) {
+    Write-Host "Get the list of Classic Resources" -ForegroundColor Cyan
+    Update-RunScriptList -RunScript "GetClassicResource" -Command "& .\Get-Classic-Resource.ps1"
+}
+
 Start-Sleep -Seconds 5
 
 # Startup Message
@@ -80,5 +86,6 @@ foreach ($RunScript in $Global:RunScriptList) {
 
 # End
 Write-Host "`nCAF Landing Zone Assessment have been completed"
+Start-Sleep -Seconds 2
 Write-Host ("`nPlease refer to the Assessment Result locate at " + $Global:ExcelFullPath)
 Write-Host "`n"
