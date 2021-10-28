@@ -35,13 +35,10 @@ Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value "true"
 
 **Reference**
 
-https://docs.microsoft.com/en-us/powershell/azure/faq?view=azps-6.5.0
-
-**Additional Information**
-
-Add to PowerShell profile to execute this command when every PowerShell session start
-
-https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles?view=powershell-7.1#the-profile-files
+- Configuration
+  - https://docs.microsoft.com/en-us/powershell/azure/faq?view=azps-6.5.0
+- Add to PowerShell profile to execute this command when every PowerShell session start
+  - https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles?view=powershell-7.1#the-profile-files
 
 # CAF Landing Zone Assessment
 
@@ -58,8 +55,7 @@ Refer to README.md in corresponding folder for instruction
 | 5 | Create-Image-From-Disk.ps1 | Virtual Machine | Create Azure VM Image from **Managed Disk** |
 | 6 | Set-Static-Private-IpAddress.ps1 | Set the allocation type Private IP of Virtual Machine in the subscription to Static |
 | 7 | Get-ASR-ReplicationProtectedItem.ps1 | Recovery Service | Get the Site Recovery Replication Protected Items of a Recovery Service Vault |
-| 8 | Get-Classic-Resource.ps1 | Classic and Unmanaged Service | Get **Classic Resource (ASM)** in the subscription |
-| 9 | Get-Classic-VM.ps1 | Classic and Unmanaged Service | Get **Classic Virtual Machine (ASM)** in the subscription |
-| 10 | Get-Unmanaged-Disk.ps1 | Classic and Unmanaged Service | Get **Unmanaged Disk** attached to VM |
-| 11 | Get-vNet-Integration.ps1 | App Service | Get the information of App Service includes status of **Virtual Network Integration** and associated vNet if exist |
-| 12 | Create-vNetPeering-Diagram.ps1 | Virtual Network Diagram | Generate Virtual Network Diagram using **Diagrams.net** |
+| 8 | Get-Classic-VM.ps1 | Classic and Unmanaged Service | Get **Classic Virtual Machine (ASM)** in the subscription |
+| 9 | Get-Unmanaged-Disk.ps1 | Classic and Unmanaged Service | Get **Unmanaged Disk** attached to VM |
+| 10 | Get-vNet-Integration.ps1 | App Service | Get the information of App Service includes status of **Virtual Network Integration** and associated vNet if exist |
+| 11 | Create-vNetPeering-Diagram.ps1 | Virtual Network Diagram | Generate Virtual Network Diagram using **Diagrams.net** |
