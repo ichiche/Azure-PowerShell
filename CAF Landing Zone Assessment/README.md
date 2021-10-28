@@ -9,19 +9,17 @@
 1. Run the script either one of below method
    1. Directly execute **Run.ps1**
    1. Copy the content of **Run.ps1** and paste into **Windows PowerShell**
-1. [Optional] Separately Login Azure using Az Module and Azure CLI in **Windows PowerShell** and retrieve the list of subscriptions
+1. [Optional] Separately Login Azure using Az Module and Azure CLI in **Windows PowerShell** and retrieve the list of certain subscriptions
 
 ### Remark
-- Support to get Diagnostic Setting of most core Azure Services
 - Refer to To-Do-List.md for upcoming enhancement
 
 ### Scope of functionalities
-- Collect Diagnostic Setting
+- Collect Diagnostic Setting (Support to get Diagnostic Setting of most core Azure Services)
 - Collect Azure Cache for Redis Network Configuration
 
 ### Reference
 - https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-network-isolation
-
 
 ## Get-Azone-Service.ps1
 
