@@ -92,7 +92,7 @@ if ($PowerStatus -ne "PowerState/running") {
 # Generalize Windows Reference VM
 if ($OSVersion -like "WS*") {
     # Sysprep Reference VM
-    Write-Output "`Performing Sysprep"  
+    Write-Output "`nPerforming Sysprep"  
     $InvokeAzVMRunCommand = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunPowerShellScript" -ScriptPath Sysprep.ps1
 
     # Check Power Status of Reference VM
