@@ -75,7 +75,7 @@ function Add-Record {
 
 # Main
 foreach ($Subscription in $Subscriptions) {
-	$AzContext = Set-AzContext -SubscriptionId $Subscription.Id
+    $AzContext = Set-AzContext -SubscriptionId $Subscription.Id
     Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
     $CurrentItem++
 
