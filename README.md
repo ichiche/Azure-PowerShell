@@ -6,7 +6,7 @@ All scripts in repository are used for DevTest only.
 
 # Prerequisites
 
-| Item | Name | Version | Installation | 
+| Item | Name | Version &nbsp; | Installation | 
 | - | - | - | - | 
 | 1 | PowerShell | 5.1 <br /> 7.0 (LTS) | https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows | 
 | 2 | Az Module | 6.4.0 | https://www.powershellgallery.com/packages/Az |
