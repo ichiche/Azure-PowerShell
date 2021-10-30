@@ -89,6 +89,9 @@ function Clear-Unsupported-ResourceType {
     return $FilteredAzResources
 }
 
+# Disable breaking change warning messages
+Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value "true"
+
 # Module
 Import-Module ImportExcel
 
@@ -97,7 +100,7 @@ Write-Host "`nCollect Diagnostic Setting has been started" -ForegroundColor Yell
 
 foreach ($Subscription in $Global:Subscriptions) {
     $AzContext = Set-AzContext -SubscriptionId $Subscription.Id
-    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
+    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Global:Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
     $CurrentItem++
 
     # Get all Azure Resources
