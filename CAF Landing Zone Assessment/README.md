@@ -1,8 +1,6 @@
 # Instruction
 
-## Run.ps1
-
-#### QuickStart
+## QuickStart
 
 1. Download all scripts to same local directory
 1. Modify **Global Parameter**
@@ -12,11 +10,11 @@
    1. Copy the content of **Run.ps1** and paste into **Windows PowerShell**
 1. [Optional] Separately Login Azure using Az Module and Azure CLI in **Windows PowerShell** and retrieve the list of certain subscriptions
 
-#### Remark
+## Remark
 
 - Refer to To-Do-List.md for upcoming enhancement
 
-#### Scope of functionalities
+## Scope of functionalities
 
 - Get Azure Backup status of **Azure VM**, **SQL Server in Azure VM**, and **Azure Blob Storage**
 - Collect Diagnostic Setting
@@ -25,9 +23,6 @@
    - Include Availability Zones
 - Get Availability Zone Enabled Service  
 - Get Classic Resource
-
-#### Reference
-- https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-network-isolation
 
 ## Availability Zone
 
@@ -56,6 +51,11 @@ Get the Azure Services with **Availability Zones** enabled in the subscription i
 
 - https://docs.microsoft.com/en-us/azure/availability-zones/az-overview#services-by-category
 
+## Redis Cache
+
+- https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-network-isolation
+
+
 ## Limitation
 
 #### App Service
@@ -79,3 +79,4 @@ For verifying the status of **Region Disaster Recovery** and **Zone to Zone Disa
 - Support to query the existing Azure VM only
    - Not support to detect a deleted VM but backup copy exist in a recovery service vault
 - RunAs account with read only permission is capable to retrieve Azure File Share Backup Copy by running Get-AzRecoveryServicesBackupProtectionPolicy, but unable to list Azure File Share of all storage account without access key, thus not able to list the Azure File Share with/without backup enabled
+
