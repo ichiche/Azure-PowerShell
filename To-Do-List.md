@@ -21,7 +21,4 @@
 - Update Azone Script to support more services
 - Get Service Endpoint Status (TBC)
 - Get Management Group hierarchy (TBC)
-
-# Remark
-- Can retrieve AzureFiles by running Get-AzRecoveryServicesBackupProtectionPolicy, but unable to list Azure File Share of all storage account without access key
 ```
