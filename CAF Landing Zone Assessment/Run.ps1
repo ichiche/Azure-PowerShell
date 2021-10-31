@@ -7,6 +7,7 @@ $Global:ExcelFullPath = "C:\Temp\CAF-Assessment.xlsx" # Export Result to Excel f
 $Global:RunScriptList = @()
 
 # Run-Script Configuration
+$GetAzureBackup = $true
 $GetDiagnosticSetting = $true
 $GetRedisNetworkIsolation = $true
 $GetClassicResource = $true
@@ -63,6 +64,14 @@ Import-Module ImportExcel
 # Determine Run-Script
 Write-Host "`n`n"
 Write-Host "Enabled RunScript:" -ForegroundColor Green -BackgroundColor Black
+
+
+if ($GetAzureBackup) {
+    Write-Host "Collect Azure Backup Status" -ForegroundColor Cyan
+    Update-RunScriptList -RunScript "GetAzureBackup" -Command "& .\Get-AzureBackup-Status.ps1"
+} else {
+    $DisabledRunScript += "Collect Azure Backup Status"
+}
 
 if ($GetDiagnosticSetting) {
     Write-Host "Collect Diagnostic Setting" -ForegroundColor Cyan
