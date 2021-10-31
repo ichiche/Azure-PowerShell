@@ -1,24 +1,7 @@
-# Global Parameter
-$SpecificTenant = "" # "Y" or "N"
-$TenantId = "" # Enter Tenant ID if $SpecificTenant is "Y"
-$CsvFullPath = "C:\Temp\Azure-Classic-Resource.csv" # Export Result to CSV file 
-
 # Script Variable
 $Global:ClassicList = @()
+$Global:ClassicListSummary = @()
 [int]$CurrentItem = 1
-
-# Login
-Connect-AzAccount
-
-# Get Azure Subscription
-if ($SpecificTenant -eq "Y") {
-    $Subscriptions = Get-AzSubscription -TenantId $TenantId
-} else {
-    $Subscriptions = Get-AzSubscription
-}
-
-# Get the Latest Location Name and Display Name
-$Global:NameReference = Get-AzLocation
 
 # Function to align the Display Name
 function Rename-Location {
@@ -52,11 +35,22 @@ function Rename-ResourceType {
     return $ResourceType
 }
 
+# Disable breaking change warning messages
+Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value "true"
+
+# Module
+Import-Module ImportExcel
+
 # Main
-foreach ($Subscription in $Subscriptions) {
+Write-Host ("`n" + "=" * 100)
+Write-Host "`nGet the list of Classic Resources" -ForegroundColor Cyan
+
+foreach ($Subscription in $Global:Subscriptions) {
+    Write-Host ("`n")
+    Write-Host ("[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
     # Set current subscription for Az Module
 	$AzContext = Set-AzContext -SubscriptionId $Subscription.Id
-    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
+    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Global:Subscriptions.Count + " Subscription: " + $Subscription.name) -ForegroundColor Yellow
     $CurrentItem++
 
     # Get Az Resource List
@@ -81,19 +75,27 @@ foreach ($Subscription in $Subscriptions) {
     }
 }
 
-# Export Result to CSV file
-$Global:ClassicList | sort ResourceType, SubscriptionName, ResourceGroup, ResourceName | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force
+#Region Export
+if ($Global:ClassicList.Count -ne 0) {
+    # Prepare Classic Resources Summary
+    $CountType = $Global:ClassicList | group ResourceType | select Name, Count | sort Name
+    foreach ($item in $CountType) {
+        $obj = New-Object -TypeName PSobject
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value $item.Name 
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $item.Count
+        $Global:ClassicListSummary += $obj
+    }
 
-# Count resource type
-Write-Host ("`n--- Summary ---")
-Write-Host ("`nCount of Classic Resource: " + $Global:ClassicList.Count) -ForegroundColor Cyan
+    # Export to Excel File
+    $Global:ClassicListSummary | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "ClassicSummary" -TableName "ClassicSummary" -TableStyle Medium16 -AutoSize -Append
+    $Global:ClassicList | sort ResourceType, SubscriptionName, ResourceGroup, ResourceName | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "ClassicDetail" -TableName "ClassicDetail" -TableStyle Medium16 -AutoSize -Append
+} else {
+    $obj = New-Object -TypeName PSobject
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "Classic Resource (ASM)"
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "Status" -Value "Resource is not found"
+    $Global:ClassicListSummary += $obj
 
-Write-Host ("`n--- Breakdown ---")
-$CountType = $Global:ClassicList | group ResourceType | select Name, Count | sort Count, Name -Descending
-foreach ($item in $CountType) {
-    Write-Host ("`n" + $item.Name + ": " + $item.Count)
+    # Export to Excel File
+    $Global:ClassicListSummary | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "ResourceNotFound" -TableName "ResourceNotFound" -TableStyle Light11 -AutoSize -Append
 }
-
-# End
-Write-Host "`nCompleted" -ForegroundColor Yellow
-Write-Host "`n"
+#EndRegion Export

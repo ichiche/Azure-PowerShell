@@ -63,12 +63,13 @@ Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value "true"
 Import-Module ImportExcel
 
 # Main
+Write-Host ("`n" + "=" * 100)
 Write-Host "`nGet Availability Zone Enabled Service" -ForegroundColor Cyan
 foreach ($Subscription in $Global:Subscriptions) {
     Write-Host ("`n")
     Write-Host ("[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
     $AzContext = Set-AzContext -SubscriptionId $Subscription.Id
-    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Global:Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
+    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Global:Subscriptions.Count + " Subscription: " + $Subscription.name) -ForegroundColor Yellow
     $CurrentItem++
 
     #Region Application Gateway

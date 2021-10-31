@@ -19,7 +19,7 @@ function Rename-Location {
     return $Location
 }
 
-function Clear-Unsupported-ResourceType {
+function Clear-UnsupportedResourceType {
     param (
         $AzResources
     )
@@ -31,6 +31,9 @@ function Clear-Unsupported-ResourceType {
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/availabilitySets"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/disks"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/images"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/galleries"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/galleries/images"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/galleries/images/versions"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/restorePointCollections"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/snapshots"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/virtualMachines/extensions"}
@@ -60,6 +63,7 @@ function Clear-Unsupported-ResourceType {
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/privateEndpoints"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/routeFilters"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/routeTables"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.network/networkWatchers/flowLogs"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.NotificationHubs/namespaces/notificationHubs"} # Support Namespace only
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.OperationsManagement/solutions"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Portal/dashboards"}
@@ -67,14 +71,21 @@ function Clear-Unsupported-ResourceType {
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Scheduler/jobcollections"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Sql/servers"} # Support Database only
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Sql/servers/jobAgents"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.StorageSync/storageSyncServices"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Web/certificates"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Web/connections"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Web/staticSites"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Sendgrid.Email/accounts"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.DataProtection/BackupVaults"} # Backup Vault not support, but Recovery Service vault support
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.DataMigration/services"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.DataMigration/services/projects"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Migrate/assessmentProjects"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Migrate/migrateprojects"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.OffAzure/VMwareSites"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.ResourceGraph/queries"}
     $AzResources = $AzResources | ? {$_.ResourceType -notlike "*Classic*"}
 
     $FilteredAzResources = @()
-
     foreach ($item in $AzResources) {
         # Exclude Master Database
         if ($item.ResourceType -eq "Microsoft.Sql/servers/databases") {
@@ -96,21 +107,25 @@ Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value "true"
 Import-Module ImportExcel
 
 # Main
-Write-Host "`nCollect Diagnostic Setting has been started" -ForegroundColor Yellow
+Write-Host ("`n" + "=" * 100)
+Write-Host "`nGet Diagnostic Setting" -ForegroundColor Cyan
 
 foreach ($Subscription in $Global:Subscriptions) {
+    Write-Host ("`n")
+    Write-Host ("[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
     $AzContext = Set-AzContext -SubscriptionId $Subscription.Id
-    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Global:Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
+    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Global:Subscriptions.Count + " Subscription: " + $Subscription.name) -ForegroundColor Yellow
     $CurrentItem++
 
     # Get all Azure Resources
     $TempList = Get-AzResource 
 
     # Filtering 
-    $TempList = Clear-Unsupported-ResourceType -AzResources $TempList
+    $TempList = Clear-UnsupportedResourceType -AzResources $TempList
 
     # Get Diagnostic Settings 
     foreach ($item in $TempList) {
+        Write-Host ("Resource: " + $item.Name)
         $TempDiagnosticSettings = Get-AzDiagnosticSetting -ResourceId $item.Id
         $Location = Rename-Location -Location $item.Location
 
@@ -160,27 +175,26 @@ foreach ($Subscription in $Global:Subscriptions) {
     }
 }
 
+#Region Export
 $Global:DiagnosticSetting = $Global:DiagnosticSetting | sort ResourceType, SubscriptionName, ResourceName
 
 # Prepare Diagnostic Setting Summary
 $SettingStatus = $Global:DiagnosticSetting | select -Unique ResourceGroup, ResourceName, ResourceType, EnabledDiagnostic
-
 foreach ($item in ($SettingStatus | group EnabledDiagnostic, ResourceType | select Name, Count)) {
     $EnableStatus = $item.Name.Substring(0, 1)
     $ResourceType = $item.Name.Substring(3)
-
     $ResourceTotal = $SettingStatus | group ResourceType | ? {$_.Name -eq $ResourceType} | select -ExpandProperty Count
 
     $obj = New-Object -TypeName PSobject
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "Resource Type" -Value $ResourceType 
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "Enabled Diagnostic" -Value $EnableStatus
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value $ResourceType 
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledDiagnostic" -Value $EnableStatus
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $ResourceTotal
     $DiagnosticSettingSummary += $obj
 }
-
 $DiagnosticSettingSummary = $DiagnosticSettingSummary | sort "Resource Type"
 
 # Export to Excel File
 $DiagnosticSettingSummary | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "DiagnosticSummary" -TableName "DiagnosticSummary" -TableStyle Medium16 -AutoSize -Append
 $Global:DiagnosticSetting | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "DiagnosticDetail" -TableName "DiagnosticDetail" -TableStyle Medium16 -AutoSize -Append
+#EndRegion Export
