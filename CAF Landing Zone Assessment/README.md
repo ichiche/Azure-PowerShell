@@ -15,8 +15,11 @@
 - Refer to To-Do-List.md for upcoming enhancement
 
 #### Scope of functionalities
-- Collect Diagnostic Setting (Support to get Diagnostic Setting of most core Azure Services)
+- Collect Diagnostic Setting
+   - Support to get Diagnostic Setting of most mainstream services
 - Collect Azure Cache for Redis Network Configuration
+- Get Classic Resource
+- Get Azure Backup status of **Azure VM**, **SQL Server in Azure VM**, and **Azure Blob Storage**
 
 #### Reference
 - https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-network-isolation
