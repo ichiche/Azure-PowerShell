@@ -55,7 +55,6 @@ Get the Azure Services with **Availability Zones** enabled in the subscription i
 
 - https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-network-isolation
 
-
 ## Limitation
 
 #### App Service
@@ -79,4 +78,3 @@ For verifying the status of **Region Disaster Recovery** and **Zone to Zone Disa
 - Support to query the existing Azure VM only
    - Not support to detect a deleted VM but backup copy exist in a recovery service vault
 - RunAs account with read only permission is capable to retrieve Azure File Share Backup Copy by running Get-AzRecoveryServicesBackupProtectionPolicy, but unable to list Azure File Share of all storage account without access key, thus not able to list the Azure File Share with/without backup enabled
-
