@@ -90,6 +90,13 @@ try {
     $LocalAdminAccountPlainPassword = $LocalAdmin.GetNetworkCredential().Password
     $LocalAdminCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $LocalAdminAccountName, $LocalAdminAccountPassword
 
+    # Get credential "LinuxAdmin"
+    $LinuxAdmin = Get-AutomationPSCredential -Name "LinuxAdmin"
+    $LinuxAdminAccountName = $LocalAdmin.UserName
+    $LinuxAdminAccountPassword = $LocalAdmin.Password
+    $LinuxAdminAccountPlainPassword = $LocalAdmin.GetNetworkCredential().Password
+    $LinuxAdminCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $LocalAdminAccountName, $LocalAdminAccountPassword
+
     # Connect to Azure  
     Write-Output ("`nConnecting to Azure Subscription ID: " + $SubscriptionId)
     Connect-AzAccount -ApplicationId $ApplicationId -CertificateThumbprint $CertificateThumbprint -Tenant $TenantId -ServicePrincipal
@@ -155,7 +162,10 @@ try {
         $LocalAdminCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $LocalAdminAccountName, ($LocalAdminAccountPassword | ConvertTo-SecureString -AsPlainText -Force)
         $vm = Set-AzVMOperatingSystem -VM $vm -Windows -ComputerName $ReferenceVMName -Credential $LocalAdminCredential -ProvisionVMAgent -TimeZone $TimeZone
     } else {
-
+        $LinuxAdminAccountName = "user1906"
+        $LinuxAdminAccountPassword = "lab@2015P@ssw0rd"
+        $LinuxAdminCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $LocalAdminAccountName, ($LocalAdminAccountPassword | ConvertTo-SecureString -AsPlainText -Force)
+        $vm = Set-AzVMOperatingSystem -VM $vm -Linux -ComputerName $ReferenceVMName -Credential $LinuxAdminCredential -PatchMode AutomaticByPlatform -ProvisionVMAgent -TimeZone $TimeZone
     }
 
     # Network Interface
