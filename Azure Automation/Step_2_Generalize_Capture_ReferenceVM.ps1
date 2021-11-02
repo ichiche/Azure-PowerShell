@@ -119,10 +119,16 @@ try {
 
         # New Gallery Image Version
         $GalleryImageVersionName = (Get-Date -Format "yyyy.MM.dd").ToString()
+        $region_southeastasia = @{Name = 'Southeast Asia'}
+        $region_eastus2 = @{Name = 'East US 2'}
+        $region_uksouth = @{Name = 'UK South'}
+        $targetRegions = @($region_southeastasia, $region_eastus2, $region_uksouth)
+        <#
         $region_eastus = @{Name = 'East US'}
         $region_eastasia = @{Name = 'East Asia'}
         $region_southeastasia = @{Name = 'Southeast Asia'}
         $targetRegions = @($region_eastus, $region_eastasia, $region_southeastasia)
+        #>
         $StorageAccountType = "Premium_LRS"
         $ReplicaCount = 1
 
