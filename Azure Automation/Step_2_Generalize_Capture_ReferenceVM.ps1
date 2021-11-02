@@ -5,7 +5,7 @@
     .NOTES
         AUTHOR: Isaac Cheng, Microsoft Customer Engineer
         EMAIL: chicheng@microsoft.com
-        LASTEDIT: Nov 1, 2021
+        LASTEDIT: Nov 2, 2021
 #>
 
 Param(
@@ -64,28 +64,28 @@ try {
     Connect-AzAccount -ApplicationId $ApplicationId -CertificateThumbprint $CertificateThumbprint -Tenant $TenantId -ServicePrincipal
     Set-AzContext -SubscriptionId $SubscriptionId
 
-    # Start up Reference VM if necessary
-    $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Status
-    $PowerStatus = $vm.Statuses | ? {$_.Code -like "PowerState*"} | select -ExpandProperty Code
-
-    if ($PowerStatus -ne "PowerState/running") {
-        Write-Output "`nStarting up Reference VM" 
-        Start-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Confirm:$false
-        
-        # Wait for a certain time to ensure Guest OS has completed the start up process
-        Start-Sleep -Seconds 180
-    }
-
-    # Prepare Script
-    "C:\Windows\System32\SysPrep\sysprep.exe /generalize /oobe /shutdown /mode:vm /quiet" | Out-File .\Sysprep.ps1 -Force -Confirm:$false
-
     # Generalize Windows Reference VM
     if ($OSVersion -like "WS*") {
+        # Start up Reference VM if necessary
+        $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Status
+        $PowerStatus = $vm.Statuses | ? {$_.Code -like "PowerState*"} | select -ExpandProperty Code
+
+        if ($PowerStatus -ne "PowerState/running") {
+            Write-Output "`nStarting up Reference VM" 
+            Start-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Confirm:$false
+            
+            # Wait for a certain time to ensure Guest OS has completed the start up process
+            Start-Sleep -Seconds 180
+        }
+
+         # Prepare Script
+        "C:\Windows\System32\SysPrep\sysprep.exe /generalize /oobe /shutdown /mode:vm /quiet" | Out-File .\Sysprep.ps1 -Force -Confirm:$false
+
         # Sysprep Reference VM
         Write-Output "`nPerforming Sysprep"  
         $InvokeAzVMRunCommand = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunPowerShellScript" -ScriptPath Sysprep.ps1
 
-        # Check Power Status of Reference VM
+        # Waiting for Sysprep to shutdown Reference VM
         while ($PowerStatus -ne "PowerState/stopped") {
             Start-Sleep -Seconds 60
             $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Status
@@ -98,8 +98,18 @@ try {
         Stop-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Force -Confirm:$false
         Start-Sleep -Seconds 10
         Write-Output "`nReference VM is deallocated" 
-    } else { # Generalize RHEL Reference VM
+    } else {
+         # Require to manually SSH to generalize RHEL Reference VM
+         $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Status
+         $PowerStatus = $vm.Statuses | ? {$_.Code -like "PowerState*"} | select -ExpandProperty Code
 
+         if ($PowerStatus -ne "PowerState/deallocated") {
+            # Deallocate Reference VM
+            Write-Output "`nDeallocating Reference VM" 
+            Stop-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Force -Confirm:$false
+            Start-Sleep -Seconds 10
+            Write-Output "`nReference VM is deallocated" 
+        }
     }
 
     # Create Gallery Image Version only if no error occur before
