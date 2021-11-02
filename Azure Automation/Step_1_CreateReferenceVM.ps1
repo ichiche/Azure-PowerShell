@@ -5,7 +5,7 @@
     .NOTES
         AUTHOR: Isaac Cheng, Microsoft Customer Engineer
         EMAIL: chicheng@microsoft.com
-        LASTEDIT: Nov 1, 2021
+        LASTEDIT: Nov 2, 2021
 #>
 
 Param(
@@ -46,7 +46,7 @@ $connectionName = "AzureRunAsConnection"
 $VMSize = "Standard_D2s_v3"
 $DiskType = "StandardSSD_LRS"
 $osDiskSizeInGb = 200 # 160
-$DataDisk0SizeInGb = 16 # 8
+#$DataDisk0SizeInGb = 16 # 8
 $TimeZone = "China Standard Time"
 
 switch ($OSVersion) {
@@ -92,10 +92,10 @@ try {
 
     # Get credential "LinuxAdmin"
     $LinuxAdmin = Get-AutomationPSCredential -Name "LinuxAdmin"
-    $LinuxAdminAccountName = $LocalAdmin.UserName
-    $LinuxAdminAccountPassword = $LocalAdmin.Password
-    $LinuxAdminAccountPlainPassword = $LocalAdmin.GetNetworkCredential().Password
-    $LinuxAdminCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $LocalAdminAccountName, $LocalAdminAccountPassword
+    $LinuxAdminAccountName = $LinuxAdmin.UserName
+    $LinuxAdminAccountPassword = $LinuxAdmin.Password
+    $LinuxAdminAccountPlainPassword = $LinuxAdmin.GetNetworkCredential().Password
+    $LinuxAdminCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $LinuxAdminAccountName, $LinuxAdminAccountPassword
 
     # Connect to Azure  
     Write-Output ("`nConnecting to Azure Subscription ID: " + $SubscriptionId)
@@ -157,15 +157,15 @@ try {
 
     # OS Setting
     if ($OSVersion -like "WS*") {
-        $LocalAdminAccountName = "tempadm"
+        $LocalAdminAccountName = "user1906"
         $LocalAdminAccountPassword = "lab@2015P@ssw0rd"
         $LocalAdminCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $LocalAdminAccountName, ($LocalAdminAccountPassword | ConvertTo-SecureString -AsPlainText -Force)
         $vm = Set-AzVMOperatingSystem -VM $vm -Windows -ComputerName $ReferenceVMName -Credential $LocalAdminCredential -ProvisionVMAgent -TimeZone $TimeZone
     } else {
         $LinuxAdminAccountName = "user1906"
         $LinuxAdminAccountPassword = "lab@2015P@ssw0rd"
-        $LinuxAdminCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $LocalAdminAccountName, ($LocalAdminAccountPassword | ConvertTo-SecureString -AsPlainText -Force)
-        $vm = Set-AzVMOperatingSystem -VM $vm -Linux -ComputerName $ReferenceVMName -Credential $LinuxAdminCredential -PatchMode AutomaticByPlatform -ProvisionVMAgent -TimeZone $TimeZone
+        $LinuxAdminCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $LinuxAdminAccountName, ($LinuxAdminAccountPassword | ConvertTo-SecureString -AsPlainText -Force)
+        $vm = Set-AzVMOperatingSystem -VM $vm -Linux -ComputerName $ReferenceVMName -Credential $LinuxAdminCredential -PatchMode AutomaticByPlatform
     }
 
     # Network Interface
@@ -209,6 +209,26 @@ try {
             Write-Output ("`nHave triggered Windows Update using PSWindowsUpdate without error")
         } else {
             Write-Error ("`nError: PSWindowsUpdate encounter issue")
+        }
+    } else {
+        Write-Output ("`nRunning yum update")
+        "yum update -y" | Out-File .\yumUpdate.ps1 -Force -Confirm:$false
+
+        $ReturnData = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunShellScript" -ScriptPath yumUpdate.ps1
+        [string]$CommandResult1 = $ReturnData.Value.Message
+
+        if ($CommandResult1 -like "*Complete!*") {
+            Start-Sleep -Seconds 30
+            $ReturnData = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunShellScript" -ScriptPath yumUpdate.ps1
+            [string]$CommandResult2 = $ReturnData.Value.Message
+            
+            if($CommandResult2 -like "*No packages marked for update*") {
+                Write-Output "yum update completed successfully"
+            } else {
+                Write-Error $CommandResult2
+            }
+        } else {
+            Write-Error $CommandResult1
         }
     }
 } catch {
