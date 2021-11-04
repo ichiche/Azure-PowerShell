@@ -99,11 +99,20 @@ try {
         Start-Sleep -Seconds 10
         Write-Output "`nReference VM is deallocated" 
     } else {
-         # Require to manually SSH to generalize RHEL Reference VM
-         $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Status
-         $PowerStatus = $vm.Statuses | ? {$_.Code -like "PowerState*"} | select -ExpandProperty Code
+        # Recommend to manually SSH to generalize RHEL Reference VM
+        Write-Output "`nRun 'sudo waagent -deprovision -force' to generalize Linux VM" 
+        Write-Output "`nRun 'sudo systemctl poweroff --force' to power off Linux VM" 
+        "sudo waagent -deprovision -force;sudo systemctl poweroff --force" | Out-File .\GeneralizeLinux.ps1 -Force -Confirm:$false
+        $ReturnData = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunShellScript" -ScriptPath GeneralizeLinux.ps1 -AsJob
+        [string]$CommandResult1 = $ReturnData.Value.Message
+        Write-Output $CommandResult1
+        Start-Sleep -Seconds 60
 
-         if ($PowerStatus -ne "PowerState/deallocated") {
+        # Deallocate Reference VM
+        $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Status
+        $PowerStatus = $vm.Statuses | ? {$_.Code -like "PowerState*"} | select -ExpandProperty Code
+
+        if ($PowerStatus -ne "PowerState/deallocated") {
             # Deallocate Reference VM
             Write-Output "`nDeallocating Reference VM" 
             Stop-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Force -Confirm:$false
