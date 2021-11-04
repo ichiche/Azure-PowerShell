@@ -54,7 +54,7 @@ switch ($OSVersion) {
         $GalleryImageDefinitionName = "WindowsServer2016"
         $ReferenceVMRG = "ImageWorkingItem"
         $ReferenceVMName = "WS2016-RefVM"
-        $LicenseType = "Windows_Server"
+        $LicenseType = "Windows_Server" #Not specify
     }
     WS2019 { 
         $GalleryImageDefinitionName = "WindowsServer2019"
@@ -181,7 +181,11 @@ try {
     Set-AzVMBootDiagnostic -VM $vm -Disable
 
     # Deploy VM
-    New-AzVM -VM $vm -ResourceGroupName $ReferenceVMRG -Location $Location -LicenseType $LicenseType
+    if ($OSVersion -like "WS*") {
+        New-AzVM -VM $vm -ResourceGroupName $ReferenceVMRG -Location $Location -LicenseType $LicenseType
+    } else {
+        New-AzVM -VM $vm -ResourceGroupName $ReferenceVMRG -Location $Location
+    }
     Start-Sleep -Seconds 5
     Write-Output "`nReference VM is created" 
 
@@ -189,7 +193,7 @@ try {
     [int]$minute = 30
     while ($minute -ne 0) {
         if ($minute % 10 -eq 0 -or $minute -le 5 ) {
-            Write-Output ("`n" + $minute + " minutes remaining before install Windows Update")
+            Write-Output ("`n" + $minute + " minutes remaining before install Update")
         }
         Start-Sleep -Seconds 60
         $minute--
