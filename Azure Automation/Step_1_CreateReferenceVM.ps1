@@ -203,11 +203,14 @@ try {
     if ($OSVersion -like "WS*") {
         "Import-Module PSWindowsUpdate" | Out-File .\InstallWindowUpdate.ps1 -Force -Confirm:$false
         "Install-WindowsUpdate -AcceptAll -AutoReboot -Silent" | Out-File .\InstallWindowUpdate.ps1 -Append -Confirm:$false
+        '$WUHistory = Get-WUHistory | select Title, OperationName, Result, Date' | Out-File .\GetWUHistory.ps1 -Force -Confirm:$false
+        'foreach ($item in $WUHistory) {Write-Output $item.Title; Write-Output $item.OperationName; Write-Output $item.Result; Write-Output $item.Date;  Write-Output "`n`n";}' | Out-File .\GetWUHistory.ps1 -Append -Confirm:$false
 
         # Run Windows Update and restart computer after patch installation
         $error.Clear()
         Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunPowerShellScript" -ScriptPath InstallWindowUpdate.ps1
         Start-Sleep -Seconds 5
+        Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunPowerShellScript" -ScriptPath GetWUHistory.ps1
 
         if ($error.Count -eq 0) {
             Write-Output ("`nHave triggered Windows Update using PSWindowsUpdate without error")
