@@ -120,12 +120,13 @@ foreach ($Subscription in $Global:Subscriptions) {
     $CurrentItem++
 
     # Get all Azure Resources
-    $TempList = Get-AzResource 
+    $TempList = Get-AzResource | ? {$_.ResourceGroupName -notlike "databricks-rg*"}
 
     # Filtering 
     $TempList = Clear-UnsupportedResourceType -AzResources $TempList
     $TempList = $TempList | sort ResourceType, ResourceGroupName, ResourceName
-
+    Write-Host ("`nNumber of Resources that support Diagnostic Logging: " + $TempList.Count)
+    
     # Rename Location
     foreach ($item in $TempList) {
         $item.Location = Rename-Location -Location $item.Location
@@ -182,20 +183,23 @@ foreach ($Subscription in $Global:Subscriptions) {
         }
     } else {
         #Region Parallel Process
+        Write-Host "`nParallel Process Start"
+
         0..($ThrottleLimit - 1) | foreach -Parallel {
-            # Initialize
+            # Script Variable
             $CurrentSubscriptionName = ($using:Subscription).Name
             $CurrentSubscriptionId  = ($using:Subscription).Id
-            $AzContext = Set-AzContext -SubscriptionId $using:CurrentSubscriptionId
             [int]$CurrentItem = $_
             $LocalTempList = $using:TempList
             $CurrentDiagnosticSetting = @()
             $CurrentExportPath = ($using:Global:ExcelOutputFolder + "DiagnosticSettingTempFile" + $_ + ".csv")
+
+            # Initialize
+            $AzContext = Set-AzContext -SubscriptionId $CurrentSubscriptionId 
             $error.Clear()
         
             # Split Single Array into Multiple Smaller Array  
-            $PartitionSize = [Math]::Ceiling($LocalTempList.Count / $using:ThrottleLimit)
-        
+            $PartitionSize = [Math]::Floor($LocalTempList.Count / $using:ThrottleLimit)
             if ($CurrentItem -eq 0) {
                 $StartIndex = 0
                 $EndIndex = ($PartitionSize - 1)
@@ -207,17 +211,15 @@ foreach ($Subscription in $Global:Subscriptions) {
                 $EndIndex = ($StartIndex + $PartitionSize - 1)
             }
         
-            Write-Host ("$_ : " + $StartIndex + " to " + $EndIndex)
-        
-            # Start Process
+            # Start Getting Information
+            Write-Host ("Thread $_ : Index From " + $StartIndex + " to " + $EndIndex) -ForegroundColor DarkGreen
             foreach ($item in $LocalTempList[$StartIndex..$EndIndex]) {
-                Start-Sleep -Milliseconds 500
-                Write-Host ("Resource: " + $item.Name)
+                Start-Sleep -Milliseconds 300
+                #Write-Host ("Resource: " + $item.Name)
         
                 $TempDiagnosticSettings = Get-AzDiagnosticSetting -ResourceId $item.Id
                 if ($error.Count -gt 0) {
-                    Write-Host ("Problematic Resource: " + $item.Id) -ForegroundColor Yellow
-                    Write-Host ("Problematic Resource Type: " + $item.ResourceType) -ForegroundColor Yellow
+                    Write-Host ("`nProblematic Resource: " + $item.Id + "`nProblematic Resource Type: " + $item.ResourceType) -ForegroundColor Yellow
                     $error.Clear()
                 }
         
