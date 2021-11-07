@@ -1,18 +1,23 @@
 # Global Parameter
 $SpecificTenant = "" # "Y" or "N"
 $TenantId = "" # Enter Tenant ID if $SpecificTenant is "Y"
-$Global:ExcelFullPath = "C:\Temp\CAF-Assessment.xlsx" # Export Result to Excel file 
+$Global:ExcelOutputFolder = "C:\TempP7"
+$ExcelFileName = "CAF-Assessment.xlsx" # Export Result to Excel file 
 
 # Script Variable
+if ($Global:ExcelOutputFolder -notlike "*\") {$Global:ExcelOutputFolder += "\"}
+$Global:ExcelFullPath = $Global:ExcelOutputFolder + $ExcelFileName
 $Global:RunScriptList = @()
-$DisabledRunScript = @()
+$Global:DisabledRunScript = @()
+$ErrorActionPreference = "Continue"
+$error.Clear()
 
 # Run-Script Configuration
-$GetAzureBackup = $true
+$GetAzureBackup = $false
 $GetDiagnosticSetting = $true
-$GetRedisNetworkIsolation = $true
-$GetAZoneEnabledService = $true
-$GetClassicResource = $true
+$GetRedisNetworkIsolation = $false
+$GetAZoneEnabledService = $false
+$GetClassicResource = $false
 
 function Update-RunScriptList {
     param(
@@ -43,6 +48,27 @@ Write-Host "`n`n"
 & .\ConvertTo-TextASCIIArt.ps1 -Text "CAF Landing Zone" -FontName $FontType[$FontNumber] -FontColor White
 Start-Sleep -Seconds 2
 
+# Create the Export Folder if not exist
+if (!(Test-Path $Global:ExcelOutputFolder)) {
+    $Global:ExcelOutputFolder
+    try {
+        New-Item -Path $Global:ExcelOutputFolder -ItemType Directory -Force -Confirm:$false -ErrorAction Stop
+    } catch {
+        Write-Host "$Global:ExcelOutputFolder does not exist or cannot create"
+        throw
+    }
+}
+
+# Delete Assessment Excel File
+if (Test-Path $Global:ExcelFullPath) {
+    try {
+        Remove-Item $Global:ExcelFullPath -Force -Confirm:$false -ErrorAction Stop
+    } catch {
+        Write-Host "Excel File with same name exists or cannot delete"
+        throw
+    }
+}
+
 # Login
 #$AzLogin = az login | Out-Null
 #$ConnectAzAccount = Connect-AzAccount | Out-Null
@@ -71,42 +97,42 @@ if ($GetAzureBackup) {
     Write-Host "Get Azure Backup Status" -ForegroundColor Cyan
     Update-RunScriptList -RunScript "GetAzureBackup" -Command "& .\Get-AzureBackup-Status.ps1"
 } else {
-    $DisabledRunScript += "Get Azure Backup Status"
+    $Global:DisabledRunScript += "Get Azure Backup Status"
 }
 
 if ($GetDiagnosticSetting) {
     Write-Host "Get Diagnostic Setting" -ForegroundColor Cyan
     Update-RunScriptList -RunScript "GetDiagnosticSetting" -Command "& .\Get-DiagnosticSetting.ps1"
 } else {
-    $DisabledRunScript += "Get Diagnostic Setting"
+    $Global:DisabledRunScript += "Get Diagnostic Setting"
 } 
 
 if ($GetRedisNetworkIsolation) {
     Write-Host "Get Azure Cache for Redis Network Configuration" -ForegroundColor Cyan
     Update-RunScriptList -RunScript "GetRedisNetworkIsolation" -Command "& .\Get-Redis-NetworkIsolation.ps1"
 } else {
-    $DisabledRunScript += "Get Azure Cache for Redis Network Configuration"
+    $Global:DisabledRunScript += "Get Azure Cache for Redis Network Configuration"
 } 
 
 if ($GetAZoneEnabledService) {
     Write-Host "Get Availability Zone Enabled Service" -ForegroundColor Cyan
     Update-RunScriptList -RunScript "GetAZoneEnabledService" -Command "& .\Get-AZoneEnabledService.ps1"
 } else {
-    $DisabledRunScript += "Get Availability Zone Enabled Service"
+    $Global:DisabledRunScript += "Get Availability Zone Enabled Service"
 } 
 
 if ($GetClassicResource) {
     Write-Host "Get the list of Classic Resource" -ForegroundColor Cyan
     Update-RunScriptList -RunScript "GetClassicResource" -Command "& .\Get-Classic-Resource.ps1"
 } else {
-    $DisabledRunScript += "Get the list of Classic Resource"
+    $Global:DisabledRunScript += "Get the list of Classic Resource"
 } 
 
-if ($DisabledRunScript.Count -ne 0 -and (![string]::IsNullOrEmpty($DisabledRunScript))) {
+if ($Global:DisabledRunScript.Count -ne 0 -and (![string]::IsNullOrEmpty($Global:DisabledRunScript))) {
     Write-Host "`n"
     Write-Host "Disabled Run-Script:" -ForegroundColor DarkRed -BackgroundColor Black
 
-    foreach ($item in $DisabledRunScript) {
+    foreach ($item in $Global:DisabledRunScript) {
         Write-Host $item -ForegroundColor Cyan
     }
 }
