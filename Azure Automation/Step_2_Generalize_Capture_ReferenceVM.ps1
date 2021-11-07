@@ -102,7 +102,9 @@ try {
         # Recommend to manually SSH to generalize RHEL Reference VM
         Write-Output "`nRun 'sudo waagent -deprovision -force' to generalize Linux VM" 
         Write-Output "`nRun 'sudo systemctl poweroff --force' to power off Linux VM" 
-        "sudo waagent -deprovision -force;sudo systemctl poweroff --force" | Out-File .\GeneralizeLinux.ps1 -Force -Confirm:$false
+        "sudo waagent -deprovision -force" | Out-File .\GeneralizeLinux.ps1 -Force -Confirm:$false
+        #"sudo systemctl poweroff --force"| Out-File .\GeneralizeLinux.ps1 -Append -Confirm:$false
+        "sudo shutdown -h now" | Out-File .\GeneralizeLinux.ps1 -Append -Confirm:$false
         $ReturnData = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunShellScript" -ScriptPath GeneralizeLinux.ps1 -AsJob
         [string]$CommandResult1 = $ReturnData.Value.Message
         Write-Output $CommandResult1
