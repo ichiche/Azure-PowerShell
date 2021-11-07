@@ -10,7 +10,9 @@
 ```
 # Target
 - Get Long-term retention of Azure SQL and SQL MI
-- Get-AzDdosProtectionPlan > Get Azure DDoS Standard enabled in all VNET
+- Get-AzDdosProtectionPlan > Get Azure DDoS Standard enabled in all VNET, highlight subnet with Firewall, Gateway, AppGW
+- Get Azure Database for MySQL Backup retention and redundancy option
+- Get Cosmos DB Backup Info (periodic mode backup policy includes Backup Interval, Retention, Copies of data retained, storage redundancy) and (continuous backup mode)
 - Get-AzSecurityPricing > Get the Azure Defender plans for a subscription in Azure Security Center
 - Get Resource Lock of subscription and resource group level
 - Check resource group that contain no resource
