@@ -29,7 +29,7 @@ PowerShell support following scopes:
 WARNING: Unable to acquire token for tenant 'Tenant Id XXX' with error 'You must use multi-factor authentication to access tenant 'Tenant Id XXX', please rerun 'Connect-AzAccount' with additional parameter '-TenantId Tenant Id XXX'.'
 ```
 
-If encounter above warning message every time you connect using Az Module or set current subscription context, suggest to run Connect-AzAccount with -TenantId during initial connection. 
+For PowerShell V5, if encounter above warning message every time you connect using Az Module or set current subscription context, suggest to run Connect-AzAccount with -TenantId during initial connection. 
 
 ```PowerShell
 Connect-AzAccount
