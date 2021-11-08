@@ -6,12 +6,25 @@ All scripts in repository are used for DevTest only.
 
 # Prerequisites
 
-| Item | Name | Version &nbsp; | Installation | 
+| Item | Name | Version | Installation | 
 | - | - | - | - | 
-| 1 | PowerShell | 5.1 <br /> 7.0 (LTS) | https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows | 
+| 1 | PowerShell | 5.1 <br /> 7.1 | https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows | 
 | 2 | Az Module | 6.4.0 | https://www.powershellgallery.com/packages/Az |
-| 3 | Azure CLI | 2.28.0 | https://docs.microsoft.com/en-us/cli/azure/install-azure-cli |
-| 4 | ImportExcel | 7.3.0 | https://www.powershellgallery.com/packages/ImportExcel |
+| 3 | Az.DataProtection Module | 0.3.0 | https://www.powershellgallery.com/packages/Az.DataProtection |
+| 4 | Azure CLI | 2.28.0 | https://docs.microsoft.com/en-us/cli/azure/install-azure-cli |
+| 5 | ImportExcel | 7.3.0 | https://www.powershellgallery.com/packages/ImportExcel |
+
+# PowerShell Multi-threading
+
+This project will not implement RunSpaces for PowerShell V5, all scripts with Multi-threading Capability require PowerShell V7 by using **Pipeline parallelization with ForEach-Object -Parallel**.
+
+**Reference**
+
+- https://docs.microsoft.com/en-us/powershell/scripting/whats-new/what-s-new-in-powershell-70?view=powershell-7.1
+- https://docs.microsoft.com/en-us/dotnet/api/system.management.automation.runspaces.runspacefactory.createrunspacepool?view=powershellsdk-7.0.0
+- https://adamtheautomator.com/powershell-multithreading/
+- https://devblogs.microsoft.com/scripting/beginning-use-of-powershell-runspaces-part-1/
+- https://gist.github.com/rjmholt/02fe49189540acf0d2650f571f5176db
 
 # Script Modification
 
