@@ -1,11 +1,3 @@
-## PowerShell Multi-threading
- 
-- https://adamtheautomator.com/powershell-multithreading/
-- https://devblogs.microsoft.com/scripting/beginning-use-of-powershell-runspaces-part-1/
-- https://docs.microsoft.com/en-us/dotnet/api/system.management.automation.runspaces.runspacefactory.createrunspacepool?view=powershellsdk-7.0.0
-- https://gist.github.com/rjmholt/02fe49189540acf0d2650f571f5176db
-
-
 ## CAF
 ```
 # Target
