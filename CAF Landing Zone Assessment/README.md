@@ -4,7 +4,8 @@
 
 1. Download all scripts to same local directory
 1. Modify **Global Parameter**
-1. Open a **Windows PowerShell** and locate to that directory
+1. Open a **Windows PowerShell** with **Version 7 or above**
+1. Change current directory to where the script exist
 1. Run the script either one of below method
    1. Directly execute **Run.ps1**
    1. Copy the content of **Run.ps1** and paste into **Windows PowerShell**
