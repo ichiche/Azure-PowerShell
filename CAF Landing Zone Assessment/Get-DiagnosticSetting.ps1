@@ -3,7 +3,7 @@ $Global:DiagnosticSetting = @()
 $DiagnosticSettingSummary = @()
 [int]$CurrentItem = 1
 [int]$ThrottleLimit = 30
-$ErrorActionPreference = "SilentlyContinue"
+$ErrorActionPreference = "Continue"
 
 # Function to align the Display Name
 function Rename-Location {
