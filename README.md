@@ -16,7 +16,9 @@ All scripts in repository are used for DevTest only.
 
 # PowerShell Multi-threading
 
-This project will not implement RunSpaces for PowerShell V5, all scripts with Multi-threading Capability require PowerShell V7 by using **Pipeline parallelization with ForEach-Object -Parallel**.
+This project will not implement RunSpaces for PowerShell V5.
+
+All scripts with Multi-threading Capability require PowerShell V7 by using **Pipeline parallelization with ForEach-Object -Parallel**.
 
 **Reference**
 
@@ -55,7 +57,7 @@ Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value "true"
 
 # CAF Landing Zone Assessment
 
-Refer to README.md in corresponding folder for instruction
+Refer to README.md in corresponding folder for instruction.
 
 # General Script List
 
