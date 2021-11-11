@@ -15,23 +15,24 @@ foreach ($Subscription in $Subscriptions) {
     $RecoveryServicesVaults = Get-AzRecoveryServicesVault
 
     foreach ($RecoveryServicesVault in $RecoveryServicesVaults) {
+        # Set Vault Context
         Write-Host ("Processing Recovery Services Vault: " + $RecoveryServicesVault.Name + "`n") -ForegroundColor Yellow
         Set-AzRecoveryServicesAsrVaultContext -Vault $RecoveryServicesVault # Perform action 'Microsoft.RecoveryServices/vaults/extendedInformation/write' 
 
+        # Retrieve Data
         $fabrics = Get-AzRecoveryServicesAsrFabric
-
         foreach ($fabric in $fabrics) {
             $ProtectionContainers = Get-AzRecoveryServicesAsrProtectionContainer -Fabric $fabric
 
             foreach ($ProtectionContainer in $ProtectionContainers) {
-                $ReplicationProtectedItems += Get-AzRecoveryServicesAsrReplicationProtectedItem -ProtectionContainer $ProtectionContainer
+                $Global:ReplicationProtectedItems += Get-AzRecoveryServicesAsrReplicationProtectedItem -ProtectionContainer $ProtectionContainer
             }
         }
     }
 }
 
 # End
-Write-Host "`nCompleted to collect Site Recovery Replication Protected Items" -ForegroundColor Yellow; `
-Write-Host "`nCheck variable " -NoNewline; `
-Write-Host '$Global:ReplicationProtectedItems' -NoNewline -ForegroundColor Cyan; `
+Write-Host "`nCompleted" -ForegroundColor Yellow;
+Write-Host "`nCheck variable " -NoNewline;
+Write-Host '$Global:ReplicationProtectedItems' -NoNewline -ForegroundColor Cyan;
 Write-Host " to review`n"
