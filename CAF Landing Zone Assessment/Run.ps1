@@ -14,6 +14,7 @@ $error.Clear()
 
 # Run-Script Configuration
 $GetAzureBackup = $false
+$GetSql_SqlMI_DB = $false
 $GetDiagnosticSetting = $true
 $GetRedisNetworkIsolation = $false
 $GetAZoneEnabledService = $false
@@ -32,7 +33,7 @@ function Update-RunScriptList {
 }
 
 # Set PowerShell Windows Size
-$host.UI.RawUI.BufferSize = New-Object System.Management.Automation.Host.size(120,8000)
+$host.UI.RawUI.BufferSize = New-Object System.Management.Automation.Host.size(120,9999)
 $host.UI.RawUI.WindowSize = New-Object System.Management.Automation.Host.size(120,45)
 Start-Sleep -Milliseconds 500
 
@@ -95,10 +96,17 @@ Write-Host "Enabled Run-Script:" -ForegroundColor Green -BackgroundColor Black
 
 if ($GetAzureBackup) {
     Write-Host "Get Azure Backup Status" -ForegroundColor Cyan
-    Update-RunScriptList -RunScript "GetAzureBackup" -Command "& .\Get-AzureBackup-Status.ps1"
+    Update-RunScriptList -RunScript "GetAzureBackup" -Command "& .\Get-AzureBackupStatus.ps1"
 } else {
     $Global:DisabledRunScript += "Get Azure Backup Status"
 }
+
+if ($GetSql_SqlMI_DB) {
+    Write-Host "Get Database Utilization, Point-in-time restore (PITR), and Long-term retention (LTR) of Azure SQL and Azure SQL Managed Instance" -ForegroundColor Cyan
+    Update-RunScriptList -RunScript "GetSql_SqlMI_DB" -Command "& .\Get-AzureSQL-DBUtilization-BackupPolicy.ps1"
+} else {
+    $Global:DisabledRunScript += "Get Database Utilization, Point-in-time restore (PITR), and Long-term retention (LTR) of Azure SQL and Azure SQL Managed Instance"
+} 
 
 if ($GetDiagnosticSetting) {
     Write-Host "Get Diagnostic Setting" -ForegroundColor Cyan
