@@ -5,7 +5,7 @@ $BackupItemVM = @()
 $BackupItemSqlVM = @()
 $BackupItemBlob = @()
 [int]$CurrentItem = 1
-$ErrorActionPreference = "SilentlyContinue"
+$ErrorActionPreference = "Continue"
 
 # Function to align the Display Name
 function Rename-Location {
