@@ -1,6 +1,6 @@
 # Script Variable
-$Global:BackupStatus = @()
-$Global:BackupStatusSummary = @()
+$Global:SQLBackupStatus = @()
+$Global:SQLBackupStatusSummary = @()
 [int]$CurrentItem = 1
 $ErrorActionPreference = "Continue"
 
@@ -13,7 +13,6 @@ Import-Module ImportExcel
 # Main
 Write-Host ("`n" + "=" * 100)
 Write-Host "`nGet Database Utilization, Point-in-time restore (PITR), and Long-term retention (LTR) of Azure SQL and Azure SQL Managed Instance" -ForegroundColor Cyan
-
 
 foreach ($Subscription in $Global:Subscriptions) {
     Write-Host ("`n")
@@ -78,9 +77,7 @@ foreach ($Subscription in $Global:Subscriptions) {
         Add-Member -InputObject $obj -Name "ServerUsed(GB)" -MemberType NoteProperty -Value "N/A"
         
         # Backup Policy
-        Write-Host ("[Get-AzSqlDatabaseBackupShortTermRetentionPolicy] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
         $ShortTerm = Get-AzSqlDatabaseBackupShortTermRetentionPolicy  -ResourceGroupName $Database.ResourceGroupName -ServerName $Database.ServerName -DatabaseName $Database.DatabaseName
-        Write-Host ("[Get-AzSqlDatabaseBackupLongTermRetentionPolicy] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
         $LongTerm = Get-AzSqlDatabaseBackupLongTermRetentionPolicy -ResourceGroupName $Database.ResourceGroupName -ServerName $Database.ServerName -DatabaseName $Database.DatabaseName
 
         # Long Term Retention
@@ -106,20 +103,114 @@ foreach ($Subscription in $Global:Subscriptions) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "WeeklyRetention" -Value $WeeklyRetention
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "MonthlyRetention" -Value $MonthlyRetention
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "YearlyRetention" -Value $YearlyRetention
-        $Global:BackupStatus += $obj
+        $Global:SQLBackupStatus += $obj
 	}
     #EndRegion Azure SQL
 
     #Region Azure SQL Managed Instance
 	$SqlServers = Get-AzSqlInstance
-	$Databases = $SqlServers | Get-AzSqlInstanceDatabase | ? {$_.Name -ne "Master"}
 
+    foreach ($SqlServer in $SqlServers) {
+        Write-Host ("SQL Managed Instance: " + $SqlServer.ManagedInstanceName)
+
+        # Pricing Tier
+        $Edition = $SqlServer.Sku.Tier
+        $Sku = $SqlServer.Sku.Name
+
+        # SQL Managed Instance Database
+        $Databases = Get-AzSqlInstanceDatabase -InstanceResourceId $SqlServer.Id | ? {$_.Name -ne "Master"}
+
+        foreach ($Database in $Databases) {
+            Write-Host ("SQL Managed Instance Database: " + $Database.Name)
+            #$Location
+
+            # Save to Temp Object
+            $obj = New-Object -TypeName PSobject
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subscription" -Value $Subscription.Name
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceGroupName" -Value $Database.ResourceGroupName
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ServerName" -Value $Database.ManagedInstanceName
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "DatabaseName" -Value $Database.Name
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Type" -Value "SQL Managed Instance Database"
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Edition" -Value $Edition
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Sku" -Value $Sku
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ElasticPoolName" -Value "N/A"
+            #VCores                        : 4
+            #StorageSizeInGB               : 256
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Database.Location
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "CreationDate" -Value $Database.CreationDate
+            
+            # SQL Managed Instance Storage space reserved
+            $MI_Metric_Storage = Get-AzMetric -ResourceId $SqlServer.Id -MetricName 'reserved_storage_mb' -WarningAction SilentlyContinue
+            [int]$MI_ReservedSpace = $MI_Metric_Storage.Data.Average | select -Last 1
+            $MI_ReservedSpace = [math]::Round($MI_ReservedSpace / 1KB, 2)
+
+            # SQL Managed Instance Storage space used
+            $MI_Metric_Storage = Get-AzMetric -ResourceId $SqlServer.Id -MetricName 'storage_space_used_mb' -WarningAction SilentlyContinue
+            [int]$MI_UsedSpace = $MI_Metric_Storage.Data.Average | select -Last 1
+            $MI_UsedSpace = [math]::Round($MI_UsedSpace / 1KB, 2)
+
+            Add-Member -InputObject $obj -Name "MaximumStorageSize(GB)" -MemberType NoteProperty -Value "N/A"
+            Add-Member -InputObject $obj -Name "UsedSpace(GB)" -MemberType NoteProperty -Value "N/A"
+            Add-Member -InputObject $obj -Name "UsedSpacePercentage" -MemberType NoteProperty -Value "N/A"
+            Add-Member -InputObject $obj -Name "AllocatedSpace(GB)" -MemberType NoteProperty -Value "N/A"
+            Add-Member -InputObject $obj -Name "ServerReserved(GB)" -MemberType NoteProperty -Value $MI_ReservedSpace
+            Add-Member -InputObject $obj -Name "ServerUsed(GB)" -MemberType NoteProperty -Value $MI_UsedSpace
+            
+            # Backup Policy
+            $ShortTerm = Get-AzSqlInstanceDatabaseBackupShortTermRetentionPolicy  -ResourceGroupName $Database.ResourceGroupName -InstanceName $Database.ManagedInstanceName -DatabaseName $Database.Name
+            $LongTerm = Get-AzSqlInstanceDatabaseBackupLongTermRetentionPolicy -ResourceGroupName $Database.ResourceGroupName -InstanceName $Database.ManagedInstanceName -DatabaseName $Database.Name
+
+            # Long Term Retention
+            if ($LongTerm.WeeklyRetention -eq "PT0S") {
+                $WeeklyRetention = "Not Enabled"
+            } else {
+                $WeeklyRetention = $LongTerm.WeeklyRetention
+            }
+
+            if ($LongTerm.MonthlyRetention -eq "PT0S") {
+                $MonthlyRetention = "Not Enabled"
+            } else {
+                $MonthlyRetention = $LongTerm.MonthlyRetention
+            }
+
+            if ($LongTerm.YearlyRetention -eq "PT0S") {
+                $YearlyRetention = "Not Enabled"
+            } else {
+                $YearlyRetention = $LongTerm.YearlyRetention
+            }
+
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "PITR" -Value $ShortTerm.RetentionDays
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "WeeklyRetention" -Value $WeeklyRetention
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "MonthlyRetention" -Value $MonthlyRetention
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "YearlyRetention" -Value $YearlyRetention
+            $Global:SQLBackupStatus += $obj
+        }
+    }
     #EndRegion Azure SQL Managed Instance
 }
 
 #Region Export
 Write-Host ("[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
 
+if ($Global:SQLBackupStatus.Count -ne 0) {
+
+} else {
+    $obj = New-Object -TypeName PSobject
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "Classic Resource (ASM)"
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "Status" -Value "Resource is not found"
+    $Global:SQLBackupStatusSummary += $obj
+
+    $obj = New-Object -TypeName PSobject
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "Classic Resource (ASM)"
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "Status" -Value "Resource is not found"
+    $Global:SQLBackupStatusSummary += $obj
+
+    #Azure SQL and Azure SQL Managed Instance
+    # Export to Excel File
+    #$Global:SQLBackupStatusSummary| Export-Excel -Path $Global:ExcelFullPath -WorksheetName "ResourceNotFound" -TableName "ResourceNotFound" -TableStyle Light11 -AutoSize -Append
+}
+
+
 # Export to Excel File
-$Global:LBackupStatus | Export-Csv -Path C:\Temp\AzureSqlDatabase-Size-BackupRetention.csv -NoTypeInformation -Confirm:$false -Force
+$Global:BackupStatus | Export-Csv -Path C:\Temp\AzureSqlDatabase-Size-BackupRetention.csv -NoTypeInformation -Confirm:$false -Force
 #EndRegion Export
