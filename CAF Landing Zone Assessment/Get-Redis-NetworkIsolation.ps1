@@ -2,7 +2,7 @@
 $Global:RedisCacheSetting = @()
 $Global:RedisCacheSettingSummary = @()
 [int]$CurrentItem = 1
-$ErrorActionPreference = "SilentlyContinue"
+$ErrorActionPreference = "Continue"
 
 # Disable breaking change warning messages
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value "true"
