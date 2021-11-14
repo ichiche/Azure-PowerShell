@@ -51,8 +51,17 @@ foreach ($Subscription in $Global:Subscriptions) {
         $Edition = $Database.Edition
         if ($Edition -eq "Premium" -or $Edition -eq "Standard" -or $Edition -eq "Basic") {
             $Sku = $Database.CurrentServiceObjectiveName
+            $vCore = "N/A"
         } else {
             $Sku = $Database.SkuName
+            $vCore = $Database.Capacity
+        }
+
+        # Replica
+        if ([string]::IsNullOrEmpty($Database.SecondaryType)) {
+            $IsReplica = "N"
+        } else {
+            $IsReplica = $Database.SecondaryType
         }
 
         # Save to Temp Object
@@ -64,8 +73,9 @@ foreach ($Subscription in $Global:Subscriptions) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "SQL Database"
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Edition" -Value $Edition
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Sku" -Value $Sku
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "vCore" -Value "N/A"
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "vCore" -Value $vCore
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "ElasticPoolName" -Value $PoolName
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "IsReplica" -Value $IsReplica
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
                 
         # Backup Policy
@@ -134,6 +144,7 @@ foreach ($Subscription in $Global:Subscriptions) {
         # Pricing Tier
         $Edition = $SqlServer.Sku.Tier
         $Sku = $SqlServer.Sku.Name
+        $vCore = $SqlServer.VCores
 
         # SQL Managed Instance Database
         $Databases = Get-AzSqlInstanceDatabase -InstanceResourceId $SqlServer.Id | ? {$_.Name -ne "Master"}
@@ -151,8 +162,9 @@ foreach ($Subscription in $Global:Subscriptions) {
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "SQL Managed Instance Database"
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "Edition" -Value $Edition
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "Sku" -Value $Sku
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "vCore" -Value $SqlServer.VCores
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "vCore" -Value $vCore
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "ElasticPoolName" -Value "N/A"
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "IsReplica" -Value "N/A"
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
             
             # Backup Policy
