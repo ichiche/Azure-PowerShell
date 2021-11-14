@@ -14,11 +14,11 @@ $error.Clear()
 
 # Run-Script Configuration
 $GetAzureBackup = $false
-$GetSql_SqlMI_DB = $true
-$GetDiagnosticSetting = $false
+$GetSql_SqlMI_DB = $false
+$GetDiagnosticSetting = $true
 $GetRedisNetworkIsolation = $true
 $GetAZoneEnabledService = $false
-$GetClassicResource = $false
+$GetClassicResource = $true
 
 function Update-RunScriptList {
     param(
