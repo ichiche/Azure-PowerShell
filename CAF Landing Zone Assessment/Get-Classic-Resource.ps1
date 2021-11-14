@@ -2,6 +2,7 @@
 $Global:ClassicList = @()
 $Global:ClassicListSummary = @()
 [int]$CurrentItem = 1
+$ErrorActionPreference = "Continue"
 
 # Function to align the Display Name
 function Rename-Location {
