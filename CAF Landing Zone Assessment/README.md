@@ -18,6 +18,7 @@
 ## Scope of functionalities
 
 - Get Azure Backup status of **Azure VM**, **SQL Server in Azure VM**, and **Azure Blob Storage**
+- Get Capacity, PITR, LTR, Backup Storage, Replication, Redundancy of Azure SQL / Azure SQL Managed Instance
 - Collect Diagnostic Setting
    - Support to get Diagnostic Setting of most mainstream services
 - Collect Azure Cache for Redis Network Configuration
@@ -27,8 +28,9 @@
 
 ## Availability Zone
 
-Get the Azure Services with **Availability Zones** enabled in the subscription includes pricing tier, current redundancy method, zone configuration of follow Azure Services:
+Get the Azure Services with **Availability Zones** enabled in the subscription of follow Azure Services:
 
+**Get-AZoneEnabledService.ps1**
 - Application Gateway
 - Event Hub (Namespace)
 - Azure Kubernetes Service (AKS)
@@ -41,9 +43,11 @@ Get the Azure Services with **Availability Zones** enabled in the subscription i
 - Api Management
 - Azure Firewall
 
+**Get-AzureSql-SqlMI-Configuration.ps1**
+- Azure SQL Database
+- Azure SQL Managed Instance
+
 **To be updated**
-- Azure SQL Database (Preview)
-- Azure SQL Managed Instance (Preview)
 - Azure Cosmos DB
 - Azure Database for MySQL
 - Azure Database for PostgreSQL
@@ -57,6 +61,7 @@ Get the Azure Services with **Availability Zones** enabled in the subscription i
 ### Limitation
 
 - Support to identify a Replica Database, not support to confirm whether a Database has enabled Geo-Replica
+- Support to identify a Database is added to Failover Group, not support to confirm the Server Role (Primary and Secondary)
 
 ## Azure SQL Managed Instance
 
@@ -82,7 +87,6 @@ Reference
 - Zone redundant status is shown on Azure Portal only
 - Az Module and Azure CLI are not able to retrieve the Zone redundant status
 - https://docs.microsoft.com/en-us/azure/app-service/how-to-zone-redundancy#how-to-deploy-a-zone-redundant-app-service
-
 
 ## Virtual Machine
 
