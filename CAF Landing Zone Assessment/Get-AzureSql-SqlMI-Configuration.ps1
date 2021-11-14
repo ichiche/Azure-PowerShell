@@ -27,7 +27,7 @@ Import-Module ImportExcel
 
 # Main
 Write-Host ("`n" + "=" * 100)
-Write-Host "`nGet Utilization, PITR, LTR of Azure SQL / SQL MI" -ForegroundColor Cyan
+Write-Host "`nGet Utilization, PITR, LTR, Replication of Azure SQL / SQL MI" -ForegroundColor Cyan
 
 foreach ($Subscription in $Global:Subscriptions) {
     Write-Host ("`n")
@@ -44,9 +44,6 @@ foreach ($Subscription in $Global:Subscriptions) {
         Write-Host ("SQL Database: " + $Database.DatabaseName)
         $Location = Rename-Location -Location $Database.Location
 
-        # Elastic Pool
-        if ($Database.ElasticPoolName -eq $null) { $PoolName = "N/A" } else { $PoolName = $Database.ElasticPoolName }
-
         # Pricing Tier
         $Edition = $Database.Edition
         if ($Edition -eq "Premium" -or $Edition -eq "Standard" -or $Edition -eq "Basic") {
@@ -55,6 +52,21 @@ foreach ($Subscription in $Global:Subscriptions) {
         } else {
             $Sku = $Database.SkuName
             $vCore = $Database.Capacity
+        }
+
+        # Elastic Pool
+        if ([string]::IsNullOrEmpty($Database.ElasticPoolName)) { 
+            $PoolName = "N/A" 
+        } else { 
+            $PoolName = $Database.ElasticPoolName 
+            $ElasticPool = Get-AzSqlElasticPool -ResourceGroupName $Database.ResourceGroupName -ServerName $Database.ServerName -ElasticPoolName $PoolName
+
+            if ($ElasticPool.Edition -eq "Premium" -or $ElasticPool.Edition -eq "Standard" -or $ElasticPool.Edition -eq "Basic") {
+                $Sku += " " + $ElasticPool.Capacity + " DTU"
+            } else {
+                $Sku += " " + $ElasticPool.SkuName
+                $vCore = $ElasticPool.Capacity
+            }
         }
 
         # Replica
