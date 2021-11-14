@@ -102,7 +102,7 @@ if ($GetAzureBackup) {
 }
 
 if ($GetSql_SqlMI_DB) {
-    Write-Host "`nGet Capacity, PITR, LTR, Backup Storage, Replication, Redundancy of SQL / SQL Managed Instance" -ForegroundColor Cyan
+    Write-Host "Get Capacity, PITR, LTR, Backup Storage, Replication, Redundancy of SQL / SQL Managed Instance" -ForegroundColor Cyan
     Update-RunScriptList -RunScript "GetSql_SqlMI_DB" -Command "& .\Get-AzureSql-SqlMI-Configuration.ps1"
 } else {
     $Global:DisabledRunScript += "Get Capacity, PITR, LTR, Backup Storage, Replication, Redundancy of SQL / SQL Managed Instance"
@@ -160,6 +160,7 @@ Write-Host ("*" * 60)
 Write-Host "`n`nThe process may take more than 30 minutes ..."
 Write-Host "`nPlease wait until it finishes ..."
 Start-Sleep -Seconds 5
+$StartTime = Get-Date
 foreach ($RunScript in $Global:RunScriptList) {
     Invoke-Expression -Command $RunScript.Command
 }
@@ -168,6 +169,9 @@ foreach ($RunScript in $Global:RunScriptList) {
 Write-Host ("`n")
 Write-Host ("[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
 Write-Host "`n`nCAF Landing Zone Assessment have been completed"
-Start-Sleep -Seconds 2
+$EndTime = Get-Date
+$Duration = $EndTime - $StartTime
+Write-Host ("`nTotal Process Time: " + $Duration.Minutes + " Minutes " + $Duration.Seconds + " Seconds") -ForegroundColor Blue -BackgroundColor Black
+Start-Sleep -Seconds 1
 Write-Host ("`nPlease refer to the Assessment Result locate at " + $Global:ExcelFullPath)
 Write-Host "`n`n"
