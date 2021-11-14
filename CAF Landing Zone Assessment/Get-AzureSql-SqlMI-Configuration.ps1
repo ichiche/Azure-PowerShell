@@ -27,7 +27,7 @@ Import-Module ImportExcel
 
 # Main
 Write-Host ("`n" + "=" * 100)
-Write-Host "`nGet Utilization, PITR, LTR, Replication of Azure SQL / SQL MI" -ForegroundColor Cyan
+Write-Host "`nGet Capacity, PITR, LTR, Storage Backup, Replication, Redundancy of SQL / SQL MI" -ForegroundColor Cyan
 
 foreach ($Subscription in $Global:Subscriptions) {
     Write-Host ("`n")
@@ -78,12 +78,9 @@ foreach ($Subscription in $Global:Subscriptions) {
 
         # Failover Group
         $FailoverGroups = Get-AzSqlDatabaseFailoverGroup -ResourceGroupName $Database.ResourceGroupName -ServerName $Database.ServerName
-        if ([string]::IsNullOrEmpty($FailoverGroups)) {
-            $FailoverGroupEnabled = "N"
-            $FailoverGroupName = "N/A"
-        } else {
-            $FailoverGroupEnabled = "N"
-
+        $FailoverGroupEnabled = "N"
+        $FailoverGroupName = "N/A"
+        if (![string]::IsNullOrEmpty($FailoverGroups)) {
             foreach ($FailoverGroup in $FailoverGroups) {
                 if ($FailoverGroup.DatabaseNames -contains $Database.DatabaseName) {
                     $FailoverGroupEnabled = "Y"
@@ -92,7 +89,12 @@ foreach ($Subscription in $Global:Subscriptions) {
             }
         }
 
-        # CurrentBackupStorageRedundancy
+        # Backup Storage Redundancy
+        if ([string]::IsNullOrEmpty($Database.CurrentBackupStorageRedundancy)) {
+            $BackupStorageRedundancy = "N/A"
+        } else {
+            $BackupStorageRedundancy = $Database.CurrentBackupStorageRedundancy
+        }
 
         # Backup Policy
         $ShortTerm = Get-AzSqlDatabaseBackupShortTermRetentionPolicy  -ResourceGroupName $Database.ResourceGroupName -ServerName $Database.ServerName -DatabaseName $Database.DatabaseName
@@ -148,6 +150,7 @@ foreach ($Subscription in $Global:Subscriptions) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "IsReplica" -Value $IsReplica
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "FailoverGroupEnabled" -Value $FailoverGroupEnabled
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "FailoverGroupName" -Value $FailoverGroupName
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "BackupStorageRedundancy" -Value $BackupStorageRedundancy
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "PITR(Day)" -Value $ShortTerm.RetentionDays
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "WeeklyRetention" -Value $WeeklyRetention
@@ -177,18 +180,22 @@ foreach ($Subscription in $Global:Subscriptions) {
 
         # Failover Group
         $FailoverGroups = Get-AzSqlDatabaseInstanceFailoverGroup -ResourceGroupName $SqlServer.ResourceGroupName
-        if ([string]::IsNullOrEmpty($FailoverGroups)) {
-            $FailoverGroupEnabled = "N"
-            $FailoverGroupName = "N/A"
-        } else {
-            $FailoverGroupEnabled = "N"
-
+        $FailoverGroupEnabled = "N"
+        $FailoverGroupName = "N/A"
+        if (![string]::IsNullOrEmpty($FailoverGroups)) {
             foreach ($FailoverGroup in $FailoverGroups) {
                 if ($FailoverGroup.PrimaryManagedInstanceName -eq $SqlServer.ManagedInstanceName -or $FailoverGroup.PartnerManagedInstanceName -eq $SqlServer.ManagedInstanceName) {
                     $FailoverGroupEnabled = "Y"
                     $FailoverGroupName = $FailoverGroup.Name
                 }
             }
+        }
+
+        # Backup Storage Redundancy
+        if ([string]::IsNullOrEmpty($SqlServer.BackupStorageRedundancy)) {
+            $BackupStorageRedundancy = "N/A"
+        } else {
+            $BackupStorageRedundancy = $SqlServer.BackupStorageRedundancy
         }
 
         # SQL Managed Instance Database
@@ -246,6 +253,7 @@ foreach ($Subscription in $Global:Subscriptions) {
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "IsReplica" -Value "N/A"
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "FailoverGroupEnabled" -Value $FailoverGroupEnabled
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "FailoverGroupName" -Value $FailoverGroupName
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "BackupStorageRedundancy" -Value $BackupStorageRedundancy
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "PITR(Day)" -Value $ShortTerm.RetentionDays
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "WeeklyRetention" -Value $WeeklyRetention
@@ -303,7 +311,7 @@ if ($Global:SQLBackupStatus.Count -ne 0) {
 
     # Export to Excel File
     $Global:SQLBackupStatusSummary | sort ResourceType, RetentionType | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "Sql_SqlMI_Summary" -TableName "Sql_SqlMI_Summary" -TableStyle Medium16 -AutoSize -Append
-    $Global:SQLBackupStatus | sort ResourceType, SubscriptionName, ResourceGroup, ServerName | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "Sql_SqlMI_Detail" -TableName "Sql_SqlMI_Detail" -TableStyle Medium16 -AutoSize -Append
+    $Global:SQLBackupStatus | sort ResourceType, SubscriptionName, DatabaseName | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "Sql_SqlMI_Detail" -TableName "Sql_SqlMI_Detail" -TableStyle Medium16 -AutoSize -Append
 } else {
     $obj = New-Object -TypeName PSobject
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "Azure SQL"
