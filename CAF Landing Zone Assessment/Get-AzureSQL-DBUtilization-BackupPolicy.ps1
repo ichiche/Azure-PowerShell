@@ -4,6 +4,21 @@ $Global:SQLBackupStatusSummary = @()
 [int]$CurrentItem = 1
 $ErrorActionPreference = "Continue"
 
+# Function to align the Display Name
+function Rename-Location {
+    param (
+        [string]$Location
+    )
+
+    foreach ($item in $Global:NameReference) {
+        if ($item.Location -eq $Location) {
+            $Location = $item.DisplayName
+        }
+    }
+
+    return $Location
+}
+
 # Disable breaking change warning messages
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value "true"
 
@@ -12,7 +27,7 @@ Import-Module ImportExcel
 
 # Main
 Write-Host ("`n" + "=" * 100)
-Write-Host "`nGet Database Utilization, Point-in-time restore (PITR), and Long-term retention (LTR) of Azure SQL and Azure SQL Managed Instance" -ForegroundColor Cyan
+Write-Host "`nGet Utilization, Point-in-time restore (PITR), Long-term retention (LTR) of Azure SQL DB / SQL MI DB" -ForegroundColor Cyan
 
 foreach ($Subscription in $Global:Subscriptions) {
     Write-Host ("`n")
@@ -26,7 +41,8 @@ foreach ($Subscription in $Global:Subscriptions) {
 	$Databases = $SqlServers | Get-AzSqlDatabase | ? {$_.DatabaseName -ne "Master" -and $_.Edition -ne "DataWarehouse"}
 
 	foreach ($Database in $Databases) {
-        Write-Host ("Resource: " + $Database.DatabaseName)
+        Write-Host ("SQL Database: " + $Database.DatabaseName)
+        $Location = Rename-Location -Location $Database.Location
 
         # Elastic Pool
         if ($Database.ElasticPoolName -eq $null) { $PoolName = "N/A" } else { $PoolName = $Database.ElasticPoolName }
@@ -41,16 +57,16 @@ foreach ($Subscription in $Global:Subscriptions) {
 
         # Save to Temp Object
         $obj = New-Object -TypeName PSobject
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subscription" -Value $Subscription.Name
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceGroupName" -Value $Database.ResourceGroupName
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value $Subscription.Name
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceGroup" -Value $Database.ResourceGroupName
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "ServerName" -Value $Database.ServerName
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "DatabaseName" -Value $Database.DatabaseName
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Type" -Value "SQL Database"
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "SQL Database"
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Edition" -Value $Edition
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Sku" -Value $Sku
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "ElasticPoolName" -Value $PoolName
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Database.Location
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "CreationDate" -Value $Database.CreationDate
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "vCore" -Value "N/A"
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
         
         # Database maximum storage size
         $db_MaximumStorageSize = $database.MaxSizeBytes / 1GB
@@ -99,10 +115,11 @@ foreach ($Subscription in $Global:Subscriptions) {
             $YearlyRetention = $LongTerm.YearlyRetention
         }
 
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "PITR" -Value $ShortTerm.RetentionDays
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "PITR(Day)" -Value $ShortTerm.RetentionDays
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "WeeklyRetention" -Value $WeeklyRetention
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "MonthlyRetention" -Value $MonthlyRetention
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "YearlyRetention" -Value $YearlyRetention
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "CreationDate" -Value $Database.CreationDate
         $Global:SQLBackupStatus += $obj
 	}
     #EndRegion Azure SQL
@@ -122,27 +139,26 @@ foreach ($Subscription in $Global:Subscriptions) {
 
         foreach ($Database in $Databases) {
             Write-Host ("SQL Managed Instance Database: " + $Database.Name)
-            #$Location
+            $Location = Rename-Location -Location $Database.Location
 
             # Save to Temp Object
             $obj = New-Object -TypeName PSobject
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subscription" -Value $Subscription.Name
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceGroupName" -Value $Database.ResourceGroupName
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value $Subscription.Name
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceGroup" -Value $Database.ResourceGroupName
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "ServerName" -Value $Database.ManagedInstanceName
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "DatabaseName" -Value $Database.Name
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Type" -Value "SQL Managed Instance Database"
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "SQL Managed Instance Database"
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "Edition" -Value $Edition
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "Sku" -Value $Sku
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "ElasticPoolName" -Value "N/A"
-            #VCores                        : 4
-            #StorageSizeInGB               : 256
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Database.Location
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "CreationDate" -Value $Database.CreationDate
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "vCore" -Value $SqlServer.VCores
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
             
             # SQL Managed Instance Storage space reserved
-            $MI_Metric_Storage = Get-AzMetric -ResourceId $SqlServer.Id -MetricName 'reserved_storage_mb' -WarningAction SilentlyContinue
-            [int]$MI_ReservedSpace = $MI_Metric_Storage.Data.Average | select -Last 1
-            $MI_ReservedSpace = [math]::Round($MI_ReservedSpace / 1KB, 2)
+            #$MI_Metric_Storage = Get-AzMetric -ResourceId $SqlServer.Id -MetricName 'reserved_storage_mb' -WarningAction SilentlyContinue
+            #[int]$MI_ReservedSpace = $MI_Metric_Storage.Data.Average | select -Last 1
+            #$MI_ReservedSpace = [math]::Round($MI_ReservedSpace / 1KB, 2)
+            $MI_ReservedSpace = $SqlServer.StorageSizeInGB
 
             # SQL Managed Instance Storage space used
             $MI_Metric_Storage = Get-AzMetric -ResourceId $SqlServer.Id -MetricName 'storage_space_used_mb' -WarningAction SilentlyContinue
@@ -179,10 +195,11 @@ foreach ($Subscription in $Global:Subscriptions) {
                 $YearlyRetention = $LongTerm.YearlyRetention
             }
 
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "PITR" -Value $ShortTerm.RetentionDays
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "PITR(Day)" -Value $ShortTerm.RetentionDays
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "WeeklyRetention" -Value $WeeklyRetention
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "MonthlyRetention" -Value $MonthlyRetention
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "YearlyRetention" -Value $YearlyRetention
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "CreationDate" -Value $Database.CreationDate
             $Global:SQLBackupStatus += $obj
         }
     }
@@ -190,27 +207,55 @@ foreach ($Subscription in $Global:Subscriptions) {
 }
 
 #Region Export
-Write-Host ("[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
-
 if ($Global:SQLBackupStatus.Count -ne 0) {
+    for ($i = 0; $i -lt 4; $i++) {
+        switch ($i) {
+            0 { 
+                $CurrentSettingStatus = $Global:SQLBackupStatus | group "PITR(Day)", ResourceType | select Name, Count 
+                $NetworkType = "Point-in-time restore (PITR)"
+            }
+            1 { 
+                $CurrentSettingStatus = $Global:SQLBackupStatus | group WeeklyRetention, ResourceType | select Name, Count 
+                $NetworkType = "Long-term retention (Weekly)"
+            }
+            2 { 
+                $CurrentSettingStatus = $Global:SQLBackupStatus | group MonthlyRetention, ResourceType | select Name, Count 
+                $NetworkType = "Long-term retention (Monthly)"
+            }
+            3 { 
+                $CurrentSettingStatus = $Global:SQLBackupStatus | group YearlyRetention, ResourceType | select Name, Count 
+                $NetworkType = "Long-term retention (Yearly)"
+            }
+        }
+        
+        <#foreach ($item in $CurrentSettingStatus) {
 
+            $Total = $Global:SQLBackupStatus 
+
+            $obj = New-Object -TypeName PSobject
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value 
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "RetentionType" -Value $NetworkType
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $Global:RedisCacheSetting.Count
+            $Global:SQLBackupStatusSummary += $obj
+        }#>
+    }
+
+
+    # Export to Excel File
+    #$Global:SQLBackupStatusSummary  | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "Sql_SqlMI_Summary" -TableName "Sql_SqlMI_Summary" -TableStyle Medium16 -AutoSize -Append
+    $Global:SQLBackupStatus | sort ResourceType, SubscriptionName, ResourceGroup, ServerName | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "Sql_SqlMI_Detail" -TableName "Sql_SqlMI_Detail" -TableStyle Medium16 -AutoSize -Append
 } else {
     $obj = New-Object -TypeName PSobject
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "Classic Resource (ASM)"
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "Azure SQL"
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "Status" -Value "Resource is not found"
     $Global:SQLBackupStatusSummary += $obj
 
     $obj = New-Object -TypeName PSobject
-    Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "Classic Resource (ASM)"
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "Azure SQL Managed Instance"
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "Status" -Value "Resource is not found"
     $Global:SQLBackupStatusSummary += $obj
 
-    #Azure SQL and Azure SQL Managed Instance
     # Export to Excel File
-    #$Global:SQLBackupStatusSummary| Export-Excel -Path $Global:ExcelFullPath -WorksheetName "ResourceNotFound" -TableName "ResourceNotFound" -TableStyle Light11 -AutoSize -Append
+    $Global:SQLBackupStatusSummary| Export-Excel -Path $Global:ExcelFullPath -WorksheetName "ResourceNotFound" -TableName "ResourceNotFound" -TableStyle Light11 -AutoSize -Append
 }
-
-
-# Export to Excel File
-$Global:BackupStatus | Export-Csv -Path C:\Temp\AzureSqlDatabase-Size-BackupRetention.csv -NoTypeInformation -Confirm:$false -Force
-#EndRegion Export
