@@ -2,6 +2,7 @@
 $Global:ResultArray = @()
 $Global:ResultArraySummary = @()
 [int]$CurrentItem = 1
+$ErrorActionPreference = "Continue"
 
 # Function to align the Display Name
 function Rename-Location {
@@ -65,6 +66,7 @@ Import-Module ImportExcel
 # Main
 Write-Host ("`n" + "=" * 100)
 Write-Host "`nGet Availability Zone Enabled Service" -ForegroundColor Cyan
+
 foreach ($Subscription in $Global:Subscriptions) {
     Write-Host ("`n")
     Write-Host ("[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
@@ -529,9 +531,6 @@ foreach ($item in $CountType) {
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $ResourceTotal
     $Global:ResultArraySummary += $obj
 }
-
-# Export to Excel File
-$Global:ResultArray | sort InstanceType, SubscriptionName | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force
 
 # Export to Excel File
 $Global:ResultArraySummary | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "AZoneSummary" -TableName "AZoneSummary" -TableStyle Medium16 -AutoSize -Append
