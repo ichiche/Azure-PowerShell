@@ -27,7 +27,7 @@ Import-Module ImportExcel
 
 # Main
 Write-Host ("`n" + "=" * 100)
-Write-Host "`nGet Capacity, PITR, LTR, Storage Backup, Replication, Redundancy of SQL / SQL MI" -ForegroundColor Cyan
+Write-Host "`nGet Capacity, PITR, LTR, Backup Storage, Replication, Redundancy of SQL / SQL Managed Instance" -ForegroundColor Cyan
 
 foreach ($Subscription in $Global:Subscriptions) {
     Write-Host ("`n")
@@ -96,6 +96,14 @@ foreach ($Subscription in $Global:Subscriptions) {
             $BackupStorageRedundancy = $Database.CurrentBackupStorageRedundancy
         }
 
+        # Availability Zone 
+        $ZoneRedundant = $Database.ZoneRedundant
+        if ($ZoneRedundant) {
+            $ZoneRedundant = "Y"
+        } else {
+            $ZoneRedundant = "N"
+        }
+
         # Backup Policy
         $ShortTerm = Get-AzSqlDatabaseBackupShortTermRetentionPolicy  -ResourceGroupName $Database.ResourceGroupName -ServerName $Database.ServerName -DatabaseName $Database.DatabaseName
         $LongTerm = Get-AzSqlDatabaseBackupLongTermRetentionPolicy -ResourceGroupName $Database.ResourceGroupName -ServerName $Database.ServerName -DatabaseName $Database.DatabaseName
@@ -151,6 +159,7 @@ foreach ($Subscription in $Global:Subscriptions) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "FailoverGroupEnabled" -Value $FailoverGroupEnabled
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "FailoverGroupName" -Value $FailoverGroupName
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "BackupStorageRedundancy" -Value $BackupStorageRedundancy
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ZoneRedundant" -Value $ZoneRedundant
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "PITR(Day)" -Value $ShortTerm.RetentionDays
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "WeeklyRetention" -Value $WeeklyRetention
@@ -179,7 +188,7 @@ foreach ($Subscription in $Global:Subscriptions) {
         $vCore = $SqlServer.VCores
 
         # Failover Group
-        $FailoverGroups = Get-AzSqlDatabaseInstanceFailoverGroup -ResourceGroupName $SqlServer.ResourceGroupName
+        $FailoverGroups = Get-AzSqlDatabaseInstanceFailoverGroup -ResourceGroupName $SqlServer.ResourceGroupName -Location $SqlServer.Location
         $FailoverGroupEnabled = "N"
         $FailoverGroupName = "N/A"
         if (![string]::IsNullOrEmpty($FailoverGroups)) {
@@ -196,6 +205,14 @@ foreach ($Subscription in $Global:Subscriptions) {
             $BackupStorageRedundancy = "N/A"
         } else {
             $BackupStorageRedundancy = $SqlServer.BackupStorageRedundancy
+        }
+
+        # Availability Zone 
+        $ZoneRedundant = $SqlServer.ZoneRedundant
+        if ($ZoneRedundant) {
+            $ZoneRedundant = "Y"
+        } else {
+            $ZoneRedundant = "N"
         }
 
         # SQL Managed Instance Database
@@ -254,6 +271,7 @@ foreach ($Subscription in $Global:Subscriptions) {
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "FailoverGroupEnabled" -Value $FailoverGroupEnabled
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "FailoverGroupName" -Value $FailoverGroupName
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "BackupStorageRedundancy" -Value $BackupStorageRedundancy
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ZoneRedundant" -Value $ZoneRedundant
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "PITR(Day)" -Value $ShortTerm.RetentionDays
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "WeeklyRetention" -Value $WeeklyRetention
