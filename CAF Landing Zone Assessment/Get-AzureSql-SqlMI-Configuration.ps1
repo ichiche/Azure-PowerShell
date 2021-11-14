@@ -76,20 +76,14 @@ foreach ($Subscription in $Global:Subscriptions) {
             $IsReplica = $Database.SecondaryType
         }
 
-        # Save to Temp Object
-        $obj = New-Object -TypeName PSobject
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value $Subscription.Name
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceGroup" -Value $Database.ResourceGroupName
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ServerName" -Value $Database.ServerName
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "DatabaseName" -Value $Database.DatabaseName
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "SQL Database"
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Edition" -Value $Edition
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Sku" -Value $Sku
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "vCore" -Value $vCore
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ElasticPoolName" -Value $PoolName
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "IsReplica" -Value $IsReplica
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
-                
+        # Failover Group
+        $FailoverGroup = Get-AzSqlDatabaseFailoverGroup -ResourceGroupName $Database.ResourceGroupName -ServerName $Database.ServerName
+        if ([string]::IsNullOrEmpty($FailoverGroup)) {
+            $FailoverGroupEnabled = "N"
+        } else {
+            $FailoverGroupEnabled = "Y"
+        }
+
         # Backup Policy
         $ShortTerm = Get-AzSqlDatabaseBackupShortTermRetentionPolicy  -ResourceGroupName $Database.ResourceGroupName -ServerName $Database.ServerName -DatabaseName $Database.DatabaseName
         $LongTerm = Get-AzSqlDatabaseBackupLongTermRetentionPolicy -ResourceGroupName $Database.ResourceGroupName -ServerName $Database.ServerName -DatabaseName $Database.DatabaseName
@@ -112,12 +106,7 @@ foreach ($Subscription in $Global:Subscriptions) {
         } else {
             $YearlyRetention = $LongTerm.YearlyRetention
         }
-
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "PITR(Day)" -Value $ShortTerm.RetentionDays
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "WeeklyRetention" -Value $WeeklyRetention
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "MonthlyRetention" -Value $MonthlyRetention
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "YearlyRetention" -Value $YearlyRetention
-        
+                
         # Database maximum storage size
         $db_MaximumStorageSize = $database.MaxSizeBytes / 1GB
 
@@ -134,14 +123,31 @@ foreach ($Subscription in $Global:Subscriptions) {
         #$db_metric_allocated_data_storage = Get-AzMetric -ResourceId $Database.ResourceId -MetricName 'allocated_data_storage' -WarningAction SilentlyContinue
         #$db_AllocatedSpace = $db_metric_allocated_data_storage.Data.Average | select -Last 1
         #$db_AllocatedSpace = [math]::Round($db_AllocatedSpace / 1GB, 2) 
-
-        Add-Member -InputObject $obj -Name "MaxDBSize(GB)" -MemberType NoteProperty -Value $db_MaximumStorageSize
-        Add-Member -InputObject $obj -Name "UsedSpace(GB)" -MemberType NoteProperty -Value $db_UsedSpace
-        Add-Member -InputObject $obj -Name "UsedSpacePercentage" -MemberType NoteProperty -Value $db_UsedSpacePercentage
-        #Add-Member -InputObject $obj -Name "AllocatedSpace(GB)" -MemberType NoteProperty -Value $db_AllocatedSpace
-        Add-Member -InputObject $obj -Name "ServerReservedSize(GB)" -MemberType NoteProperty -Value "N/A"
-        Add-Member -InputObject $obj -Name "ServerUsedSize(GB)" -MemberType NoteProperty -Value "N/A"
-        
+                
+        # Save to Temp Object
+        $obj = New-Object -TypeName PSobject
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value $Subscription.Name
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceGroup" -Value $Database.ResourceGroupName
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ServerName" -Value $Database.ServerName
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "DatabaseName" -Value $Database.DatabaseName
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "SQL Database"
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Edition" -Value $Edition
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Sku" -Value $Sku
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "vCore" -Value $vCore
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ElasticPoolName" -Value $PoolName
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "IsReplica" -Value $IsReplica
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "FailoverGroupEnabled" -Value $FailoverGroupEnabled
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "PITR(Day)" -Value $ShortTerm.RetentionDays
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "WeeklyRetention" -Value $WeeklyRetention
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "MonthlyRetention" -Value $MonthlyRetention
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "YearlyRetention" -Value $YearlyRetention
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "MaxDBSize(GB)"  -Value $db_MaximumStorageSize
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "UsedSpace(GB)" -Value $db_UsedSpace
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "UsedSpacePercentage" -Value $db_UsedSpacePercentage
+        #Add-Member -InputObject $obj -MemberType NoteProperty -Name "AllocatedSpace(GB)" -Value $db_AllocatedSpace
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ServerReservedSize(GB)" -Value "N/A"
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ServerUsedSize(GB)" -Value "N/A"
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "DBCreationDate" -Value $Database.CreationDate
         $Global:SQLBackupStatus += $obj
 	}
@@ -165,20 +171,6 @@ foreach ($Subscription in $Global:Subscriptions) {
             Write-Host ("SQL Managed Instance Database: " + $Database.Name)
             $Location = Rename-Location -Location $Database.Location
 
-            # Save to Temp Object
-            $obj = New-Object -TypeName PSobject
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value $Subscription.Name
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceGroup" -Value $Database.ResourceGroupName
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ServerName" -Value $Database.ManagedInstanceName
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "DatabaseName" -Value $Database.Name
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "SQL Managed Instance Database"
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Edition" -Value $Edition
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Sku" -Value $Sku
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "vCore" -Value $vCore
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ElasticPoolName" -Value "N/A"
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "IsReplica" -Value "N/A"
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
-            
             # Backup Policy
             $ShortTerm = Get-AzSqlInstanceDatabaseBackupShortTermRetentionPolicy  -ResourceGroupName $Database.ResourceGroupName -InstanceName $Database.ManagedInstanceName -DatabaseName $Database.Name
             $LongTerm = Get-AzSqlInstanceDatabaseBackupLongTermRetentionPolicy -ResourceGroupName $Database.ResourceGroupName -InstanceName $Database.ManagedInstanceName -DatabaseName $Database.Name
@@ -201,12 +193,7 @@ foreach ($Subscription in $Global:Subscriptions) {
             } else {
                 $YearlyRetention = $LongTerm.YearlyRetention
             }
-
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "PITR(Day)" -Value $ShortTerm.RetentionDays
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "WeeklyRetention" -Value $WeeklyRetention
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "MonthlyRetention" -Value $MonthlyRetention
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "YearlyRetention" -Value $YearlyRetention
-
+            
             # SQL Managed Instance Storage space reserved
             #$MI_Metric_Storage = Get-AzMetric -ResourceId $SqlServer.Id -MetricName 'reserved_storage_mb' -WarningAction SilentlyContinue
             #[int]$MI_ReservedSpace = $MI_Metric_Storage.Data.Average | select -Last 1
@@ -218,13 +205,30 @@ foreach ($Subscription in $Global:Subscriptions) {
             [int]$MI_UsedSpace = $MI_Metric_Storage.Data.Average | select -Last 1
             $MI_UsedSpace = [math]::Round($MI_UsedSpace / 1KB, 2)
 
-            Add-Member -InputObject $obj -Name "MaxDBSize(GB)" -MemberType NoteProperty -Value "N/A"
-            Add-Member -InputObject $obj -Name "UsedSpace(GB)" -MemberType NoteProperty -Value "N/A"
-            Add-Member -InputObject $obj -Name "UsedSpacePercentage" -MemberType NoteProperty -Value "N/A"
-            #Add-Member -InputObject $obj -Name "AllocatedSpace(GB)" -MemberType NoteProperty -Value "N/A"
-            Add-Member -InputObject $obj -Name "ServerReservedSize(GB)" -MemberType NoteProperty -Value $MI_ReservedSpace
-            Add-Member -InputObject $obj -Name "ServerUsedSize(GB)" -MemberType NoteProperty -Value $MI_UsedSpace
-
+            # Save to Temp Object
+            $obj = New-Object -TypeName PSobject
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value $Subscription.Name
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceGroup" -Value $Database.ResourceGroupName
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ServerName" -Value $Database.ManagedInstanceName
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "DatabaseName" -Value $Database.Name
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "SQL Managed Instance Database"
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Edition" -Value $Edition
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Sku" -Value $Sku
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "vCore" -Value $vCore
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ElasticPoolName" -Value "N/A"
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "IsReplica" -Value "N/A"
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "FailoverGroupEnabled" -Value $FailoverGroupEnabled
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "PITR(Day)" -Value $ShortTerm.RetentionDays
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "WeeklyRetention" -Value $WeeklyRetention
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "MonthlyRetention" -Value $MonthlyRetention
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "YearlyRetention" -Value $YearlyRetention
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "MaxDBSize(GB)"  -Value "N/A"
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "UsedSpace(GB)" -Value "N/A"
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "UsedSpacePercentage" -Value "N/A"
+            #Add-Member -InputObject $obj -MemberType NoteProperty -Name "AllocatedSpace(GB)" -Value "N/A"
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ServerReservedSize(GB)"  -Value $MI_ReservedSpace
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ServerUsedSize(GB)"  -Value $MI_UsedSpace
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "DBCreationDate" -Value $Database.CreationDate
             $Global:SQLBackupStatus += $obj
         }
