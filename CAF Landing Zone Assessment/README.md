@@ -52,20 +52,41 @@ Get the Azure Services with **Availability Zones** enabled in the subscription i
 
 - https://docs.microsoft.com/en-us/azure/availability-zones/az-overview#services-by-category
 
+## Azure SQL
+
+### Limitation
+
+- Support to identify a Replica Database, not support to confirm whether a Database has enabled Geo-Replica
+
+## Azure SQL Managed Instance
+
+### Limitation
+
+- Not support to query the Instance Pool
+- Not support to explicitly indicate Primary / Partner Managed Instance Name 
+
 ## Redis Cache
+
+- Collect the configuration of Network Isolation Method of Redis Cache Instance
+- Require Azure CLI
+
+Reference
 
 - https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-network-isolation
 
-## Limitation
+## App Service
 
-#### App Service
+### Limitation
 
 - Zone Redundant is supported to be created by ARM template at this moment
 - Zone redundant status is shown on Azure Portal only
 - Az Module and Azure CLI are not able to retrieve the Zone redundant status
 - https://docs.microsoft.com/en-us/azure/app-service/how-to-zone-redundancy#how-to-deploy-a-zone-redundant-app-service
 
-#### Virtual Machine
+
+## Virtual Machine
+
+### Limitation
 
 For verifying the status of **Region Disaster Recovery** and **Zone to Zone Disaster Recovery**
 
@@ -74,7 +95,9 @@ For verifying the status of **Region Disaster Recovery** and **Zone to Zone Disa
    - Require additional permission to perform action 'Microsoft.RecoveryServices/vaults/extendedInformation/write'
 - Azure CLI (Not Supported)
 
-#### Azure Backup
+## Azure Backup
+
+### Limitation
 
 - Support to query the existing Azure VM only
    - Not support to detect a deleted VM but backup copy exist in a recovery service vault
