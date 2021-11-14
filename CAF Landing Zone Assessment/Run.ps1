@@ -1,7 +1,7 @@
 # Global Parameter
 $SpecificTenant = "" # "Y" or "N"
 $TenantId = "" # Enter Tenant ID if $SpecificTenant is "Y"
-$Global:ExcelOutputFolder = "C:\TempP7"
+$Global:ExcelOutputFolder = "C:\Temp"
 $ExcelFileName = "CAF-Assessment.xlsx" # Export Result to Excel file 
 
 # Script Variable
@@ -14,9 +14,9 @@ $error.Clear()
 
 # Run-Script Configuration
 $GetAzureBackup = $false
-$GetSql_SqlMI_DB = $false
-$GetDiagnosticSetting = $true
-$GetRedisNetworkIsolation = $false
+$GetSql_SqlMI_DB = $true
+$GetDiagnosticSetting = $false
+$GetRedisNetworkIsolation = $true
 $GetAZoneEnabledService = $false
 $GetClassicResource = $false
 
@@ -102,10 +102,10 @@ if ($GetAzureBackup) {
 }
 
 if ($GetSql_SqlMI_DB) {
-    Write-Host "Get Database Utilization, Point-in-time restore (PITR), and Long-term retention (LTR) of Azure SQL and Azure SQL Managed Instance" -ForegroundColor Cyan
-    Update-RunScriptList -RunScript "GetSql_SqlMI_DB" -Command "& .\Get-AzureSQL-DBUtilization-BackupPolicy.ps1"
+    Write-Host "`nGet Capacity, PITR, LTR, Backup Storage, Replication, Redundancy of SQL / SQL Managed Instance" -ForegroundColor Cyan
+    Update-RunScriptList -RunScript "GetSql_SqlMI_DB" -Command "& .\Get-AzureSql-SqlMI-Configuration.ps1"
 } else {
-    $Global:DisabledRunScript += "Get Database Utilization, Point-in-time restore (PITR), and Long-term retention (LTR) of Azure SQL and Azure SQL Managed Instance"
+    $Global:DisabledRunScript += "Get Capacity, PITR, LTR, Backup Storage, Replication, Redundancy of SQL / SQL Managed Instance"
 } 
 
 if ($GetDiagnosticSetting) {
