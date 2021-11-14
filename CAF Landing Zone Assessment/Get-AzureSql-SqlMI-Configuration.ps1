@@ -77,12 +77,20 @@ foreach ($Subscription in $Global:Subscriptions) {
         }
 
         # Failover Group
-        $FailoverGroup = Get-AzSqlDatabaseFailoverGroup -ResourceGroupName $Database.ResourceGroupName -ServerName $Database.ServerName
-        if ([string]::IsNullOrEmpty($FailoverGroup)) {
+        $FailoverGroups = Get-AzSqlDatabaseFailoverGroup -ResourceGroupName $Database.ResourceGroupName -ServerName $Database.ServerName
+        if ([string]::IsNullOrEmpty($FailoverGroups)) {
             $FailoverGroupEnabled = "N"
         } else {
-            $FailoverGroupEnabled = "Y"
+            $FailoverGroupEnabled = "N"
+
+            foreach ($FailoverGroup in $FailoverGroups) {
+                if ($FailoverGroup.DatabaseNames -contains $Database.DatabaseName) {
+                    $FailoverGroupEnabled = "Y"
+                }
+            }
         }
+
+        # CurrentBackupStorageRedundancy
 
         # Backup Policy
         $ShortTerm = Get-AzSqlDatabaseBackupShortTermRetentionPolicy  -ResourceGroupName $Database.ResourceGroupName -ServerName $Database.ServerName -DatabaseName $Database.DatabaseName
