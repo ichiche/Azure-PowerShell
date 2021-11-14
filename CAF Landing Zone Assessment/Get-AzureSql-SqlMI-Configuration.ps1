@@ -80,12 +80,14 @@ foreach ($Subscription in $Global:Subscriptions) {
         $FailoverGroups = Get-AzSqlDatabaseFailoverGroup -ResourceGroupName $Database.ResourceGroupName -ServerName $Database.ServerName
         if ([string]::IsNullOrEmpty($FailoverGroups)) {
             $FailoverGroupEnabled = "N"
+            $FailoverGroupName = "N/A"
         } else {
             $FailoverGroupEnabled = "N"
 
             foreach ($FailoverGroup in $FailoverGroups) {
                 if ($FailoverGroup.DatabaseNames -contains $Database.DatabaseName) {
                     $FailoverGroupEnabled = "Y"
+                    $FailoverGroupName = $FailoverGroup.FailoverGroupName
                 }
             }
         }
@@ -145,6 +147,7 @@ foreach ($Subscription in $Global:Subscriptions) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "ElasticPoolName" -Value $PoolName
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "IsReplica" -Value $IsReplica
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "FailoverGroupEnabled" -Value $FailoverGroupEnabled
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "FailoverGroupName" -Value $FailoverGroupName
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "PITR(Day)" -Value $ShortTerm.RetentionDays
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "WeeklyRetention" -Value $WeeklyRetention
@@ -171,6 +174,22 @@ foreach ($Subscription in $Global:Subscriptions) {
         $Edition = $SqlServer.Sku.Tier
         $Sku = $SqlServer.Sku.Name
         $vCore = $SqlServer.VCores
+
+        # Failover Group
+        $FailoverGroups = Get-AzSqlDatabaseInstanceFailoverGroup -ResourceGroupName $SqlServer.ResourceGroupName
+        if ([string]::IsNullOrEmpty($FailoverGroups)) {
+            $FailoverGroupEnabled = "N"
+            $FailoverGroupName = "N/A"
+        } else {
+            $FailoverGroupEnabled = "N"
+
+            foreach ($FailoverGroup in $FailoverGroups) {
+                if ($FailoverGroup.PrimaryManagedInstanceName -eq $SqlServer.ManagedInstanceName -or $FailoverGroup.PartnerManagedInstanceName -eq $SqlServer.ManagedInstanceName) {
+                    $FailoverGroupEnabled = "Y"
+                    $FailoverGroupName = $FailoverGroup.Name
+                }
+            }
+        }
 
         # SQL Managed Instance Database
         $Databases = Get-AzSqlInstanceDatabase -InstanceResourceId $SqlServer.Id | ? {$_.Name -ne "Master"}
@@ -226,6 +245,7 @@ foreach ($Subscription in $Global:Subscriptions) {
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "ElasticPoolName" -Value "N/A"
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "IsReplica" -Value "N/A"
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "FailoverGroupEnabled" -Value $FailoverGroupEnabled
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "FailoverGroupName" -Value $FailoverGroupName
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "PITR(Day)" -Value $ShortTerm.RetentionDays
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "WeeklyRetention" -Value $WeeklyRetention
