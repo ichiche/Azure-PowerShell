@@ -46,6 +46,9 @@ All scripts with Multi-threading Capability require PowerShell V7 by using **Pip
 ```PowerShell
 # Disable breaking change warning messages
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value "true"
+
+# Above Environment Variable may not work for specific Az command, add Common Parameters 'WarningAction'
+Get-AzMetric -ResourceId $ResourceId -MetricName 'storage' -WarningAction SilentlyContinue
 ```
 
 **Reference**
@@ -54,6 +57,8 @@ Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value "true"
   - https://docs.microsoft.com/en-us/powershell/azure/faq?view=azps-6.5.0
 - Add to PowerShell profile to execute this command when every PowerShell session start
   - https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles?view=powershell-7.1#the-profile-files
+- Common Parameters
+  - https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters?view=powershell-7.2
 
 # CAF Landing Zone Assessment
 
