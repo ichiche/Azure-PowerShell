@@ -38,6 +38,7 @@ function Clear-UnsupportedResourceType {
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/galleries/images/versions"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/restorePointCollections"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/snapshots"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/sshPublicKeys"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/virtualMachines/extensions"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/virtualMachineScaleSets"} # Enabling Azure Monitors for VMSS
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.ContainerRegistry/registries/replications"}
@@ -48,32 +49,44 @@ function Clear-UnsupportedResourceType {
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/activityLogAlerts"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/autoscalesettings"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/components"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Insights/dataCollectionRules"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/metricalerts"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/webtests"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/scheduledqueryrules"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/workbooks"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.LabServices/labaccounts"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Logic/integrationServiceEnvironments"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Logic/integrationServiceEnvironments/managedApis"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.ManagedIdentity/userAssignedIdentities"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Migrate/moveCollections"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/applicationSecurityGroups"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/connections"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/ddosProtectionPlans"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/firewallPolicies"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/ipGroups"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/localNetworkGateways"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/serviceEndpointPolicies"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/networkIntentPolicies"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.network/networkWatchers/flowLogs"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/networkWatchers"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/privateDnsZones"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/privateDnsZones/virtualNetworkLinks"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/privateEndpoints"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/routeFilters"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/routeTables"}
-    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.network/networkWatchers/flowLogs"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.NotificationHubs/namespaces/notificationHubs"} # Support Namespace only
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.OperationsManagement/solutions"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Portal/dashboards"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.SaaS/resources"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Scheduler/jobcollections"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Security/iotSecuritySolutions"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Sql/servers"} # Support Database only
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Sql/servers/jobAgents"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Sql/virtualClusters"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.SqlVirtualMachine/SqlVirtualMachines"} # Configure at Virtual Machine
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.StorageSync/storageSyncServices"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.visualstudio/account"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Web/connectionGateways"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Web/certificates"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Web/connections"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Web/staticSites"}
@@ -246,20 +259,11 @@ foreach ($Subscription in $Global:Subscriptions) {
                         Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceName" -Value $item.ResourceName
                         Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value $item.ResourceType
                         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $item.Location
-        
-                        if ($TempDiagnosticSetting -eq $null) {
-                            Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledDiagnostic" -Value "N"
-                            Add-Member -InputObject $obj -MemberType NoteProperty -Name "WorkspaceId" -Value "N/A"
-                            Add-Member -InputObject $obj -MemberType NoteProperty -Name "StorageAccountId" -Value "N/A"
-                            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ServiceBusRuleId" -Value "N/A"
-                            Add-Member -InputObject $obj -MemberType NoteProperty -Name "EventHubAuthorizationRuleId" -Value "N/A"
-                        } else {
-                            Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledDiagnostic" -Value "Y"
-                            Add-Member -InputObject $obj -MemberType NoteProperty -Name "WorkspaceId" -Value $TempDiagnosticSetting.WorkspaceId
-                            Add-Member -InputObject $obj -MemberType NoteProperty -Name "StorageAccountId" -Value $TempDiagnosticSetting.StorageAccountId
-                            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ServiceBusRuleId" -Value $TempDiagnosticSetting.ServiceBusRuleId
-                            Add-Member -InputObject $obj -MemberType NoteProperty -Name "EventHubAuthorizationRuleId" -Value $TempDiagnosticSetting.EventHubAuthorizationRuleId
-                        }
+                        Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledDiagnostic" -Value "Y"
+                        Add-Member -InputObject $obj -MemberType NoteProperty -Name "WorkspaceId" -Value $TempDiagnosticSetting.WorkspaceId
+                        Add-Member -InputObject $obj -MemberType NoteProperty -Name "StorageAccountId" -Value $TempDiagnosticSetting.StorageAccountId
+                        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ServiceBusRuleId" -Value $TempDiagnosticSetting.ServiceBusRuleId
+                        Add-Member -InputObject $obj -MemberType NoteProperty -Name "EventHubAuthorizationRuleId" -Value $TempDiagnosticSetting.EventHubAuthorizationRuleId
                         
                         # Save to Array
                         $CurrentDiagnosticSetting += $obj
