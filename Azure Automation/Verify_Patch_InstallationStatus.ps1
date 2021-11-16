@@ -21,22 +21,18 @@ $connectionName = "AzureRunAsConnection"
 
 switch ($OSVersion) {
     WS2016 { 
-        $GalleryImageDefinitionName = "WindowsServer2016"
         $ReferenceVMRG = "ImageWorkingItem"
         $ReferenceVMName = "WS2016-RefVM"
     }
     WS2019 { 
-        $GalleryImageDefinitionName = "WindowsServer2019"
         $ReferenceVMRG = "ImageWorkingItem"
         $ReferenceVMName = "WS2019-RefVM"
     }
     RHEL7 { 
-        $GalleryImageDefinitionName = "RHEL7"
         $ReferenceVMRG = "ImageWorkingItem"
         $ReferenceVMName = "RHEL7-RefVM"
     }
     RHEL8 { 
-        $GalleryImageDefinitionName = "RHEL8"
         $ReferenceVMRG = "ImageWorkingItem"
         $ReferenceVMName = "RHEL8-RefVM"
     }
@@ -64,31 +60,39 @@ try {
         
         # Wait for a certain time to ensure Guest OS has completed the start up process
         Start-Sleep -Seconds 180
+        Write-Output "`nReference VM is running now" 
     }
     
     # Verification
     if ($OSVersion -like "WS*") {
-        # Windows Update
-        $WindowsUpdates = Get-WindowsUpdate | ? {$_.IsInstalled -eq $false}
-        if ($WindowsUpdates -ne $null) {
-            Write-Output "Following Windows Update(s) is not installed yet:`n"
-            foreach ($WindowsUpdate in $WindowsUpdates) {
-                Write-Output $WindowsUpdate.Title
+        # Prepare Script
+        '$WindowsUpdates = Get-WindowsUpdate | ? {$_.IsInstalled -eq $false}' | Out-File .\CheckWindowUpdate.ps1 -Force -Confirm:$false
+        'if ($WindowsUpdates -ne $null) { Write-Output "Following Windows Update is not installed yet:`n";' | Out-File .\CheckWindowUpdate.ps1 -Append -Confirm:$false
+            'foreach ($WindowsUpdate in $WindowsUpdates) {Write-Output $WindowsUpdate.Title}' | Out-File .\CheckWindowUpdate.ps1 -Append -Confirm:$false
+        '} else {Write-Output "Already installed the latest Windows Update";}' | Out-File .\CheckWindowUpdate.ps1 -Append -Confirm:$false
+        
+        # Get Windows Update Installation Status
+        Write-Output "`nGet Windows Update Installation Status" 
+        $ReturnData = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunPowerShellScript" -ScriptPath CheckWindowUpdate.ps1
+        Write-Output "`n" 
+        foreach ($Data in $ReturnData) {
+            Write-Output $Data.Value.Message
+            if ($Data.Value.Message -like "*not installed yet*") {
+                $IsWindowsUpdateInstalled = $false
+            } elseif ($Data.Value.Message -like "*Already installed*") {
+                $IsWindowsUpdateInstalled = $true
             }
+        }
 
-
-            Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunPowerShellScript" -ScriptPath InstallWindowUpdate.ps1
-            
-
-            # Run Windows Update and restart computer after patch installation
+        # If latest Windows Update is not installed, run Windows Update and restart computer after patch installation
+        if (!$IsWindowsUpdateInstalled ) {
             "Import-Module PSWindowsUpdate" | Out-File .\InstallWindowUpdate.ps1 -Force -Confirm:$false
             "Install-WindowsUpdate -AcceptAll -AutoReboot -Silent" | Out-File .\InstallWindowUpdate.ps1 -Append -Confirm:$false
             Write-Output "`nProcessing to install Windows Update"
             $error.Clear()
             Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunPowerShellScript" -ScriptPath InstallWindowUpdate.ps1
-            
             Start-Sleep -Seconds 5
-
+    
             if ($error.Count -eq 0) {
                 Write-Output ("`nHave triggered to install Windows Update using PSWindowsUpdate without error")
             } else {
