@@ -27,6 +27,7 @@ function Clear-UnsupportedResourceType {
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.alertsmanagement/smartDetectorAlertRules"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.AlertsManagement/actionRules"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Automation/automationAccounts/runbooks"} # Support Automation Accounts only
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.AzureActiveDirectory/b2cDirectories"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.cdn/profiles"} # Support Endpoint only
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/availabilitySets"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/disks"}
@@ -36,6 +37,7 @@ function Clear-UnsupportedResourceType {
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/galleries/images/versions"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/restorePointCollections"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/snapshots"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/sshPublicKeys"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/virtualMachines/extensions"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/virtualMachineScaleSets"} # Enabling Azure Monitors for VMSS
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.ContainerRegistry/registries/replications"}
@@ -46,32 +48,44 @@ function Clear-UnsupportedResourceType {
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/activityLogAlerts"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/autoscalesettings"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/components"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Insights/dataCollectionRules"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/metricalerts"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/webtests"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/scheduledqueryrules"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/workbooks"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.LabServices/labaccounts"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Logic/integrationServiceEnvironments"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Logic/integrationServiceEnvironments/managedApis"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.ManagedIdentity/userAssignedIdentities"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Migrate/moveCollections"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/applicationSecurityGroups"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/connections"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/ddosProtectionPlans"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/firewallPolicies"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/ipGroups"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/localNetworkGateways"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/serviceEndpointPolicies"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/networkIntentPolicies"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.network/networkWatchers/flowLogs"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/networkWatchers"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/privateDnsZones"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/privateDnsZones/virtualNetworkLinks"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/privateEndpoints"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/routeFilters"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/routeTables"}
-    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.network/networkWatchers/flowLogs"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.NotificationHubs/namespaces/notificationHubs"} # Support Namespace only
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.OperationsManagement/solutions"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Portal/dashboards"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.SaaS/resources"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Scheduler/jobcollections"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Security/iotSecuritySolutions"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Sql/servers"} # Support Database only
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Sql/servers/jobAgents"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Sql/virtualClusters"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.SqlVirtualMachine/SqlVirtualMachines"} # Configure at Virtual Machine
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.StorageSync/storageSyncServices"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.visualstudio/account"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Web/connectionGateways"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Web/certificates"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Web/connections"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Web/staticSites"}
@@ -118,7 +132,7 @@ foreach ($Subscription in $Global:Subscriptions) {
     $CurrentItem++
 
     # Get all Azure Resources
-    $TempList = Get-AzResource 
+    $TempList = Get-AzResource | ? {$_.ResourceGroupName -notlike "databricks-rg*"}
 
     # Filtering 
     $TempList = Clear-UnsupportedResourceType -AzResources $TempList
@@ -192,7 +206,7 @@ foreach ($item in ($SettingStatus | group EnabledDiagnostic, ResourceType | sele
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $ResourceTotal
     $DiagnosticSettingSummary += $obj
 }
-$DiagnosticSettingSummary = $DiagnosticSettingSummary | sort "Resource Type"
+$DiagnosticSettingSummary = $DiagnosticSettingSummary | sort ResourceType
 
 # Export to Excel File
 $DiagnosticSettingSummary | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "DiagnosticSummary" -TableName "DiagnosticSummary" -TableStyle Medium16 -AutoSize -Append
