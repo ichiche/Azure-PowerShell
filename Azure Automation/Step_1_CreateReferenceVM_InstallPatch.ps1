@@ -5,7 +5,7 @@
     .NOTES
         AUTHOR: Isaac Cheng, Microsoft Customer Engineer
         EMAIL: chicheng@microsoft.com
-        LASTEDIT: Nov 2, 2021
+        LASTEDIT: Nov 18, 2021
 #>
 
 Param(
@@ -43,7 +43,7 @@ function Rename-Location {
 
 # Script Variable
 $connectionName = "AzureRunAsConnection"
-$VMSize = "Standard_D2s_v3"
+$VMSize = "Standard_D4s_v3"
 $DiskType = "StandardSSD_LRS"
 $osDiskSizeInGb = 200 # 160
 #$DataDisk0SizeInGb = 16 # 8
