@@ -165,7 +165,7 @@ try {
         $LinuxAdminAccountName = "user1906"
         $LinuxAdminAccountPassword = "lab@2015P@ssw0rd"
         $LinuxAdminCredential = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList $LinuxAdminAccountName, ($LinuxAdminAccountPassword | ConvertTo-SecureString -AsPlainText -Force)
-        $vm = Set-AzVMOperatingSystem -VM $vm -Linux -ComputerName $ReferenceVMName -Credential $LinuxAdminCredential -PatchMode AutomaticByPlatform
+        $vm = Set-AzVMOperatingSystem -VM $vm -Linux -ComputerName $ReferenceVMName -Credential $LinuxAdminCredential -PatchMode ImageDefault
     }
 
     # Network Interface
