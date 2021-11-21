@@ -87,13 +87,11 @@ foreach ($Subscription in $Global:Subscriptions) {
 
     foreach ($item in $ResourceGroups) {
         $TempList = Get-AzResource -ResourceGroupName $item.ResourceGroupName
+        $TempList = Clear-UnsupportedResourceType -AzResources $TempList
 
         if ($TempList -eq $null) {
             Write-Host ($item.ResourceGroupName + " is empty")
-        } elseif ($TempList.Count -lt 2) {
-            Write-Host ($item.ResourceGroupName + " has less than 2 items")
-        }
-        #$TempList = Clear-UnsupportedResourceType -AzResources $TempList
+        } 
     }
 
     #EndRegion Resource Group without Resource
