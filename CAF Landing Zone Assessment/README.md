@@ -52,23 +52,30 @@ Get the Azure Services with **Availability Zones** enabled in the subscription o
 - Azure Database for MySQL
 - Azure Database for PostgreSQL
 
+#### App Service
+
+- Zone Redundant is supported to be created by ARM template at this moment
+- Zone redundant status is shown on Azure Portal only
+- Az Module and Azure CLI are not able to retrieve the Zone redundant status
+- https://docs.microsoft.com/en-us/azure/app-service/how-to-zone-redundancy#how-to-deploy-a-zone-redundant-app-service
+
 #### Regions and Availability Zones in Azure
 
 - https://docs.microsoft.com/en-us/azure/availability-zones/az-overview#services-by-category
 
 ## Azure SQL
 
-### Limitation
+#### Limitation
 
-- Support to identify a Replica Database, not support to confirm whether a Database has enabled Geo-Replica
-- Support to identify a Database is added to Failover Group, not support to confirm the Server Role (Primary and Secondary)
+- Support to identify a Replica Database, but not support to confirm whether a Database has enabled Geo-Replica
+- Support to identify a Database is added to Failover Group, but not support to explicitly indicate Primary and Secondary of Failover Group
 
 ## Azure SQL Managed Instance
 
-### Limitation
+#### Limitation
 
 - Not support to query the Instance Pool
-- Not support to explicitly indicate Primary / Partner Managed Instance Name 
+- Support to identify a Database is added to Failover Group, but not support to explicitly indicate Primary and Secondary of Failover Group
 
 ## Redis Cache
 
@@ -79,18 +86,9 @@ Reference
 
 - https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-network-isolation
 
-## App Service
-
-### Limitation
-
-- Zone Redundant is supported to be created by ARM template at this moment
-- Zone redundant status is shown on Azure Portal only
-- Az Module and Azure CLI are not able to retrieve the Zone redundant status
-- https://docs.microsoft.com/en-us/azure/app-service/how-to-zone-redundancy#how-to-deploy-a-zone-redundant-app-service
-
 ## Virtual Machine
 
-### Limitation
+#### Limitation
 
 For verifying the status of **Region Disaster Recovery** and **Zone to Zone Disaster Recovery**
 
@@ -101,8 +99,15 @@ For verifying the status of **Region Disaster Recovery** and **Zone to Zone Disa
 
 ## Azure Backup
 
-### Limitation
+#### Limitation
 
 - Support to query the existing Azure VM only
    - Not support to detect a deleted VM but backup copy exist in a recovery service vault
 - RunAs account with read only permission is capable to retrieve Azure File Share Backup Copy by running Get-AzRecoveryServicesBackupProtectionPolicy, but unable to list Azure File Share of all storage account without access key, thus not able to list the Azure File Share with/without backup enabled
+
+## Resource Type
+
+| Azure Services | Resource Type | Is Hidden Resource | Support Tagging | 
+| - | - | - | - | 
+| Availability Test | microsoft.insights/webtests | No | Yes |
+| Application Insights | microsoft.insights/components | No | Yes |
