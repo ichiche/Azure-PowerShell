@@ -344,3 +344,4 @@ if ($Global:SQLBackupStatus.Count -ne 0) {
     # Export to Excel File
     $Global:SQLBackupStatusSummary | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "ResourceNotFound" -TableName "ResourceNotFound" -TableStyle Light11 -AutoSize -Append
 }
+#EndRegion Export
