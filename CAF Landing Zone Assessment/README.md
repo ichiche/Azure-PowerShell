@@ -104,10 +104,20 @@ For verifying the status of **Region Disaster Recovery** and **Zone to Zone Disa
 - Support to query the existing Azure VM only
    - Not support to detect a deleted VM but backup copy exist in a recovery service vault
 - RunAs account with read only permission is capable to retrieve Azure File Share Backup Copy by running Get-AzRecoveryServicesBackupProtectionPolicy, but unable to list Azure File Share of all storage account without access key, thus not able to list the Azure File Share with/without backup enabled
+- Clarify the backup status SQL Server in Azure VM replied on Resource Type **Microsoft.SqlVirtualMachine/SqlVirtualMachines**
+   - Azure VM Agent has to function proper in order to reflect whether SQL Server is installed on Azure VM 
+   - Support to query the Databases that enable backup, not support to query the Databases that has not enable backup
 
 ## Resource Type
 
 | Azure Services | Resource Type | Is Hidden Resource | Support Tagging | 
 | - | - | - | - | 
 | Availability Test | microsoft.insights/webtests | No | Yes |
+| API Connection | Microsoft.Web/connections | No | Yes |
 | Application Insights | microsoft.insights/components | No | Yes |
+| Data collection Rule | microsoft.Insights/dataCollectionRules | No | Yes |
+| Azure Workbook | microsoft.insights/workbooks | No | Yes |
+| Azure Lab Account | Microsoft.LabServices/labaccounts | No | Yes |
+| Data Share | Microsoft.DataShare/accounts | No | Yes |
+| Managed Identity | Microsoft.ManagedIdentity/userAssignedIdentities | No | Yes |
+| On-premises Data Gateway | Microsoft.Web/connectionGateways | No | Yes |
