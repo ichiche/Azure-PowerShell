@@ -64,20 +64,21 @@ try {
     Connect-AzAccount -ApplicationId $ApplicationId -CertificateThumbprint $CertificateThumbprint -Tenant $TenantId -ServicePrincipal
     Set-AzContext -SubscriptionId $SubscriptionId
 
+    # Start up Reference VM if necessary
+    $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Status
+    $PowerStatus = $vm.Statuses | ? {$_.Code -like "PowerState*"} | select -ExpandProperty Code
+
+    if ($PowerStatus -ne "PowerState/running") {
+        Write-Output "`nStarting up Reference VM" 
+        Start-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Confirm:$false
+        
+        # Wait for a certain time to ensure Guest OS has completed the start up process
+        Start-Sleep -Seconds 180
+        Write-Output "`nReference VM is running now" 
+    }
+
     # Generalize Windows Reference VM
     if ($OSVersion -like "WS*") {
-        # Start up Reference VM if necessary
-        $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Status
-        $PowerStatus = $vm.Statuses | ? {$_.Code -like "PowerState*"} | select -ExpandProperty Code
-
-        if ($PowerStatus -ne "PowerState/running") {
-            Write-Output "`nStarting up Reference VM" 
-            Start-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Confirm:$false
-            
-            # Wait for a certain time to ensure Guest OS has completed the start up process
-            Start-Sleep -Seconds 180
-        }
-
          # Prepare Script
         "C:\Windows\System32\SysPrep\sysprep.exe /generalize /oobe /shutdown /mode:vm /quiet" | Out-File .\Sysprep.ps1 -Force -Confirm:$false
 
