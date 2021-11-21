@@ -38,9 +38,12 @@ function Clear-UnsupportedResourceType {
         $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/networkWatchers/connectionMonitors"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.network/networkWatchers/flowLogs"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.network/privatednszones/virtualnetworklinks"}
+        $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/virtualHubs"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.offazure/ImportSites"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.OffAzure/MasterSites"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.OffAzure/VMwareSites"}
+        $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.security/automations"}
+        $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Security/iotSecuritySolutions"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Sql/managedInstances/databases"} # Only Instance support Tagging
         $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Sql/virtualClusters"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.visualstudio/account"}
