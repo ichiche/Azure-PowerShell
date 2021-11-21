@@ -28,18 +28,24 @@ function Clear-UnsupportedResourceType {
         $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.alertsmanagement/smartdetectoralertrules"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.compute/virtualmachines/extensions"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.devtestlab/schedules"}
+        $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.MarketplaceApps/classicDevServices"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/actiongroups"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/activityLogAlerts"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/autoscalesettings"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/metricalerts"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/scheduledqueryrules"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.network/networkintentpolicies"}
+        $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/networkWatchers/connectionMonitors"}
+        $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.network/networkWatchers/flowLogs"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.network/privatednszones/virtualnetworklinks"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.offazure/ImportSites"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.OffAzure/MasterSites"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.OffAzure/VMwareSites"}
+        $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Sql/managedInstances/databases"} # Only Instance support Tagging
+        $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Sql/virtualClusters"}
+        $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.visualstudio/account"}
         $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.web/certificates"}
-        $AzResources = $AzResources | ? {$_.ResourceType -ne ""}
+        $AzResources = $AzResources | ? {$_.ResourceType -notlike "*/webhooks"}
 
         $FilteredAzResources = @()
         foreach ($item in $AzResources) {
@@ -84,9 +90,7 @@ foreach ($Subscription in $Global:Subscriptions) {
 
         if ($TempList -eq $null) {
             Write-Host ($item.ResourceGroupName + " is empty")
-        }
-
-        if ($TempList.Count -lt 2) {
+        } elseif ($TempList.Count -lt 2) {
             Write-Host ($item.ResourceGroupName + " has less than 2 items")
         }
         #$TempList = Clear-UnsupportedResourceType -AzResources $TempList
