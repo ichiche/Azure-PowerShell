@@ -47,11 +47,6 @@ Get the Azure Services with **Availability Zones** enabled in the subscription o
 - Azure SQL Database
 - Azure SQL Managed Instance
 
-**To be updated**
-- Azure Cosmos DB
-- Azure Database for MySQL
-- Azure Database for PostgreSQL
-
 #### App Service
 
 - Zone Redundant is supported to be created by ARM template at this moment
@@ -102,13 +97,14 @@ For verifying the status of **Region Disaster Recovery** and **Zone to Zone Disa
 #### Limitation
 
 - Support to query the existing Azure VM only
-   - Not support to detect a deleted VM but backup copy exist in a recovery service vault
-- RunAs account with read only permission is capable to retrieve Azure File Share Backup Copy by running Get-AzRecoveryServicesBackupProtectionPolicy, but unable to list Azure File Share of all storage account without access key, thus not able to list the Azure File Share with/without backup enabled
+   - Not support to detect a deleted VM but backup copy exist in a Recovery Service Vault
+- Not Support to list the Azure File Share with/without backup enabled
+   - Although RunAs account with read only permission is capable to retrieve Azure File Share Backup Copy by running Get-AzRecoveryServicesBackupProtectionPolicy, it is not able to list Azure File Share of all storage account without access key or using read only access account
 - Clarify the backup status SQL Server in Azure VM replied on Resource Type **Microsoft.SqlVirtualMachine/SqlVirtualMachines**
-   - Azure VM Agent has to function proper in order to reflect whether SQL Server is installed on Azure VM 
+   - Azure VM Agent has to function properly in order to reflect whether SQL Server is installed on Azure VM 
    - Support to query the Databases that enable backup, not support to query the Databases that has not enable backup
 
-## Resource Type
+## Resource Type Matrix
 
 | Azure Services | Resource Type | Is Hidden Resource | Support Tagging | 
 | - | - | - | - | 
@@ -121,3 +117,9 @@ For verifying the status of **Region Disaster Recovery** and **Zone to Zone Disa
 | Data Share | Microsoft.DataShare/accounts | No | Yes |
 | Managed Identity | Microsoft.ManagedIdentity/userAssignedIdentities | No | Yes |
 | On-premises Data Gateway | Microsoft.Web/connectionGateways | No | Yes |
+| App Service Environment | Microsoft.Web/hostingEnvironments | No | Yes |
+| Azure DevOps Organization | microsoft.visualstudio/account | No | No | 
+| SQL Managed Instance Database | Microsoft.Sql/managedInstances/databases | No | No | 
+| SQL Virtual Cluster | Microsoft.Sql/virtualClusters | No | No | 
+| Service Endpoint Policy | Microsoft.Network/serviceEndpointPolicies | **Yes** | **Yes** | 
+
