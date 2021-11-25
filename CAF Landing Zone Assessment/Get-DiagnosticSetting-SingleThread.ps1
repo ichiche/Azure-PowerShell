@@ -24,8 +24,8 @@ function Clear-UnsupportedResourceType {
         $AzResources
     )
 
-    $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.alertsmanagement/smartDetectorAlertRules"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.AlertsManagement/actionRules"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.alertsmanagement/smartDetectorAlertRules"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Automation/automationAccounts/runbooks"} # Support Automation Accounts only
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.AzureActiveDirectory/b2cDirectories"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.cdn/profiles"} # Support Endpoint only
@@ -95,6 +95,8 @@ function Clear-UnsupportedResourceType {
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.DataMigration/services/projects"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Migrate/assessmentProjects"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Migrate/migrateprojects"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.offazure/ImportSites"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.OffAzure/MasterSites"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.OffAzure/VMwareSites"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.ResourceGraph/queries"}
     $AzResources = $AzResources | ? {$_.ResourceType -notlike "*Classic*"}
