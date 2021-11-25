@@ -5,7 +5,7 @@
     .NOTES
         AUTHOR: Isaac Cheng, Microsoft Customer Engineer
         EMAIL: chicheng@microsoft.com
-        LASTEDIT: Nov 18, 2021
+        LASTEDIT: Nov 25, 2021
 #>
 
 Param(
@@ -66,13 +66,13 @@ switch ($OSVersion) {
         $GalleryImageDefinitionName = "RHEL7"
         $ReferenceVMRG = "ImageWorkingItem"
         $ReferenceVMName = "RHEL7-RefVM"
-        $LicenseType = "RHEL_BYOS"
+        #$LicenseType = "RHEL_BYOS"
     }
     RHEL8 { 
         $GalleryImageDefinitionName = "RHEL8"
         $ReferenceVMRG = "ImageWorkingItem"
         $ReferenceVMName = "RHEL8-RefVM"
-        $LicenseType = "RHEL_BYOS"
+        #$LicenseType = "RHEL_BYOS"
     }
 }
 
@@ -101,6 +101,7 @@ try {
     Write-Output ("`nConnecting to Azure Subscription ID: " + $SubscriptionId)
     Connect-AzAccount -ApplicationId $ApplicationId -CertificateThumbprint $CertificateThumbprint -Tenant $TenantId -ServicePrincipal
     Set-AzContext -SubscriptionId $SubscriptionId
+    Write-Output ("`nOS Version: $OSVersion")
 
     # Get the Latest Location Name and Display Name
     $Global:NameReference = Get-AzLocation
@@ -201,12 +202,13 @@ try {
 
     # Prepare Script for Windows Update
     if ($OSVersion -like "WS*") {
+        Write-Output ("`nRunning Windows Update")
         "Import-Module PSWindowsUpdate" | Out-File .\InstallWindowUpdate.ps1 -Force -Confirm:$false
         "Install-WindowsUpdate -AcceptAll -AutoReboot -Silent" | Out-File .\InstallWindowUpdate.ps1 -Append -Confirm:$false
         
         # Run Windows Update and restart computer after patch installation
         $error.Clear()
-        #Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunPowerShellScript" -ScriptPath InstallWindowUpdate.ps1
+        Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunPowerShellScript" -ScriptPath InstallWindowUpdate.ps1
         Start-Sleep -Seconds 5
 
         if ($error.Count -eq 0) {
@@ -217,9 +219,12 @@ try {
     } else {
         # Prepare Script for yum update 
         Write-Output ("`nRunning yum update")
-        "yum update -y" | Out-File .\yumUpdate.ps1 -Force -Confirm:$false
+        "yum clean all" | Out-File .\yumUpdate.ps1 -Force -Confirm:$false
+        "yum update -y" | Out-File .\yumUpdate.ps1 -Append -Confirm:$false
 
         $ReturnData = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunShellScript" -ScriptPath yumUpdate.ps1
+        Write-Output ("`nyum update completed and verifying the update result")
+        Start-Sleep -Seconds 10
         [string]$CommandResult1 = $ReturnData.Value.Message
 
         if ($CommandResult1 -like "*Complete!*") {
@@ -227,7 +232,7 @@ try {
             $ReturnData = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunShellScript" -ScriptPath yumUpdate.ps1
             [string]$CommandResult2 = $ReturnData.Value.Message
             
-            if($CommandResult2 -like "*No packages marked for update*") {
+            if($CommandResult2 -like "*No packages marked for update*" -or $CommandResult2 -like "*Nothing to do*") {
                 Write-Output "yum update completed successfully"
             } else {
                 Write-Error $CommandResult2

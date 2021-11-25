@@ -5,7 +5,7 @@
     .NOTES
         AUTHOR: Isaac Cheng, Microsoft Customer Engineer
         EMAIL: chicheng@microsoft.com
-        LASTEDIT: Nov 2, 2021
+        LASTEDIT: Nov 25, 2021
 #>
 
 Param(
@@ -63,6 +63,7 @@ try {
     Write-Output ("`nConnecting to Azure Subscription ID: " + $SubscriptionId)  
     Connect-AzAccount -ApplicationId $ApplicationId -CertificateThumbprint $CertificateThumbprint -Tenant $TenantId -ServicePrincipal
     Set-AzContext -SubscriptionId $SubscriptionId
+    Write-Output ("`nOS Version: $OSVersion")
 
     # Start up Reference VM if necessary
     $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Status
@@ -97,30 +98,39 @@ try {
         # Deallocate Reference VM
         Write-Output "`nDeallocating Reference VM" 
         Stop-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Force -Confirm:$false
-        Start-Sleep -Seconds 10
+        Start-Sleep -Seconds 20
         Write-Output "`nReference VM is deallocated" 
     } else {
         # Recommend to manually SSH to generalize RHEL Reference VM
         Write-Output "`nRun 'sudo waagent -deprovision -force' to generalize Linux VM" 
-        Write-Output "`nRun 'sudo systemctl poweroff --force' to power off Linux VM" 
-        "sudo waagent -deprovision -force" | Out-File .\GeneralizeLinux.ps1 -Force -Confirm:$false
+        "sudo waagent -deprovision -force;sudo shutdown -h now" | Out-File .\GeneralizeLinux.ps1 -Force -Confirm:$false
+        #Write-Output "`nRun 'sudo systemctl poweroff --force' to power off Linux VM" 
+        #"sudo waagent -deprovision -force" | Out-File .\GeneralizeLinux.ps1 -Force -Confirm:$false
         #"sudo systemctl poweroff --force"| Out-File .\GeneralizeLinux.ps1 -Append -Confirm:$false
-        "sudo shutdown -h now" | Out-File .\GeneralizeLinux.ps1 -Append -Confirm:$false
+        #"sudo shutdown -h now" | Out-File .\GeneralizeLinux.ps1 -Append -Confirm:$false
         $ReturnData = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunShellScript" -ScriptPath GeneralizeLinux.ps1 -AsJob
-        [string]$CommandResult1 = $ReturnData.Value.Message
+        #[string]$CommandResult1 = $ReturnData.Value.Message
+        [string]$CommandResult1 = $ReturnData.Name
         Write-Output $CommandResult1
         Start-Sleep -Seconds 60
 
         # Deallocate Reference VM
         $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Status
-        $PowerStatus = $vm.Statuses | ? {$_.Code -like "PowerState*"} | select -ExpandProperty Code
+        $ProvisioningState = $vm.Statuses | ? {$_.Code -eq "ProvisioningState/updating"} | select -ExpandProperty Code
 
-        if ($PowerStatus -ne "PowerState/deallocated") {
-            # Deallocate Reference VM
-            Write-Output "`nDeallocating Reference VM" 
-            Stop-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Force -Confirm:$false
-            Start-Sleep -Seconds 10
-            Write-Output "`nReference VM is deallocated" 
+        if ($ProvisioningState -ne $null) {
+            Write-Output "`nProvisioningState is updating" 
+            $PowerStatus = $vm.Statuses | ? {$_.Code -like "PowerState*"} | select -ExpandProperty Code
+
+            if ($PowerStatus -ne "PowerState/deallocated") {
+                # Deallocate Reference VM
+                Write-Output "`nDeallocating Reference VM" 
+                Stop-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Force -Confirm:$false
+                Start-Sleep -Seconds 20
+                Write-Output "`nReference VM is deallocated" 
+            }
+        } else {
+            Write-Output "`nDeprovision Failed" 
         }
     }
 
@@ -145,12 +155,12 @@ try {
         $ReplicaCount = 1
 
         # Create Gallery Image Version sourcing from VM
-        Write-Output "`nCreating Gallery Image Version" 
+        Write-Output "`nCreating Gallery Image Version $GalleryImageVersionName" 
         $SetAzVm = Set-AzVm -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Generalized
         $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName
         $SourceImageId = $vm.Id
         New-AzGalleryImageVersion -ResourceGroupName $GalleryRG -GalleryName $GalleryName -GalleryImageDefinitionName $GalleryImageDefinitionName -Name $GalleryImageVersionName -Location $GalleryImageDefinition.Location -TargetRegion $targetRegions -ReplicaCount $ReplicaCount -StorageAccountType $StorageAccountType -SourceImageId $SourceImageId
-        Write-Output "`nGallery Image Version is created" 
+        Write-Output "`nGallery Image Version $GalleryImageVersionName is created in $GalleryImageDefinitionName" 
     }
 } catch {
     if (!$servicePrincipalConnection)
