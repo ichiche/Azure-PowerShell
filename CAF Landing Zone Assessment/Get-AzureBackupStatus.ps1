@@ -145,9 +145,17 @@ foreach ($Subscription in $Global:Subscriptions) {
 
             # Get Backup Healthiness
             $ProtectionStatus = $BackupItemSqlVM | ? {$_.SourceResourceId -eq $ResourceId} | select -ExpandProperty ProtectionStatus
+            if ($ProtectionStatus.Count -gt 1) {
+                $ProtectionStatus = ($ProtectionStatus -join ", ")
+            } 
 
             # Backup Database
             $Database = $BackupItemSqlVM | ? {$_.SourceResourceId -eq $ResourceId} | select -ExpandProperty FriendlyName
+            if ($Database.Count -gt 1) {
+                $DatabaseFriendlyName = ($Database -join ", ")
+            } else {
+                $DatabaseFriendlyName = $Database
+            }
 
             $obj = New-Object -TypeName PSobject
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value $Subscription.Name
@@ -157,8 +165,8 @@ foreach ($Subscription in $Global:Subscriptions) {
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "SQL Server in Azure VM"
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledBackup" -Value "Y"
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ProtectionStatus" -Value ($ProtectionStatus -join ", ")
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Database" -Value ($Database -join ", ")
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "ProtectionStatus" -Value $ProtectionStatus
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Database" -Value $DatabaseFriendlyName
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "VaultName" -Value $VaultName
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "VaultId" -Value $VaultId
             $Global:BackupStatus += $obj
