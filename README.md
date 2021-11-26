@@ -64,6 +64,20 @@ Get-AzMetric -ResourceId $ResourceId -MetricName 'storage' -WarningAction Silent
 
 Refer to README.md in corresponding folder for instruction.
 
+# Azure Automation
+
+### Golden Image for Windows and Linux
+
+| Id | File Name | Folder | Description |
+| - | - | - | - |
+| 1 |  | Golden Image |  |
+| 2 |  | Golden Image |  |
+| 3 |  | Golden Image |  |
+| 4 |  | Golden Image |  |
+
+#### Required PowerShell Module on Azure VM (Windows)
+https://www.powershellgallery.com/packages/PSWindowsUpdate/2.2.0.2
+
 # General Script List
 
 | Id | File Name | Folder | Description |
@@ -72,6 +86,7 @@ Refer to README.md in corresponding folder for instruction.
 | 2 | Encrypt-Password-ReadHost.ps1 | Connection | Enter the password at PowerShell session for Converting to **SecureString** and export to text file |
 | 3 | Connect-To-Cloud.ps1 | Connection | Login Azure with pre-encrypted credential using PowerShell  |
 | 4 | Get-NsgRule.ps1 | Security | Get Custom Rule and Association of **Network Security Group (NSG)** in the subscription |
+|  | Create-Bastion-NsgRule.ps1 | Security |  |
 | 5 | Create-Image-From-Disk.ps1 | Virtual Machine | Create Azure VM Image from **Managed Disk** |
 | 6 | Set-Static-Private-IpAddress.ps1 | Set the allocation type Private IP of Virtual Machine in the subscription to Static |
 | 7 | Get-ASR-ReplicationProtectedItem.ps1 | Recovery Service | Get the Site Recovery Replication Protected Items of a Recovery Service Vault |
