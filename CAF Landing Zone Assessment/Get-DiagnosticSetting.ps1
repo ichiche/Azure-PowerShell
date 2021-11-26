@@ -25,8 +25,8 @@ function Clear-UnsupportedResourceType {
         $AzResources
     )
 
-    $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.alertsmanagement/smartDetectorAlertRules"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.AlertsManagement/actionRules"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.alertsmanagement/smartDetectorAlertRules"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Automation/automationAccounts/runbooks"} # Support Automation Accounts only
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.AzureActiveDirectory/b2cDirectories"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.cdn/profiles"} # Support Endpoint only
@@ -45,6 +45,7 @@ function Clear-UnsupportedResourceType {
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.ContainerRegistry/registries/webhooks"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.DataCatalog/catalogs"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.DevTestLab/schedules"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.MarketplaceApps/classicDevServices"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/actiongroups"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/activityLogAlerts"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.insights/autoscalesettings"}
@@ -59,27 +60,36 @@ function Clear-UnsupportedResourceType {
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Logic/integrationServiceEnvironments/managedApis"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.ManagedIdentity/userAssignedIdentities"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Migrate/moveCollections"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/applicationGatewayWebApplicationFirewallPolicies"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/frontdoorWebApplicationFirewallPolicies"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/applicationSecurityGroups"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/connections"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/ddosProtectionPlans"}
-    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/firewallPolicies"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/firewallPolicies"} # Firewall Instance support Diagnostic settings
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/ipGroups"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/localNetworkGateways"}
-    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/serviceEndpointPolicies"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/serviceEndpointPolicies"} # Hidden Item, not support Diagnostic settings, but support Tagging
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/networkIntentPolicies"}
-    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.network/networkWatchers/flowLogs"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/networkWatchers"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/networkWatchers/connectionMonitors"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.network/networkWatchers/flowLogs"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/privateDnsZones"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/privateDnsZones/virtualNetworkLinks"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/privateEndpoints"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/publicIPPrefixes"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/routeFilters"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/routeTables"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/virtualHubs"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/virtualWans"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.NotificationHubs/namespaces/notificationHubs"} # Support Namespace only
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.OperationsManagement/solutions"}
-    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Portal/dashboards"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Portal/dashboards"} # Shared Dashboard not support
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.ResourceGraph/queries"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.SaaS/resources"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Scheduler/jobcollections"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.security/automations"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Security/iotSecuritySolutions"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.StreamAnalytics/clusters"} # Microsoft.StreamAnalytics/streamingjobs support
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Sql/servers"} # Support Database only
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Sql/servers/jobAgents"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Sql/virtualClusters"}
@@ -96,9 +106,11 @@ function Clear-UnsupportedResourceType {
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.DataMigration/services/projects"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Migrate/assessmentProjects"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Migrate/migrateprojects"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.offazure/ImportSites"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.OffAzure/MasterSites"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.OffAzure/VMwareSites"}
-    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.ResourceGraph/queries"}
     $AzResources = $AzResources | ? {$_.ResourceType -notlike "*Classic*"}
+    $AzResources = $AzResources | ? {$_.ResourceType -notlike "*/webhooks"}
 
     $FilteredAzResources = @()
     foreach ($item in $AzResources) {
