@@ -5,15 +5,15 @@
     .NOTES
         AUTHOR: Isaac Cheng, Microsoft Customer Engineer
         EMAIL: chicheng@microsoft.com
-        LASTEDIT: Nov 16, 2021
+        LASTEDIT: Nov 27, 2021
 #>
 
 Param(
     [Parameter(Mandatory=$false)]
     [string]$SubscriptionId = '5ba60130-b60b-4c4b-8614-06a0c6723d9b',
-    [Parameter(Mandatory=$false)]
+    [Parameter(Mandatory)]
     [ValidateSet("WS2016","WS2019","RHEL7","RHEL8")]
-    [string]$OSVersion = 'WS2016'
+    [string]$OSVersion = 'WS2016 or WS2019 or RHEL7 or RHEL8'
 )
 
 # Script Variable
@@ -49,6 +49,7 @@ try {
     Write-Output ("`nConnecting to Azure Subscription ID: " + $SubscriptionId)
     Connect-AzAccount -ApplicationId $ApplicationId -CertificateThumbprint $CertificateThumbprint -Tenant $TenantId -ServicePrincipal
     Set-AzContext -SubscriptionId $SubscriptionId
+    Write-Output ("`nOS Version: $OSVersion")
 
     # Start up Reference VM if necessary
     $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Status
@@ -65,7 +66,7 @@ try {
     
     # Verification
     if ($OSVersion -like "WS*") {
-        # Prepare Script
+        # Prepare Script for Windows Update
         '$WindowsUpdates = Get-WindowsUpdate | ? {$_.IsInstalled -eq $false}' | Out-File .\CheckWindowUpdate.ps1 -Force -Confirm:$false
         'if ($WindowsUpdates -ne $null) { Write-Output "Following Windows Update is not installed yet:`n";' | Out-File .\CheckWindowUpdate.ps1 -Append -Confirm:$false
             'foreach ($WindowsUpdate in $WindowsUpdates) {Write-Output $WindowsUpdate.Title}' | Out-File .\CheckWindowUpdate.ps1 -Append -Confirm:$false
@@ -81,6 +82,7 @@ try {
                 $IsWindowsUpdateInstalled = $false
             } elseif ($Data.Value.Message -like "*Already installed*") {
                 $IsWindowsUpdateInstalled = $true
+                Write-Output "`nWindows Update Completed" 
             }
         }
 
@@ -100,25 +102,24 @@ try {
             }
         }
     } else {
-        # yum update
+        # Prepare Script for yum update
         Write-Output ("`nRunning yum update")
         "yum update -y" | Out-File .\yumUpdate.ps1 -Force -Confirm:$false
 
         $ReturnData = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunShellScript" -ScriptPath yumUpdate.ps1
         [string]$CommandResult1 = $ReturnData.Value.Message
 
-        if ($CommandResult1 -like "*Complete!*") {
-            Start-Sleep -Seconds 30
-            $ReturnData = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunShellScript" -ScriptPath yumUpdate.ps1
-            [string]$CommandResult2 = $ReturnData.Value.Message
-            
-            if($CommandResult2 -like "*No packages marked for update*") {
-                Write-Output "yum update completed successfully"
-            } else {
-                Write-Error $CommandResult2
-            }
+        if ($CommandResult1 -like "*No packages marked for update*" -or $CommandResult1 -like "*Nothing to do*") {
+            Write-Output "yum update completed successfully"
         } else {
             Write-Error $CommandResult1
+            Write-Output "Re-run yum update"
+            Start-Sleep -Seconds 60
+            $ReturnData = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunShellScript" -ScriptPath yumUpdate.ps1
+            [string]$CommandResult2 = $ReturnData.Value.Message
+            if ($CommandResult2 -like "*Complete!*") {
+                Write-Output "Re-run yum update completed successfully"
+            }
         }
     }
 } catch {
