@@ -5,7 +5,7 @@
     .NOTES
         AUTHOR: Isaac Cheng, Microsoft Customer Engineer
         EMAIL: chicheng@microsoft.com
-        LASTEDIT: Nov 27, 2021
+        LASTEDIT: Nov 28, 2021
 #>
 
 Param(
@@ -98,7 +98,7 @@ try {
             if ($error.Count -eq 0) {
                 Write-Output ("`nHave triggered to install Windows Update using PSWindowsUpdate without error")
             } else {
-                Write-Error ("`nError: PSWindowsUpdate encounter issue")
+                Write-Error ("`nError Occur while running PSWindowsUpdate")
             }
         }
     } else {
@@ -119,12 +119,15 @@ try {
             [string]$CommandResult2 = $ReturnData.Value.Message
             if ($CommandResult2 -like "*Complete!*") {
                 Write-Output "Re-run yum update completed successfully"
+            } else {
+                Write-Error $CommandResult2
             }
         }
     }
 } catch {
     if (!$servicePrincipalConnection) {
-        $ErrorMessage = "Connection $connectionName not found."
+        $ErrorMessage = "Connection $connectionName not found"
+        Write-Error $ErrorMessage
         throw $ErrorMessage
     } else {
         Write-Error -Message $_.Exception
