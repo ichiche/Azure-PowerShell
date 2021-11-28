@@ -5,7 +5,7 @@
     .NOTES
         AUTHOR: Isaac Cheng, Microsoft Customer Engineer
         EMAIL: chicheng@microsoft.com
-        LASTEDIT: Nov 2, 2021
+        LASTEDIT: Nov 28, 2021
 #>
 
 Param(
@@ -59,10 +59,18 @@ try {
             }
         }
     }
+
+    # End
+    if ($error.Count -eq 0) {
+        Write-Output ("Obsolete Image Versions are deleted successfully")
+    } else {
+        Write-Error ("Error Occur while deleting Obsolete Image Version")
+    }
 } catch {
     if (!$servicePrincipalConnection)
     {
-        $ErrorMessage = "Connection $connectionName not found."
+        $ErrorMessage = "Connection $connectionName not found"
+        Write-Error $ErrorMessage
         throw $ErrorMessage
     } else{
         Write-Error -Message $_.Exception
