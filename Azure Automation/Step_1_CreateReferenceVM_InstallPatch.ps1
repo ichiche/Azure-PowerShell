@@ -5,7 +5,7 @@
     .NOTES
         AUTHOR: Isaac Cheng, Microsoft Customer Engineer
         EMAIL: chicheng@microsoft.com
-        LASTEDIT: Nov 25, 2021
+        LASTEDIT: Nov 28, 2021
 #>
 
 Param(
@@ -188,62 +188,74 @@ try {
         New-AzVM -VM $vm -ResourceGroupName $ReferenceVMRG -Location $Location
     }
     Start-Sleep -Seconds 5
-    Write-Output "`nReference VM is created" 
 
-    # Wait for a certain time to ensure Guest OS has completed the initial setup process
-    [int]$minute = 30
-    while ($minute -ne 0) {
-        if ($minute % 10 -eq 0 -or $minute -le 5 ) {
-            Write-Output ("`n" + $minute + " minutes remaining before install Update")
-        }
-        Start-Sleep -Seconds 60
-        $minute--
+    # Check
+    if ($error.Count -eq 0) {
+        Write-Output "`nReference VM is created"
+        $IsContinue = $true
+    } else {
+        Write-Error ("Error Occur while creating Reference VM")
+        $IsContinue = $false
     }
 
-    # Prepare Script for Windows Update
-    if ($OSVersion -like "WS*") {
-        Write-Output ("`nRunning Windows Update")
-        "Import-Module PSWindowsUpdate" | Out-File .\InstallWindowUpdate.ps1 -Force -Confirm:$false
-        "Install-WindowsUpdate -AcceptAll -AutoReboot -Silent" | Out-File .\InstallWindowUpdate.ps1 -Append -Confirm:$false
-        
-        # Run Windows Update and restart computer after patch installation
-        $error.Clear()
-        Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunPowerShellScript" -ScriptPath InstallWindowUpdate.ps1
-        Start-Sleep -Seconds 5
-
-        if ($error.Count -eq 0) {
-            Write-Output ("`nHave triggered to install Windows Update using PSWindowsUpdate without error")
-        } else {
-            Write-Error ("`nError: PSWindowsUpdate encounter issue")
-        }   
-    } else {
-        # Prepare Script for yum update 
-        Write-Output ("`nRunning yum update")
-        "yum clean all" | Out-File .\yumUpdate.ps1 -Force -Confirm:$false
-        "yum update -y" | Out-File .\yumUpdate.ps1 -Append -Confirm:$false
-
-        $ReturnData = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunShellScript" -ScriptPath yumUpdate.ps1
-        Write-Output ("`nyum update completed and verifying the update result")
-        Start-Sleep -Seconds 10
-        [string]$CommandResult1 = $ReturnData.Value.Message
-
-        if ($CommandResult1 -like "*Complete!*") {
-            Start-Sleep -Seconds 30
-            $ReturnData = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunShellScript" -ScriptPath yumUpdate.ps1
-            [string]$CommandResult2 = $ReturnData.Value.Message
-            
-            if($CommandResult2 -like "*No packages marked for update*" -or $CommandResult2 -like "*Nothing to do*") {
-                Write-Output "yum update completed successfully"
-            } else {
-                Write-Error $CommandResult2
+    # Install Patch
+    if ($IsContinue) {
+        # Wait for a certain time to ensure Guest OS has completed the initial setup process
+        [int]$minute = 30
+        while ($minute -ne 0) {
+            if ($minute % 10 -eq 0 -or $minute -le 5 ) {
+                Write-Output ("`n" + $minute + " minutes remaining before install Update")
             }
+            Start-Sleep -Seconds 60
+            $minute--
+        }
+
+        # Prepare Script for Windows Update
+        if ($OSVersion -like "WS*") {
+            Write-Output ("`nRunning Windows Update")
+            "Import-Module PSWindowsUpdate" | Out-File .\InstallWindowUpdate.ps1 -Force -Confirm:$false
+            "Install-WindowsUpdate -AcceptAll -AutoReboot -Silent" | Out-File .\InstallWindowUpdate.ps1 -Append -Confirm:$false
+            
+            # Run Windows Update and restart computer after patch installation
+            $error.Clear()
+            Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunPowerShellScript" -ScriptPath InstallWindowUpdate.ps1
+            Start-Sleep -Seconds 5
+
+            if ($error.Count -eq 0) {
+                Write-Output ("`nHave triggered to install Windows Update using PSWindowsUpdate without error")
+            } else {
+                Write-Error ("`nError Occur while running PSWindowsUpdate")
+            }   
         } else {
-            Write-Error $CommandResult1
+            # Prepare Script for yum update 
+            Write-Output ("`nRunning yum update")
+            "yum clean all" | Out-File .\yumUpdate.ps1 -Force -Confirm:$false
+            "yum update -y" | Out-File .\yumUpdate.ps1 -Append -Confirm:$false
+
+            $ReturnData = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunShellScript" -ScriptPath yumUpdate.ps1
+            Write-Output ("`nyum update completed and verifying the update result")
+            Start-Sleep -Seconds 10
+            [string]$CommandResult1 = $ReturnData.Value.Message
+
+            if ($CommandResult1 -like "*Complete!*") {
+                Start-Sleep -Seconds 30
+                $ReturnData = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunShellScript" -ScriptPath yumUpdate.ps1
+                [string]$CommandResult2 = $ReturnData.Value.Message
+                
+                if($CommandResult2 -like "*No packages marked for update*" -or $CommandResult2 -like "*Nothing to do*") {
+                    Write-Output "yum update completed successfully"
+                } else {
+                    Write-Error $CommandResult2
+                }
+            } else {
+                Write-Error $CommandResult1
+            }
         }
     }
 } catch {
     if (!$servicePrincipalConnection) {
-        $ErrorMessage = "Connection $connectionName not found."
+        $ErrorMessage = "Connection $connectionName not found"
+        Write-Error $ErrorMessage
         throw $ErrorMessage
     } else {
         Write-Error -Message $_.Exception
