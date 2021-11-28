@@ -5,7 +5,7 @@
     .NOTES
         AUTHOR: Isaac Cheng, Microsoft Customer Engineer
         EMAIL: chicheng@microsoft.com
-        LASTEDIT: Nov 25, 2021
+        LASTEDIT: Nov 28, 2021
 #>
 
 Param(
@@ -89,7 +89,7 @@ try {
 
         # Waiting for Sysprep to shutdown Reference VM
         while ($PowerStatus -ne "PowerState/stopped") {
-            Start-Sleep -Seconds 60
+            Start-Sleep -Seconds 90
             $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Status
             $PowerStatus = $vm.Statuses | ? {$_.Code -like "PowerState*"} | select -ExpandProperty Code
         }
@@ -130,7 +130,7 @@ try {
                 Write-Output "`nReference VM is deallocated" 
             }
         } else {
-            Write-Output "`nDeprovision Failed" 
+            Write-Error ("`nError Occur while Deprovisioning RHEL Reference VM")
         }
     }
 
@@ -160,14 +160,19 @@ try {
         $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName
         $SourceImageId = $vm.Id
         New-AzGalleryImageVersion -ResourceGroupName $GalleryRG -GalleryName $GalleryName -GalleryImageDefinitionName $GalleryImageDefinitionName -Name $GalleryImageVersionName -Location $GalleryImageDefinition.Location -TargetRegion $targetRegions -ReplicaCount $ReplicaCount -StorageAccountType $StorageAccountType -SourceImageId $SourceImageId
-        Write-Output "`nGallery Image Version $GalleryImageVersionName is created in $GalleryImageDefinitionName" 
-    }
+        
+        if ($error.Count -eq 0) {
+            Write-Output "`nGallery Image Version $GalleryImageVersionName is created in $GalleryImageDefinitionName" 
+        } else {
+            Write-Error ("`nError Occur while creating Gallery Image Version")
+        }
+    } 
 } catch {
-    if (!$servicePrincipalConnection)
-    {
-        $ErrorMessage = "Connection $connectionName not found."
+    if (!$servicePrincipalConnection) {
+        $ErrorMessage = "Connection $connectionName not found"
+        Write-Error $ErrorMessage
         throw $ErrorMessage
-    } else{
+    } else {
         Write-Error -Message $_.Exception
         throw $_.Exception
     }
