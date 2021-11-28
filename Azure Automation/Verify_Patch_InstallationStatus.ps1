@@ -112,9 +112,8 @@ try {
         if ($CommandResult1 -like "*No packages marked for update*" -or $CommandResult1 -like "*Nothing to do*") {
             Write-Output "yum update completed successfully"
         } else {
-            Write-Error $CommandResult1
             Write-Output "Re-run yum update"
-            Start-Sleep -Seconds 60
+            Start-Sleep -Seconds 90
             $ReturnData = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunShellScript" -ScriptPath yumUpdate.ps1
             [string]$CommandResult2 = $ReturnData.Value.Message
             if ($CommandResult2 -like "*Complete!*") {
