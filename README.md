@@ -70,10 +70,10 @@ Refer to README.md in corresponding folder for instruction.
 
 | Id | File Name | Folder | Description |
 | - | - | - | - |
-| 1 |  | Golden Image |  |
-| 2 |  | Golden Image |  |
-| 3 |  | Golden Image |  |
-| 4 |  | Golden Image |  |
+| 1 | Step_1_CreateReferenceVM_InstallPatch.ps1 | Golden Image |  |
+| 2 | Step_2_Generalize_Capture_ReferenceVM.ps1 | Golden Image |  |
+| 3 | Verify_Patch_InstallationStatus.ps1 | Golden Image |  |
+| 4 | Delete_Obsolete_Image_Version.ps1 | Golden Image |  |
 
 #### Required PowerShell Module on Azure VM (Windows)
 https://www.powershellgallery.com/packages/PSWindowsUpdate/2.2.0.2
