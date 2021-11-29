@@ -13,11 +13,11 @@ $ErrorActionPreference = "Continue"
 $error.Clear()
 
 # Run-Script Configuration
-$GetAzureBackup = $false
-$GetSql_SqlMI_DB = $false
+$GetAzureBackup = $true
+$GetSql_SqlMI_DB = $true
 $GetDiagnosticSetting = $true
 $GetRedisNetworkIsolation = $true
-$GetAZoneEnabledService = $false
+$GetAZoneEnabledService = $true
 $GetClassicResource = $true
 
 function Update-RunScriptList {
