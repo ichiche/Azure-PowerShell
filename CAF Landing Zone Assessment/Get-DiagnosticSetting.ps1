@@ -31,6 +31,7 @@ function Clear-UnsupportedResourceType {
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.AzureActiveDirectory/b2cDirectories"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.cdn/profiles"} # Support Endpoint only
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/availabilitySets"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/cloudServices"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/disks"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/images"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/galleries"}
@@ -160,8 +161,13 @@ foreach ($Subscription in $Global:Subscriptions) {
     # Get Diagnostic Settings 
     if ($TempList.Count -lt 30) {
         foreach ($item in $TempList) {
-            Write-Host ("Resource: " + $item.ResourceName)
+            #Write-Host ("Resource: " + $item.ResourceName)
+            
+            $CurrentErrorCount = $error.Count 
             $TempDiagnosticSettings = Get-AzDiagnosticSetting -ResourceId $item.Id
+            if ($CurrentErrorCount -ne $error.Count) {
+                Write-Host ("`nProblematic Resource: " + $item.Id + "`nProblematic Resource Type: " + $item.ResourceType) -ForegroundColor Yellow
+            }
 
             if ($TempDiagnosticSettings -eq $null) {
                 $obj = New-Object -TypeName PSobject
@@ -242,10 +248,10 @@ foreach ($Subscription in $Global:Subscriptions) {
                 Start-Sleep -Milliseconds 300
                 #Write-Host ("Resource: " + $item.Name)
         
+                $CurrentErrorCount = $error.Count 
                 $TempDiagnosticSettings = Get-AzDiagnosticSetting -ResourceId $item.Id
-                if ($error.Count -gt 0) {
+                if ($CurrentErrorCount -ne $error.Count) {
                     Write-Host ("`nProblematic Resource: " + $item.Id + "`nProblematic Resource Type: " + $item.ResourceType) -ForegroundColor Yellow
-                    $error.Clear()
                 }
         
                 if ($TempDiagnosticSettings -eq $null) {
@@ -292,7 +298,7 @@ foreach ($Subscription in $Global:Subscriptions) {
             $CurrentExportPath = ($Global:ExcelOutputFolder + "DiagnosticSettingTempFile" + $_ + ".csv")
             $Global:DiagnosticSetting += Import-Csv -Path $CurrentExportPath
             Start-Sleep -Milliseconds 500
-            #Remove-Item -Path $CurrentExportPath -Force -Confirm:$false
+            Remove-Item -Path $CurrentExportPath -Force -Confirm:$false
         }
         #EndRegion Parallel Process
     }
