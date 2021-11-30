@@ -166,7 +166,7 @@ foreach ($Subscription in $Global:Subscriptions) {
             $CurrentErrorCount = $error.Count 
             $TempDiagnosticSettings = Get-AzDiagnosticSetting -ResourceId $item.Id
             if ($CurrentErrorCount -ne $error.Count) {
-                Write-Host ("`nProblematic Resource: " + $item.Id + "`nProblematic Resource Type: " + $item.ResourceType) -ForegroundColor Yellow
+                Write-Host ("`nProblematic Resource: " + $item.Id + "`n`nProblematic Resource Type: " + $item.ResourceType) -ForegroundColor Yellow
             }
 
             if ($TempDiagnosticSettings -eq $null) {
@@ -251,7 +251,7 @@ foreach ($Subscription in $Global:Subscriptions) {
                 $CurrentErrorCount = $error.Count 
                 $TempDiagnosticSettings = Get-AzDiagnosticSetting -ResourceId $item.Id
                 if ($CurrentErrorCount -ne $error.Count) {
-                    Write-Host ("`nProblematic Resource: " + $item.Id + "`nProblematic Resource Type: " + $item.ResourceType) -ForegroundColor Yellow
+                    Write-Host ("`nProblematic Resource: " + $item.Id + "`n`nProblematic Resource Type: " + $item.ResourceType) -ForegroundColor Yellow
                 }
         
                 if ($TempDiagnosticSettings -eq $null) {
