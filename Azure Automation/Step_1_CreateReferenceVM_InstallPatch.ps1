@@ -5,7 +5,7 @@
     .NOTES
         AUTHOR: Isaac Cheng, Microsoft Customer Engineer
         EMAIL: chicheng@microsoft.com
-        LASTEDIT: Nov 28, 2021
+        LASTEDIT: Dec 1, 2021
 #>
 
 Param(
@@ -102,6 +102,7 @@ try {
     Connect-AzAccount -ApplicationId $ApplicationId -CertificateThumbprint $CertificateThumbprint -Tenant $TenantId -ServicePrincipal
     Set-AzContext -SubscriptionId $SubscriptionId
     Write-Output ("`nOS Version: $OSVersion")
+    $error.Clear()
 
     # Get the Latest Location Name and Display Name
     $Global:NameReference = Get-AzLocation
@@ -195,13 +196,17 @@ try {
         $IsContinue = $true
     } else {
         Write-Error ("Error Occur while creating Reference VM")
+
+        foreach ($item in $error) {
+            Write-Error ($item.ToString())
+        }
         $IsContinue = $false
     }
 
     # Install Patch
     if ($IsContinue) {
         # Wait for a certain time to ensure Guest OS has completed the initial setup process
-        [int]$minute = 30
+        [int]$minute = 15
         while ($minute -ne 0) {
             if ($minute % 10 -eq 0 -or $minute -le 5 ) {
                 Write-Output ("`n" + $minute + " minutes remaining before install Update")
@@ -225,6 +230,10 @@ try {
                 Write-Output ("`nHave triggered to install Windows Update using PSWindowsUpdate without error")
             } else {
                 Write-Error ("`nError Occur while running PSWindowsUpdate")
+
+                foreach ($item in $error) {
+                    Write-Error ($item.ToString())
+                }
             }   
         } else {
             # Prepare Script for yum update 
