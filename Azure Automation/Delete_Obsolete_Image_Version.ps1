@@ -5,7 +5,7 @@
     .NOTES
         AUTHOR: Isaac Cheng, Microsoft Customer Engineer
         EMAIL: chicheng@microsoft.com
-        LASTEDIT: Nov 28, 2021
+        LASTEDIT: Dec 1, 2021
 #>
 
 Param(
@@ -33,6 +33,7 @@ try {
     Write-Output ("`nConnecting to Azure Subscription ID: " + $SubscriptionId)
     Connect-AzAccount -ApplicationId $ApplicationId -CertificateThumbprint $CertificateThumbprint -Tenant $TenantId -ServicePrincipal
     Set-AzContext -SubscriptionId $SubscriptionId
+    $error.Clear()
 
     # Define the easiest valid and active date of Image Version 
     $ValidDate = Get-Date -Hour 0 -Minute 1 -Second 0
