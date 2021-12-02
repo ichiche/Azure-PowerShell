@@ -5,7 +5,7 @@
     .NOTES
         AUTHOR: Isaac Cheng, Microsoft Customer Engineer
         EMAIL: chicheng@microsoft.com
-        LASTEDIT: Nov 28, 2021
+        LASTEDIT: Dec 2, 2021
 #>
 
 Param(
@@ -50,6 +50,7 @@ try {
     Connect-AzAccount -ApplicationId $ApplicationId -CertificateThumbprint $CertificateThumbprint -Tenant $TenantId -ServicePrincipal
     Set-AzContext -SubscriptionId $SubscriptionId
     Write-Output ("`nOS Version: $OSVersion")
+    $error.Clear()
 
     # Start up Reference VM if necessary
     $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Status
@@ -99,6 +100,10 @@ try {
                 Write-Output ("`nHave triggered to install Windows Update using PSWindowsUpdate without error")
             } else {
                 Write-Error ("`nError Occur while running PSWindowsUpdate")
+
+                foreach ($item in $error) {
+                    Write-Error ($item.ToString())
+                }
             }
         }
     } else {
