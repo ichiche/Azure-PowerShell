@@ -5,7 +5,7 @@
     .NOTES
         AUTHOR: Isaac Cheng, Microsoft Customer Engineer
         EMAIL: chicheng@microsoft.com
-        LASTEDIT: Nov 28, 2021
+        LASTEDIT: Dec 3, 2021
 #>
 
 Param(
@@ -64,6 +64,7 @@ try {
     Connect-AzAccount -ApplicationId $ApplicationId -CertificateThumbprint $CertificateThumbprint -Tenant $TenantId -ServicePrincipal
     Set-AzContext -SubscriptionId $SubscriptionId
     Write-Output ("`nOS Version: $OSVersion")
+    $error.Clear()
 
     # Start up Reference VM if necessary
     $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Status
@@ -165,6 +166,10 @@ try {
             Write-Output "`nGallery Image Version $GalleryImageVersionName is created in $GalleryImageDefinitionName" 
         } else {
             Write-Error ("`nError Occur while creating Gallery Image Version")
+
+            foreach ($item in $error) {
+                Write-Error ($item.ToString())
+            }
         }
     } 
 } catch {
