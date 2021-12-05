@@ -10,6 +10,7 @@ $Global:ExcelFullPath = $Global:ExcelOutputFolder + $ExcelFileName
 $Global:RunScriptList = @()
 $Global:DisabledRunScript = @()
 $ErrorActionPreference = "Continue"
+$Width = 120
 $error.Clear()
 
 # Run-Script Configuration
@@ -33,9 +34,11 @@ function Update-RunScriptList {
 }
 
 # Set PowerShell Windows Size
-$host.UI.RawUI.BufferSize = New-Object System.Management.Automation.Host.size(120,9999)
-$host.UI.RawUI.WindowSize = New-Object System.Management.Automation.Host.size(120,45)
-Start-Sleep -Milliseconds 500
+if ($host.UI.RawUI.BufferSize.Width -lt $Width) {
+    $host.UI.RawUI.BufferSize = New-Object System.Management.Automation.Host.size(120,9999)
+    $host.UI.RawUI.WindowSize = New-Object System.Management.Automation.Host.size(120,45)
+    Start-Sleep -Milliseconds 500
+}
 
 # Banner
 [int]$FontNumber = Get-Random -Minimum 0 -Maximum 5
