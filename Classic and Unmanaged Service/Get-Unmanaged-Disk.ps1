@@ -8,19 +8,19 @@ $Global:UnmanagedDisks = @()
 $CurrentItem = 1
 
 # Login
-az login # For Azure CLI
-Start-Sleep -Seconds 10
-Connect-AzAccount
+#az login # For Azure CLI
+Start-Sleep -Seconds 2
+#Connect-AzAccount
 
 # Get Azure Subscription
 if ($SpecificTenant -eq "Y") {
-    $Subscriptions = Get-AzSubscription -TenantId $TenantId
+    #$Subscriptions = Get-AzSubscription -TenantId $TenantId
 } else {
-    $Subscriptions = Get-AzSubscription
+    #$Subscriptions = Get-AzSubscription
 }
 
 # Main
-foreach ($Subscription in $Subscriptions) {
+foreach ($Subscription in $Global:Subscriptions) {
     # Set current subscription for Az Module
 	$AzContext = Set-AzContext -SubscriptionId $Subscription.Id
 
@@ -28,7 +28,7 @@ foreach ($Subscription in $Subscriptions) {
     az account set --subscription $Subscription.Id
 
     # Main
-    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
+    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Global:Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
     $CurrentItem++
     $CurrentVMItem = 1
     $vms = Get-AzVM
