@@ -5,7 +5,7 @@
     .NOTES
         AUTHOR: Isaac Cheng, Microsoft Customer Engineer
         EMAIL: chicheng@microsoft.com
-        LASTEDIT: Dec 1, 2021
+        LASTEDIT: Dec 7, 2021
 #>
 
 Param(
@@ -102,7 +102,6 @@ try {
     Connect-AzAccount -ApplicationId $ApplicationId -CertificateThumbprint $CertificateThumbprint -Tenant $TenantId -ServicePrincipal
     Set-AzContext -SubscriptionId $SubscriptionId
     Write-Output ("`nOS Version: $OSVersion")
-    $error.Clear()
 
     # Get the Latest Location Name and Display Name
     $Global:NameReference = Get-AzLocation
@@ -111,17 +110,17 @@ try {
     $vm = Get-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -ErrorAction SilentlyContinue
 
     if($vm -ne $null) {
-        Write-Output "`nDeleting existing Reference VM" 
+        Write-Output "`n$OSVersion Deleting existing Reference VM" 
         $RemoveAzVM = Remove-AzVM -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -Force -Confirm:$false
         Start-Sleep -Seconds 30
 
         $RefVMResource = Get-AzResource -ResourceGroupName $ReferenceVMRG | ? {$_.Name -like "$ReferenceVMName*"} | Remove-AzResource -Force -Confirm:$false
-        Start-Sleep -Seconds 5
-        Write-Output "`nExisting Reference VM is deleted" 
+        Start-Sleep -Seconds 30
+        Write-Output "`n$OSVersion Existing Reference VM is deleted" 
     }
 
     # Get Image Version from Shared Image Gallery
-    Write-Output "`nRetrieving Image Version" 
+    Write-Output "`n$OSVersion Retrieving Image Version" 
     $GalleryImageDefinition = Get-AzGalleryImageDefinition -ResourceGroupName $GalleryRG -GalleryName $GalleryName -Name $GalleryImageDefinitionName
     $Location = Rename-Location -Location $GalleryImageDefinition.Location
     $GalleryImageVersion = Get-AzGalleryImageVersion -ResourceGroupName $GalleryRG -GalleryName $GalleryName -GalleryImageDefinitionName $GalleryImageDefinitionName
@@ -137,11 +136,11 @@ try {
             $LastVersionIndex = $i
         }
     }
-    Write-Output "`nImage Version is retrieved" 
-    Write-Output ("`nImage Version: " + $GalleryImageVersion[$LastVersionIndex].Name + " is selected")
+    Write-Output "`n$OSVersion Image Version is retrieved" 
+    Write-Output ("`n$OSVersion Image Version: " + $GalleryImageVersion[$LastVersionIndex].Name + " is selected")
 
     # Create Reference VM from Shared Image Gallery
-    Write-Output "`nCreating Reference VM" 
+    Write-Output "`n$OSVersion Creating Reference VM" 
 
     # VM Image
     $vm = New-AzVMConfig -VMName $ReferenceVMName -VMSize $VMSize
@@ -171,6 +170,7 @@ try {
     }
 
     # Network Interface
+    $error.Clear()
     $NICName = "$ReferenceVMName-Ethernet0"
     $vNet = Get-AzVirtualNetwork -Name $RefVM_vNetName -ResourceGroupName $RefVM_vNetRG
     $SubnetId = $vNet.Subnets.Id | ? {$_ -like "*$RefVM_vNetSubnetName*"}
@@ -192,14 +192,14 @@ try {
 
     # Check
     if ($error.Count -eq 0) {
-        Write-Output "`nReference VM is created"
+        Write-Output "`n$OSVersion Reference VM is created"
         $IsContinue = $true
     } else {
-        Write-Error ("Error Occur while creating Reference VM")
-
         foreach ($item in $error) {
             Write-Error ($item.ToString())
         }
+
+        Write-Error ("`n$OSVersion Error Occur while creating Reference VM")
         $IsContinue = $false
     }
 
@@ -217,7 +217,7 @@ try {
 
         # Prepare Script for Windows Update
         if ($OSVersion -like "WS*") {
-            Write-Output ("`nRunning Windows Update")
+            Write-Output ("`n$OSVersion Running Windows Update")
             "Import-Module PSWindowsUpdate" | Out-File .\InstallWindowUpdate.ps1 -Force -Confirm:$false
             "Install-WindowsUpdate -AcceptAll -AutoReboot -Silent" | Out-File .\InstallWindowUpdate.ps1 -Append -Confirm:$false
             
@@ -227,9 +227,9 @@ try {
             Start-Sleep -Seconds 5
 
             if ($error.Count -eq 0) {
-                Write-Output ("`nHave triggered to install Windows Update using PSWindowsUpdate without error")
+                Write-Output ("`n$OSVersion Have triggered to install Windows Update using PSWindowsUpdate without error")
             } else {
-                Write-Error ("`nError Occur while running PSWindowsUpdate")
+                Write-Error ("`n$OSVersion Error Occur while running PSWindowsUpdate")
 
                 foreach ($item in $error) {
                     Write-Error ($item.ToString())
@@ -237,12 +237,12 @@ try {
             }   
         } else {
             # Prepare Script for yum update 
-            Write-Output ("`nRunning yum update")
+            Write-Output ("`n$OSVersion Running yum update")
             "yum clean all" | Out-File .\yumUpdate.ps1 -Force -Confirm:$false
             "yum update -y" | Out-File .\yumUpdate.ps1 -Append -Confirm:$false
 
             $ReturnData = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunShellScript" -ScriptPath yumUpdate.ps1
-            Write-Output ("`nyum update completed and verifying the update result")
+            Write-Output ("`n$OSVersion yum update completed and verifying the update result")
             Start-Sleep -Seconds 10
             [string]$CommandResult1 = $ReturnData.Value.Message
 
@@ -251,19 +251,19 @@ try {
                 $ReturnData = Invoke-AzVMRunCommand -ResourceGroupName $ReferenceVMRG -Name $ReferenceVMName -CommandId "RunShellScript" -ScriptPath yumUpdate.ps1
                 [string]$CommandResult2 = $ReturnData.Value.Message
                 
-                if($CommandResult2 -like "*No packages marked for update*" -or $CommandResult2 -like "*Nothing to do*") {
-                    Write-Output "yum update completed successfully"
+                if ($CommandResult2 -like "*No packages marked for update*" -or $CommandResult2 -like "*Nothing to do*") {
+                    Write-Output "$OSVersion yum update completed successfully"
                 } else {
-                    Write-Error $CommandResult2
+                    Write-Error ($OSVersion + " " + $CommandResult2)
                 }
             } else {
-                Write-Error $CommandResult1
+                Write-Error ($OSVersion + " " + $CommandResult1)
             }
         }
     }
 } catch {
     if (!$servicePrincipalConnection) {
-        $ErrorMessage = "Connection $connectionName not found"
+        $ErrorMessage = "`n$OSVersion Connection $connectionName not found"
         Write-Error $ErrorMessage
         throw $ErrorMessage
     } else {
