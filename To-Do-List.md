@@ -13,10 +13,14 @@
 - Get Azure Database for MySQL Backup retention and redundancy option
 - Get Cosmos DB Backup Info (periodic mode backup policy includes Backup Interval, Retention, Copies of data retained, storage redundancy) and (continuous backup mode)
 - Get Private Endpoint Status
-- Update Azone Script to support more services
-    - Azure Cosmos DB
-    - Azure Database for MySQL
-    - Azure Database for PostgreSQL
+- Azone
+    - Support more services
+        - Azure Cosmos DB
+        - Azure Database for MySQL
+        - Azure Database for PostgreSQL
+    - Azone Summary Page
+        - Show Kubernetes Cluster total instead of node total
+- Indicate Storage Account is v1
 - Get Service Endpoint Status (TBC)
 - Get Management Group hierarchy (TBC)
 ```
