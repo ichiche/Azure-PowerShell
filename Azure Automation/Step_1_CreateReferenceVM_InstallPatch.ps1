@@ -10,7 +10,7 @@
 
 Param(
     [Parameter(Mandatory=$false)]
-    [string]$SubscriptionId = '5ba60130-b60b-4c4b-8614-06a0c6723d9b',
+    [string]$SubscriptionId = '',
     [Parameter(Mandatory=$false)]
     [ValidateSet("WS2016","WS2019","RHEL7","RHEL8")]
     [string]$OSVersion = 'WS2016',

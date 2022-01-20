@@ -10,7 +10,7 @@
 
 Param(
     [Parameter(Mandatory=$false)]
-    [string]$SubscriptionId = '5ba60130-b60b-4c4b-8614-06a0c6723d9b',
+    [string]$SubscriptionId = '',
     [Parameter(Mandatory=$false)]
     [string]$GalleryRG = 'Image',
     [Parameter(Mandatory=$false)]
