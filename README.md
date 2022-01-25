@@ -47,7 +47,8 @@ All scripts with Multi-threading Capability require PowerShell V7 by using **Pip
 # Disable breaking change warning messages
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value "true"
 
-# Above Environment Variable may not work for specific Az command, add Common Parameters 'WarningAction'
+# SuppressAzurePowerShellBreakingChangeWarnings Variable may not work for specific Az command, add Common Parameters 'WarningAction' instead
+# Example
 Get-AzMetric -ResourceId $ResourceId -MetricName 'storage' -WarningAction SilentlyContinue
 ```
 
