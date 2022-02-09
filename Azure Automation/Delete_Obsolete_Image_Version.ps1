@@ -5,7 +5,7 @@
     .NOTES
         AUTHOR: Isaac Cheng, Microsoft Customer Engineer
         EMAIL: chicheng@microsoft.com
-        LASTEDIT: Dec 1, 2021
+        LASTEDIT: Dec 9, 2021
 #>
 
 Param(
@@ -15,6 +15,8 @@ Param(
     [string]$GalleryRG = 'Image',
     [Parameter(Mandatory=$false)]
     [string]$GalleryName = 'SharedImage',
+    [Parameter(Mandatory=$false)]
+    [string]$GalleryImageDefinitionName = 'RedHatEnterprise7,RedHatEnterprise8',
     [Parameter(Mandatory=$true)]
     [string]$RetainRecentMonth = '6'
 )
@@ -43,7 +45,9 @@ try {
 
     # Get Image Version from Shared Image Gallery
     Write-Output "`nRetrieving Image Version" 
-    $GalleryImageDefinitions = Get-AzGalleryImageDefinition -ResourceGroupName $GalleryRG -GalleryName $GalleryName -Name $GalleryImageDefinitionName
+    $AllGalleryImageDefinitions = Get-AzGalleryImageDefinition -ResourceGroupName $GalleryRG -GalleryName $GalleryName
+    [array]$GalleryImageDefinitionName = $GalleryImageDefinitionName.Split(",")
+    $GalleryImageDefinitions = $AllGalleryImageDefinitions | ? {$GalleryImageDefinitionName -contains $_.Name}
 
     foreach ($GalleryImageDefinition in $GalleryImageDefinitions) {
         # Retrieve Image Versions
