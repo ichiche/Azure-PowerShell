@@ -9,7 +9,9 @@
     - Azone Summary Page
         - Show Kubernetes Cluster total instead of node total
 - Indicate Storage Account is v1
-- Merge Unmanaged Disk into CAF Assessment
+- Merge below into CAF WAF Assessment
+    - Classic VM
+    - Unmanaged Disk
 - Well-Architected Framework Operational Excellence
     - Check resource group that contain no resource
     - Tagging
