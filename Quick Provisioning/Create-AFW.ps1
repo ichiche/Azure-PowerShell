@@ -4,6 +4,7 @@ $FirewallPolicyRG = "FirewallPolicy"
 $FirewallPolicyId = "/subscriptions/7a2dec40-395f-45a9-b6b0-bef1593ce760/resourceGroups/AzureFirewall/providers/Microsoft.Network/firewallPolicies/afwpol-core-prd-sea-001"
 $HubVNetRG = "Network"
 $HubVNetwork = "vnet-hub-prd-sea-001"
+$logRG = "Log"
 
 # Main
 $StartTime = Get-Date
@@ -45,8 +46,8 @@ $afw = New-AzFirewall -ResourceGroupName $HubVNetRG -Name "afw-core-prd-sea-001"
 
 #Region Log Analytics Workspace
 # Standard Tier: Pricing tier doesn't match the subscription's billing model
-$workspace = New-AzOperationalInsightsWorkspace -ResourceGroupName $FirewallPolicyRG -Name "log-analytics-core-prd-sea-001" -Sku pergb2018 -Location $Location
-#$workspace = Get-AzOperationalInsightsWorkspace -ResourceGroupName $FirewallPolicyRG -Name "log-analytics-core-prd-sea-001"
+$workspace = New-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name "log-analytics-temp-prd-sea-001" -Sku pergb2018 -Location $Location
+#$workspace = Get-AzOperationalInsightsWorkspace -ResourceGroupName $FirewallPolicyRG -Name "log-analytics-temp-prd-sea-001"
 Start-Sleep -Seconds 10
 $DiagnosticSetting = Set-AzDiagnosticSetting -Name "log-analytics-prd-sea-001" -ResourceId $afw.Id -WorkspaceId $workspace.ResourceId -Enabled $true
 #EndRegion Log Analytics Workspace
@@ -65,4 +66,4 @@ Remove-AzFirewall -ResourceGroupName $HubVNetRG -Name "afw-core-prd-sea-001" -Fo
 Start-Sleep -Seconds 10
 Remove-AzFirewallPolicy -ResourceGroupName $FirewallPolicyRG -Name "afwpol-core-prd-sea-001" -Force -Confirm:$false
 Remove-AzPublicIpAddress -ResourceGroupName $FirewallPolicyRG -Name "pip-afw-core-prd-sea-001" -Force -Confirm:$false
-Remove-AzOperationalInsightsWorkspace -ResourceGroupName $FirewallPolicyRG -Name "log-analytics-prd-sea-001" -Force -Confirm:$false
+Remove-AzOperationalInsightsWorkspace -ResourceGroupName $FirewallPolicyRG -Name "log-analytics-temp-prd-sea-001" -Force -Confirm:$false
