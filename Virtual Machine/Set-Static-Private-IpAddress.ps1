@@ -6,7 +6,7 @@ $vms = Get-AzVM -Status
 $nics = Get-AzNetworkInterface  | ? {$_.VirtualMachine -ne $null} | sort Name #skip Nics with no VM
 
 # Map VM to NIC
-foreach($nic in $nics) {
+foreach ($nic in $nics) {
     $vm = $vms | ? {$_.Id -eq $nic.VirtualMachine.id}
     $prv =  $nic.IpConfigurations | select -ExpandProperty PrivateIpAddress
     $alloc =  $nic.IpConfigurations | select -ExpandProperty PrivateIpAllocationMethod
@@ -24,7 +24,7 @@ $info | ft Name, IpAddress, NetworkInterface, AllocationMethod -AutoSize
 
 # Set PrivateIpAllocationMethod to Static
 Write-Host ("`nProcessing to set Private Ip Allocation to Static`n") -ForegroundColor Yellow
-foreach($nic in $nics) {
+foreach ($nic in $nics) {
     $vm = $vms | ? {$_.Id -eq $nic.VirtualMachine.id}
     $NicIpConfigurations =  $nic.IpConfigurations | select -ExpandProperty PrivateIpAllocationMethod
 
