@@ -1,6 +1,6 @@
 # Script Variable
-$Global:ResultArray = @()
-$Global:ResultArraySummary = @()
+$Global:AZoneStatus = @()
+$Global:AZoneStatusSummary = @()
 [int]$CurrentItem = 1
 $ErrorActionPreference = "Continue"
 
@@ -54,7 +54,7 @@ function Add-Record {
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "Remark" -Value $Remark
 
     # Save to Array
-    $Global:ResultArray += $obj
+    $Global:AZoneStatus += $obj
 }
 
 # Disable breaking change warning messages
@@ -518,21 +518,21 @@ foreach ($Subscription in $Global:Subscriptions) {
 
 #Region Export
 # Prepare Availability Zone Enabled Service Summary
-$CountType = $Global:ResultArray | group InstanceType, EnabledAZone | select Name, Count | sort Name
+$CountType = $Global:AZoneStatus | group InstanceType, EnabledAZone | select Name, Count | sort Name
 foreach ($item in $CountType) {
     $InstanceType = $item.Name.Substring(0, $item.Name.IndexOf(","))
     $EnableStatus = $item.Name.Substring($item.Name.IndexOf(",") + 2)
-    $ResourceTotal = $Global:ResultArray | group InstanceType | ? {$_.Name -eq $InstanceType} | select -ExpandProperty Count
+    $ResourceTotal = $Global:AZoneStatus | group InstanceType | ? {$_.Name -eq $InstanceType} | select -ExpandProperty Count
 
     $obj = New-Object -TypeName PSobject
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "InstanceType" -Value $InstanceType
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledAZone" -Value $EnableStatus
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $ResourceTotal
-    $Global:ResultArraySummary += $obj
+    $Global:AZoneStatusSummary += $obj
 }
 
 # Export to Excel File
-$Global:ResultArraySummary | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "AZoneSummary" -TableName "AZoneSummary" -TableStyle Medium16 -AutoSize -Append
-$Global:ResultArray | sort SubscriptionName, InstanceType, ResourceGroup, InstanceName | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "AZoneDetail" -TableName "AZoneDetail" -TableStyle Medium16 -AutoSize -Append
+$Global:AZoneStatusSummary | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "AZoneSummary" -TableName "AZoneSummary" -TableStyle Medium16 -AutoSize -Append
+$Global:AZoneStatus | sort SubscriptionName, InstanceType, ResourceGroup, InstanceName | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "AZoneDetail" -TableName "AZoneDetail" -TableStyle Medium16 -AutoSize -Append
 #EndRegion Export
