@@ -2,6 +2,9 @@
 $Location = "Southeast Asia"
 $FirewallPolicyRG = "FirewallPolicy"
 $FirewallPolicyId = "/subscriptions/7a2dec40-395f-45a9-b6b0-bef1593ce760/resourceGroups/AzureFirewall/providers/Microsoft.Network/firewallPolicies/afwpol-core-prd-sea-001"
+$FirewallPolicyName = "afwpol-core-prd-sea-001"
+$FirewallName = "afw-core-prd-sea-001"
+$pipName = "pip-afw-core-prd-sea-001"
 $HubVNetRG = "Network"
 $HubVNetName = "vnet-hub-prd-sea-001"
 $logRG = "Log"
@@ -16,7 +19,7 @@ $StartTime = Get-Date
 # A policy with multiple firewall associations is billed at a fixed rate. 
 Write-Host ("`n[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
 Write-Host "`nProvision Azure Firewall Policy ..." -ForegroundColor Cyan
-$fwpol = New-AzFirewallPolicy -ResourceGroupName $FirewallPolicyRG -Name "afwpol-core-prd-sea-001" -SkuTier Standard -Location $Location
+$fwpol = New-AzFirewallPolicy -ResourceGroupName $FirewallPolicyRG -Name $FirewallPolicyName -SkuTier Standard -Location $Location
 $FirewallPolicyId = $fwpol.Id
 Start-Sleep -Seconds 10
 #EndRegion Azure Firewall Policy 
@@ -34,7 +37,7 @@ Set-AzFirewallPolicyRuleCollectionGroup -Name $rcgroup.Name -Priority 200 -RuleC
 #Region Public IP Address
 Write-Host ("`n[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
 Write-Host "`nProvision Public IP Address for Azure Firewall ..." -ForegroundColor Cyan
-$pip = New-AzPublicIpAddress -ResourceGroupName $FirewallPolicyRG -Name "pip-afw-core-prd-sea-001" -AllocationMethod Static -Location $Location -Sku Standard -Zone (1,2,3)
+$pip = New-AzPublicIpAddress -ResourceGroupName $FirewallPolicyRG -Name $pipName -AllocationMethod Static -Location $Location -Sku Standard -Zone (1,2,3)
 Start-Sleep -Seconds 10
 #EndRegion Public IP Address
 
@@ -42,14 +45,14 @@ Start-Sleep -Seconds 10
 Write-Host ("`n[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
 Write-Host "`nProvision Azure Firewall ..." -ForegroundColor Cyan
 $HubVNet = Get-AzVirtualNetwork -ResourceGroup $HubVNetRG -Name $HubVNetName
-$afw = New-AzFirewall -ResourceGroupName $HubVNetRG -Name "afw-core-prd-sea-001" -Location $Location -VirtualNetwork $HubVNet -PublicIpAddress $pip -FirewallPolicyId $FirewallPolicyId
+$afw = New-AzFirewall -ResourceGroupName $HubVNetRG -Name $FirewallName -Location $Location -VirtualNetwork $HubVNet -PublicIpAddress $pip -FirewallPolicyId $FirewallPolicyId
 #EndRegion Azure Firewall
 
 #Region Log Analytics Workspace
 # Standard Tier: Pricing tier doesn't match the subscription's billing model
 $workspace = New-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName -Sku pergb2018 -Location $Location
-#$workspace = Get-AzOperationalInsightsWorkspace -ResourceGroupName $FirewallPolicyRG -Name $logName
-Start-Sleep -Seconds 10
+#$workspace = Get-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName
+Start-Sleep -Seconds 15
 $DiagnosticSetting = Set-AzDiagnosticSetting -Name "log-analytics-prd-sea-001" -ResourceId $afw.Id -WorkspaceId $workspace.ResourceId -Enabled $true
 #EndRegion Log Analytics Workspace
 
@@ -63,8 +66,8 @@ Start-Sleep -Seconds 1
 Write-Host "`n`n"
 
 #Region Decommission
-Remove-AzFirewall -ResourceGroupName $HubVNetRG -Name "afw-core-prd-sea-001" -Force -Confirm:$false
+Remove-AzFirewall -ResourceGroupName $HubVNetRG -Name $FirewallName -Force -Confirm:$false
 Start-Sleep -Seconds 10
-Remove-AzFirewallPolicy -ResourceGroupName $FirewallPolicyRG -Name "afwpol-core-prd-sea-001" -Force -Confirm:$false
-Remove-AzPublicIpAddress -ResourceGroupName $FirewallPolicyRG -Name "pip-afw-core-prd-sea-001" -Force -Confirm:$false
+Remove-AzFirewallPolicy -ResourceGroupName $FirewallPolicyRG -Name $FirewallPolicyName -Force -Confirm:$false
+Remove-AzPublicIpAddress -ResourceGroupName $FirewallPolicyRG -Name $pipName -Force -Confirm:$false
 Remove-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName -Force -Confirm:$false
