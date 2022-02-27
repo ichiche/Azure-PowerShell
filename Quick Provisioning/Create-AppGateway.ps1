@@ -35,37 +35,34 @@ $FrontendPort  = New-AzApplicationGatewayFrontendPort -Name "DefaultFrontendPort
 # At least 1 Backend Pool is needed 
 $BackendAddressPool = New-AzApplicationGatewayBackendAddressPool -Name "DefaultBackendAddressPool"
 
+# Backend Http Setting
+# If Redirection Rule is specified, Backend Http Setting is not required using Azure Portal, but still require using Az Module
+$BackendHttpSetting = New-AzApplicationGatewayBackendHttpSetting -Name "DefaultBackendHttpSetting" -Port 80 -Protocol Http -CookieBasedAffinity Enabled -RequestTimeout 30
+
 # Http Listener
 $HttpListener = New-AzApplicationGatewayHttpListener -Name "DefaultHttpListener" -Protocol Http -FrontendIPConfiguration $FrontendIpConfig -FrontendPort $FrontendPort
 
-# Redirection Rule
-# Redirect to Google DNS
-# No Backend Http Setting is required 
-$RedirectConfiguration = New-AzApplicationGatewayRedirectConfiguration -Name "DefaultRedirectConfiguration" -RedirectType Permanent -TargetUrl "http://8.8.8.8"
-$RoutingRule = New-AzApplicationGatewayRequestRoutingRule -Name "DefaultRoutingRule"-RuleType Basic -HttpListener $HttpListener -RedirectConfiguration $RedirectConfiguration
+# Request Routing Rule
+$RoutingRule = New-AzApplicationGatewayRequestRoutingRule -Name "DefaultRoutingRule"-RuleType Basic -HttpListener $HttpListener -BackendAddressPool $BackendAddressPool -BackendHttpSettings $BackendHttpSetting 
 
 # Application Gateway Sku
-$sku = New-AzApplicationGatewaySku `
-  -Name Standard_v2 `
-  -Tier Standard_v2 `
-  -Capacity 2
+$sku = New-AzApplicationGatewaySku -Name Standard_v2 -Tier Standard_v2
 
-  $autoscaleConfig = New-AzApplicationGatewayAutoscaleConfiguration -MinCapacity 3
-  $gw = New-AzApplicationGateway -Name $appgwName -ResourceGroupName $rgname ..  -AutoscaleConfiguration $autoscaleConfig
+# Application Gateway Auto Scale
+$autoscaleConfig = New-AzApplicationGatewayAutoscaleConfiguration -MinCapacity 0 -MaxCapacity 2
 
-New-AzApplicationGateway `
-  -Name myAppGateway `
-  -ResourceGroupName myResourceGroupAG `
-  -Location eastus `
-  -BackendAddressPools $backendPool `
-  -BackendHttpSettingsCollection $poolSettings `
-  -FrontendIpConfigurations $fipconfig `
-  -GatewayIpConfigurations $gipconfig `
-  -FrontendPorts $frontendport `
-  -HttpListeners $defaultlistener `
-  -RequestRoutingRules $frontendRule `
-  -Sku $sku
-
+# Provision Application Gateway
+$agw = New-AzApplicationGateway -ResourceGroupName $AppGatewayRG -Name $AppGatewayName `
+    -Location $Location `
+    -AutoscaleConfiguration $autoscaleConfig `
+    -GatewayIpConfigurations $IpConfiguration `
+    -FrontendIpConfigurations $FrontendIpConfig `
+    -FrontendPorts $FrontendPort `
+    -BackendAddressPools $BackendAddressPool `
+    -BackendHttpSettingsCollection $BackendHttpSetting `
+    -HttpListeners $HttpListener `
+    -RequestRoutingRules $RoutingRule `
+    -Sku $sku
 #EndRegion Application Gateway
 
 #Region Log Analytics Workspace
@@ -86,5 +83,25 @@ Start-Sleep -Seconds 1
 Write-Host "`n`n"
 
 #Region Decommission
+Remove-AzApplicationGateway -ResourceGroupName $AppGatewayRG -Name $AppGatewayName -Force -Confirm:$false
+Start-Sleep -Seconds 15
 Remove-AzPublicIpAddress -ResourceGroupName $AppGatewayRG -Name $pipName -Force -Confirm:$false
 Remove-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName -Force -Confirm:$false
+
+
+
+# Issue
+
+# Redirection Rule
+# Redirect to Google DNS
+$RedirectConfiguration = New-AzApplicationGatewayRedirectConfiguration -Name "DefaultRedirectConfiguration" -RedirectType Permanent -TargetUrl "http://8.8.8.8"
+$RoutingRule = New-AzApplicationGatewayRequestRoutingRule -Name "DefaultRoutingRule"-RuleType Basic -HttpListener $HttpListener -RedirectConfiguration $RedirectConfiguration -BackendHttpSettings $BackendHttpSetting
+
+$RedirectConfiguration = New-AzApplicationGatewayRedirectConfiguration -Name "DefaultRedirectConfiguration" -RedirectType Permanent -TargetUrl "http://8.8.8.8" -IncludePath $false -IncludeQueryString $false
+$RoutingRule = New-AzApplicationGatewayRequestRoutingRule -Name "DefaultRoutingRule"-RuleType Basic -HttpListenerId $HttpListener.Id -RedirectConfigurationId $RedirectConfiguration.Id
+
+
+
+New-AzApplicationGateway: Resource...agw-core-prd-sea-001/redirectConfigurations/DefaultRedirectConfiguration referenced by resource...agw-core-prd-sea-001/requestRoutingRules/DefaultRoutingRule was not found. 
+
+Please make sure that the referenced resource exists, and that both resources are in the same region.
