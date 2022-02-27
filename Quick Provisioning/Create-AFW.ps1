@@ -3,8 +3,9 @@ $Location = "Southeast Asia"
 $FirewallPolicyRG = "FirewallPolicy"
 $FirewallPolicyId = "/subscriptions/7a2dec40-395f-45a9-b6b0-bef1593ce760/resourceGroups/AzureFirewall/providers/Microsoft.Network/firewallPolicies/afwpol-core-prd-sea-001"
 $HubVNetRG = "Network"
-$HubVNetwork = "vnet-hub-prd-sea-001"
+$HubVNetName = "vnet-hub-prd-sea-001"
 $logRG = "Log"
+$logName = "log-analytics-temp-prd-sea-001"
 
 # Main
 $StartTime = Get-Date
@@ -40,14 +41,14 @@ Start-Sleep -Seconds 10
 #Region Azure Firewall
 Write-Host ("`n[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
 Write-Host "`nProvision Azure Firewall ..." -ForegroundColor Cyan
-$HubVNet = Get-AzVirtualNetwork -ResourceGroup $HubVNetRG -Name $HubVNetwork
+$HubVNet = Get-AzVirtualNetwork -ResourceGroup $HubVNetRG -Name $HubVNetName
 $afw = New-AzFirewall -ResourceGroupName $HubVNetRG -Name "afw-core-prd-sea-001" -Location $Location -VirtualNetwork $HubVNet -PublicIpAddress $pip -FirewallPolicyId $FirewallPolicyId
 #EndRegion Azure Firewall
 
 #Region Log Analytics Workspace
 # Standard Tier: Pricing tier doesn't match the subscription's billing model
-$workspace = New-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name "log-analytics-temp-prd-sea-001" -Sku pergb2018 -Location $Location
-#$workspace = Get-AzOperationalInsightsWorkspace -ResourceGroupName $FirewallPolicyRG -Name "log-analytics-temp-prd-sea-001"
+$workspace = New-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName -Sku pergb2018 -Location $Location
+#$workspace = Get-AzOperationalInsightsWorkspace -ResourceGroupName $FirewallPolicyRG -Name $logName
 Start-Sleep -Seconds 10
 $DiagnosticSetting = Set-AzDiagnosticSetting -Name "log-analytics-prd-sea-001" -ResourceId $afw.Id -WorkspaceId $workspace.ResourceId -Enabled $true
 #EndRegion Log Analytics Workspace
@@ -66,4 +67,4 @@ Remove-AzFirewall -ResourceGroupName $HubVNetRG -Name "afw-core-prd-sea-001" -Fo
 Start-Sleep -Seconds 10
 Remove-AzFirewallPolicy -ResourceGroupName $FirewallPolicyRG -Name "afwpol-core-prd-sea-001" -Force -Confirm:$false
 Remove-AzPublicIpAddress -ResourceGroupName $FirewallPolicyRG -Name "pip-afw-core-prd-sea-001" -Force -Confirm:$false
-Remove-AzOperationalInsightsWorkspace -ResourceGroupName $FirewallPolicyRG -Name "log-analytics-temp-prd-sea-001" -Force -Confirm:$false
+Remove-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName -Force -Confirm:$false
