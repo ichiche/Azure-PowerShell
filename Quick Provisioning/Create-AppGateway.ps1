@@ -4,7 +4,8 @@ $AppGatewayRG = "AppGateway"
 $AppGatewayName ="agw-core-prd-sea-001"
 $pipName = "pip-agw-core-prd-sea-001"
 $HubVNetRG = "Network"
-$HubVNetwork = "vnet-hub-prd-sea-001"
+$HubVNetName = "vnet-hub-prd-sea-001"
+$AppGatewaySubnetName = "AppGateway"
 $logRG = "Log"
 $logName = "log-analytics-temp-prd-sea-001"
 
@@ -18,10 +19,54 @@ $pip = New-AzPublicIpAddress -ResourceGroupName $AppGatewayRG -Name $pipName -Al
 Start-Sleep -Seconds 10
 #EndRegion Public IP Address
 
-#Region Azure Application Gateway
+#Region Application Gateway
 Write-Host ("`n[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
 Write-Host "`nProvision Azure Application Gateway ..." -ForegroundColor Cyan
-#EndRegion Azure Firewall
+
+$HubVNet = Get-AzVirtualNetwork -ResourceGroup $HubVNetRG -Name $HubVNetName
+$AppGatewaySubnet = Get-AzVirtualNetworkSubnetConfig -VirtualNetwork $HubVNet -Name $AppGatewaySubnetName
+
+# Frontend 
+$IpConfiguration  = New-AzApplicationGatewayIPConfiguration -Name "DefaultIpConfiguration" -Subnet $AppGatewaySubnet
+$FrontendIpConfig  = New-AzApplicationGatewayFrontendIPConfig -Name "DefaultFrontendIpConfig" -PublicIPAddress $pip
+$FrontendPort  = New-AzApplicationGatewayFrontendPort -Name "DefaultFrontendPort" -Port 80
+
+# Backend Pool without target
+# At least 1 Backend Pool is needed 
+$BackendAddressPool = New-AzApplicationGatewayBackendAddressPool -Name "DefaultBackendAddressPool"
+
+# Http Listener
+$HttpListener = New-AzApplicationGatewayHttpListener -Name "DefaultHttpListener" -Protocol Http -FrontendIPConfiguration $FrontendIpConfig -FrontendPort $FrontendPort
+
+# Redirection Rule
+# Redirect to Google DNS
+# No Backend Http Setting is required 
+$RedirectConfiguration = New-AzApplicationGatewayRedirectConfiguration -Name "DefaultRedirectConfiguration" -RedirectType Permanent -TargetUrl "http://8.8.8.8"
+$RoutingRule = New-AzApplicationGatewayRequestRoutingRule -Name "DefaultRoutingRule"-RuleType Basic -HttpListener $HttpListener -RedirectConfiguration $RedirectConfiguration
+
+# Application Gateway Sku
+$sku = New-AzApplicationGatewaySku `
+  -Name Standard_v2 `
+  -Tier Standard_v2 `
+  -Capacity 2
+
+  $autoscaleConfig = New-AzApplicationGatewayAutoscaleConfiguration -MinCapacity 3
+  $gw = New-AzApplicationGateway -Name $appgwName -ResourceGroupName $rgname ..  -AutoscaleConfiguration $autoscaleConfig
+
+New-AzApplicationGateway `
+  -Name myAppGateway `
+  -ResourceGroupName myResourceGroupAG `
+  -Location eastus `
+  -BackendAddressPools $backendPool `
+  -BackendHttpSettingsCollection $poolSettings `
+  -FrontendIpConfigurations $fipconfig `
+  -GatewayIpConfigurations $gipconfig `
+  -FrontendPorts $frontendport `
+  -HttpListeners $defaultlistener `
+  -RequestRoutingRules $frontendRule `
+  -Sku $sku
+
+#EndRegion Application Gateway
 
 #Region Log Analytics Workspace
 # Standard Tier: Pricing tier doesn't match the subscription's billing model
