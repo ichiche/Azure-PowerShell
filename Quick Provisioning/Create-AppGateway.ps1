@@ -1,11 +1,14 @@
 # Global Parameter
-$Location = "Southeast Asia"
+#$Location = "Southeast Asia"
+$Location = "East Asia"
 $AppGatewayRG = "AppGateway"
 $AppGatewayName ="agw-core-prd-sea-001"
 $pipName = "pip-agw-core-prd-sea-001"
 $HubVNetRG = "Network"
-$HubVNetName = "vnet-hub-prd-sea-001"
-$AppGatewaySubnetName = "AppGateway"
+#$HubVNetName = "vnet-hub-prd-sea-001"
+#$AppGatewaySubnetName = "AppGateway"
+$HubVNetName = "vn-poc-hk-peak"
+$AppGatewaySubnetName = "subnet-poc-hk-peak-appgateway"
 $logRG = "Log"
 $logName = "log-analytics-temp-prd-sea-001"
 
@@ -67,8 +70,8 @@ $agw = New-AzApplicationGateway -ResourceGroupName $AppGatewayRG -Name $AppGatew
 
 #Region Log Analytics Workspace
 # Standard Tier: Pricing tier doesn't match the subscription's billing model
-$workspace = New-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName -Sku pergb2018 -Location $Location
-#$workspace = Get-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName
+#$workspace = New-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName -Sku pergb2018 -Location $Location
+$workspace = Get-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName
 Start-Sleep -Seconds 15
 $DiagnosticSetting = Set-AzDiagnosticSetting -Name "log-analytics-prd-sea-001" -ResourceId $agw.Id -WorkspaceId $workspace.ResourceId -Enabled $true
 #EndRegion Log Analytics Workspace

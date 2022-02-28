@@ -50,8 +50,8 @@ $afw = New-AzFirewall -ResourceGroupName $HubVNetRG -Name $FirewallName -Locatio
 
 #Region Log Analytics Workspace
 # Standard Tier: Pricing tier doesn't match the subscription's billing model
-$workspace = New-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName -Sku pergb2018 -Location $Location
-#$workspace = Get-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName
+#$workspace = New-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName -Sku pergb2018 -Location $Location
+$workspace = Get-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName
 Start-Sleep -Seconds 15
 $DiagnosticSetting = Set-AzDiagnosticSetting -Name "log-analytics-prd-sea-001" -ResourceId $afw.Id -WorkspaceId $workspace.ResourceId -Enabled $true
 #EndRegion Log Analytics Workspace
