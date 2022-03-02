@@ -12,8 +12,8 @@ Resources
 | where tostring(properties.networkAcls.virtualNetworkRules) != '[]'
 | mv-expand rules = properties.networkAcls.virtualNetworkRules
 | extend allowed_vnet_Subnet = substring(tostring(rules.id), indexof(tostring(rules.id), '/virtual'))
-| where allowed_vnet_Subnet contains "subnets/worker"
-| project name, allowed_vnet_Subnet
+| where allowed_vnet_Subnet contains "subnet-sit-hk-peak-k8s-nodes"
+| project type, name, allowed_vnet_Subnet
 | order by type, name asc
 
 // KeyVault
@@ -40,7 +40,7 @@ Resources
 
 // Redis Cache
 Resources
-| where type == 'microsoft.cache/redis'
+| where type =~ 'microsoft.cache/redis'
 | where isnotempty(properties.networkAcls.virtualNetworkRules) and isnotnull(properties.networkAcls.virtualNetworkRules) 
 | where tostring(properties.networkAcls.virtualNetworkRules) != '[]'
 | mv-expand rules = properties.networkAcls.virtualNetworkRules
