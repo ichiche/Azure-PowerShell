@@ -11,9 +11,9 @@ Resources
 | where isnotempty(properties.networkAcls.virtualNetworkRules) and isnotnull(properties.networkAcls.virtualNetworkRules) 
 | where tostring(properties.networkAcls.virtualNetworkRules) != '[]'
 | mv-expand rules = properties.networkAcls.virtualNetworkRules
-| extend allowed_vnet_Subnet = substring(tostring(rules.id), indexof(tostring(rules.id), '/virtual'))
-| where allowed_vnet_Subnet contains "subnet-sit-hk-peak-k8s-nodes"
-| project type, name, allowed_vnet_Subnet
+| extend allowed_vnet_subnet = substring(tostring(rules.id), indexof(tostring(rules.id), '/virtual'))
+| where allowed_vnet_subnet contains 'subnet-sit-hk-peak-k8s-nodes'
+| project type, resourceGroup, name, allowed_vnet_subnet, subscriptionId
 | order by type, name asc
 
 // KeyVault
@@ -22,9 +22,9 @@ Resources
 | where isnotempty(properties.networkAcls.virtualNetworkRules) and isnotnull(properties.networkAcls.virtualNetworkRules) 
 | where tostring(properties.networkAcls.virtualNetworkRules) != '[]'
 | mv-expand rules = properties.networkAcls.virtualNetworkRules
-| extend allowed_vnet_Subnet = substring(tostring(rules.id), indexof(tostring(rules.id), '/virtual'))
-| where allowed_vnet_Subnet contains "subnets/worker"
-| project name, allowed_vnet_Subnet
+| extend allowed_vnet_subnet = substring(tostring(rules.id), indexof(tostring(rules.id), '/virtual'))
+| where allowed_vnet_subnet contains 'subnets/worker'
+| project name, allowed_vnet_subnet
 | order by name asc
 
 // Storage Account
@@ -33,9 +33,9 @@ Resources
 | where isnotempty(properties.networkAcls.virtualNetworkRules) and isnotnull(properties.networkAcls.virtualNetworkRules) 
 | where tostring(properties.networkAcls.virtualNetworkRules) != '[]'
 | mv-expand rules = properties.networkAcls.virtualNetworkRules
-| extend allowed_vnet_Subnet = substring(tostring(rules.id), indexof(tostring(rules.id), '/virtual'))
-| where allowed_vnet_Subnet contains "/subnets/default"
-| project name, allowed_vnet_Subnet
+| extend allowed_vnet_subnet = substring(tostring(rules.id), indexof(tostring(rules.id), '/virtual'))
+| where allowed_vnet_subnet contains '/subnets/default'
+| project name, allowed_vnet_subnet
 | order by name asc
 
 // Redis Cache
@@ -44,7 +44,7 @@ Resources
 | where isnotempty(properties.networkAcls.virtualNetworkRules) and isnotnull(properties.networkAcls.virtualNetworkRules) 
 | where tostring(properties.networkAcls.virtualNetworkRules) != '[]'
 | mv-expand rules = properties.networkAcls.virtualNetworkRules
-| extend allowed_vnet_Subnet = substring(tostring(rules.id), indexof(tostring(rules.id), '/virtual'))
-| where allowed_vnet_Subnet contains "/subnets/default"
-| project name, allowed_vnet_Subnet
+| extend allowed_vnet_subnet = substring(tostring(rules.id), indexof(tostring(rules.id), '/virtual'))
+| where allowed_vnet_subnet contains '/subnets/default'
+| project name, allowed_vnet_subnet
 | order by name asc
