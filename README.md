@@ -95,3 +95,16 @@ https://www.powershellgallery.com/packages/PSWindowsUpdate/2.2.0.2
 | 10 | Get-Unmanaged-Disk.ps1 | Classic and Unmanaged Service | Get **Unmanaged Disk** attached to VM |
 | 11 | Get-vNet-Integration.ps1 | App Service | Get the information of App Service includes status of **Virtual Network Integration** and associated vNet if exist |
 | 11 | Create-vNetPeering-Diagram.ps1 | Virtual Network Diagram | Generate Virtual Network Diagram using **Diagrams.net** |
+
+# Preview Feature
+
+```PowerShell
+# Verify EncryptionAtHost feature is registered by Subscription 
+az feature show --namespace "Microsoft.Network" --name "AllowUpdateAddressSpaceInPeeredVnets"
+
+# Register EncryptionAtHost feature by Subscription 
+az feature register --namespace "Microsoft.Network" --name "AllowUpdateAddressSpaceInPeeredVnets"
+
+# Once the feature 'AllowUpdateAddressSpaceInPeeredVnets' is registered, invoking 'az provider register -n Microsoft.Network' is required to get the change propagated
+az provider register -n Microsoft.Network
+```
