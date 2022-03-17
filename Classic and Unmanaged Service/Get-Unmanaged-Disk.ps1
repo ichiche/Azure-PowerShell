@@ -7,10 +7,10 @@ $CsvFullPath = "C:\Temp\Azure-Unmanaged-Disk.csv" # Export Result to CSV file
 $Global:UnmanagedDisks = @()
 $CurrentItem = 1
 
-# Login
-#az login # For Azure CLI
+# Login 
+az login
+Connect-AzAccount
 Start-Sleep -Seconds 2
-#Connect-AzAccount
 
 # Get Azure Subscription
 if ($SpecificTenant -eq "Y") {
