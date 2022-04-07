@@ -9,7 +9,6 @@ $currentSubscriptionId = ""
 $AllowedSubnetId = @()
 $kvs = $kvs | Sort-Object SubscriptionId
 
-
 # Main
 $StartTime = Get-Date
 Write-Host ("`n")
