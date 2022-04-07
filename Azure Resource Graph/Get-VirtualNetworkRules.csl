@@ -3,7 +3,6 @@
 // Resource Type
 // https://github.com/globalbao/azure-resource-graph/blob/master/README.md#star-azgraph-queries-w-export-to-json
 
-
 // KeyVault and Storage Account
 Resources
 //| where type =~ 'microsoft.keyvault/vaults'
