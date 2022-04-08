@@ -54,6 +54,10 @@ Get the Azure Services with **Availability Zones** enabled in the subscription o
 - Az Module and Azure CLI are not able to retrieve the Zone redundant status
 - https://docs.microsoft.com/en-us/azure/app-service/how-to-zone-redundancy#how-to-deploy-a-zone-redundant-app-service
 
+#### Storage Account
+
+- V1 is recommended to upgrade
+
 #### Regions and Availability Zones in Azure
 
 - https://docs.microsoft.com/en-us/azure/availability-zones/az-overview#services-by-category

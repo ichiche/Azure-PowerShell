@@ -189,7 +189,6 @@ foreach ($Subscription in $Global:Subscriptions) {
 }
 #EndRegion SQL Server in Azure VM
 
-
 #Region Blob Storage
 foreach ($Subscription in $Global:Subscriptions) {
     # Set current subscription for Az Module

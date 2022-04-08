@@ -263,7 +263,14 @@ foreach ($Subscription in $Global:Subscriptions) {
             $EnabledAZone = "N" 
             $DeployedZone = "N/A"
         }
-        Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $StorageAccount.ResourceGroupName -Location $StorageAccount.Location -InstanceName $StorageAccount.StorageAccountName -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledAZone $EnabledAZone -DeployedZone $DeployedZone -Remark ""
+
+        if ($StorageAccount.kind -eq "Storage") {
+            $remark = "Recommend to upgrade to General-purpose v2 storage account"
+        } else {
+            $remark = ""
+        }
+
+        Add-Record -SubscriptionName $Subscription.Name -SubscriptionId $Subscription.Id -ResourceGroup $StorageAccount.ResourceGroupName -Location $StorageAccount.Location -InstanceName $StorageAccount.StorageAccountName -InstanceType $InstanceType -InstanceTypeDetail $InstanceTypeDetail -InstanceSize $sku -CurrentRedundancyType $CurrentRedundancyType -EnabledAZone $EnabledAZone -DeployedZone $DeployedZone -Remark $remark
     }
     #EndRegion Storage Account
 

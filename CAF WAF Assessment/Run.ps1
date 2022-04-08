@@ -2,7 +2,7 @@
 $SpecificTenant = "" # "Y" or "N"
 $TenantId = "" # Enter Tenant ID if $SpecificTenant is "Y"
 $Global:ExcelOutputFolder = "C:\Temp"
-$ExcelFileName = "CAF-Assessment.xlsx" # Export Result to Excel file 
+$ExcelFileName = "WAF-Assessment.xlsx" # Export Result to Excel file 
 
 # Script Variable
 if ($Global:ExcelOutputFolder -notlike "*\") {$Global:ExcelOutputFolder += "\"}
@@ -14,10 +14,10 @@ $Width = 120
 $error.Clear()
 
 # Run-Script Configuration
-$GetAzureBackup = $true
-$GetSql_SqlMI_DB = $true
-$GetDiagnosticSetting = $true
-$GetRedisNetworkIsolation = $true
+$GetAzureBackup = $false
+$GetSql_SqlMI_DB = $false
+$GetDiagnosticSetting = $false
+$GetRedisNetworkIsolation = $false
 $GetAZoneEnabledService = $true
 $GetClassicResource = $true
 
@@ -37,20 +37,8 @@ function Update-RunScriptList {
 if ($host.UI.RawUI.BufferSize.Width -lt $Width) {
     $host.UI.RawUI.BufferSize = New-Object System.Management.Automation.Host.size(120,9999)
     $host.UI.RawUI.WindowSize = New-Object System.Management.Automation.Host.size(120,45)
-    Start-Sleep -Milliseconds 500
+    Start-Sleep -Milliseconds 200
 }
-
-# Banner
-[int]$FontNumber = Get-Random -Minimum 0 -Maximum 5
-$FontType = @()
-$FontType += "standard"
-$FontType += "bell"
-$FontType += "big"
-$FontType += "utopia"
-$FontType += "jazmine"
-Write-Host "`n`n"
-& .\ConvertTo-TextASCIIArt.ps1 -Text "CAF Landing Zone" -FontName $FontType[$FontNumber] -FontColor White
-Start-Sleep -Seconds 2
 
 # Create the Export Folder if not exist
 if (!(Test-Path $Global:ExcelOutputFolder)) {
@@ -84,17 +72,8 @@ if ($SpecificTenant -eq "Y") {
     #$Global:Subscriptions = Get-AzSubscription
 }
 
-# Get the Latest Location Name and Display Name
-$Global:NameReference = Get-AzLocation
-
-# Disable breaking change warning messages
-Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value "true"
-
-# Module
-Import-Module ImportExcel
-
 # Determine Run-Script
-Write-Host "`n`n"
+Write-Host "`n"
 Write-Host "Enabled Run-Script:" -ForegroundColor Green -BackgroundColor Black
 
 if ($GetAzureBackup) {
@@ -134,7 +113,7 @@ if ($GetAZoneEnabledService) {
 
 if ($GetClassicResource) {
     Write-Host "Get the list of Classic Resource" -ForegroundColor Cyan
-    Update-RunScriptList -RunScript "GetClassicResource" -Command "& .\Get-Classic-Resource.ps1"
+    Update-RunScriptList -RunScript "GetClassicResource" -Command "& .\Get-ClassicResource.ps1"
 } else {
     $Global:DisabledRunScript += "Get the list of Classic Resource"
 } 
@@ -147,17 +126,28 @@ if ($Global:DisabledRunScript.Count -ne 0 -and (![string]::IsNullOrEmpty($Global
         Write-Host $item -ForegroundColor Cyan
     }
 }
-Start-Sleep -Seconds 5
+Start-Sleep -Seconds 3
 
 # Startup Message
 Write-Host "`n`n"
 Write-Host ("*" * 60)
 Write-Host ("*" + " " * 58 + "*")
 Write-Host ("*" + " " * 58 + "*")
-Write-Host ("*" + " " * 7 + "Microsoft Cloud Adoption Framework for Azure" + " " * 7 + "*")
+Write-Host ("*" + " " * 58 + "*")
+Write-Host ("*" + " " * 8 + "Microsoft Azure Well-Architected Framework" + " " * 8 + "*")
+Write-Host ("*" + " " * 58 + "*")
 Write-Host ("*" + " " * 58 + "*")
 Write-Host ("*" + " " * 58 + "*")
 Write-Host ("*" * 60)
+
+# Get the Latest Location Name and Display Name
+$Global:NameReference = Get-AzLocation
+
+# Disable breaking change warning messages
+Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value "true"
+
+# Module
+Import-Module ImportExcel
 
 # Execute Run Script using RunspacePool
 Write-Host "`n`nThe process may take more than 30 minutes ..."
