@@ -62,6 +62,10 @@ Get the Azure Services with **Availability Zones** enabled in the subscription o
 
 - https://docs.microsoft.com/en-us/azure/availability-zones/az-overview#services-by-category
 
+## Azure Kubernetes Service (AKS)
+
+- In Summary Page, it indicates by node pool instead of Kubernetes Cluster instance 
+
 ## Azure SQL
 
 #### Limitation
@@ -78,6 +82,8 @@ Get the Azure Services with **Availability Zones** enabled in the subscription o
 
 ## Redis Cache
 
+**Get-Redis-NetworkIsolation.ps1**
+- Verify whether **Availability Zones** is enabled
 - Collect the configuration of Network Isolation Method of Redis Cache Instance
 - Require Azure CLI
 
@@ -125,5 +131,4 @@ For verifying the status of **Region Disaster Recovery** and **Zone to Zone Disa
 | Azure DevOps Organization | microsoft.visualstudio/account | No | No | 
 | SQL Managed Instance Database | Microsoft.Sql/managedInstances/databases | No | No | 
 | SQL Virtual Cluster | Microsoft.Sql/virtualClusters | No | No | 
-| Service Endpoint Policy | Microsoft.Network/serviceEndpointPolicies | **Yes** | **Yes** | 
-
+| Service Endpoint Policy | Microsoft.Network/serviceEndpointPolicies | No | Yes | 
