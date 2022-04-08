@@ -18,7 +18,7 @@
 ## Scope of functionalities
 
 - Get Azure Backup status of **Azure VM**, **SQL Server in Azure VM**, and **Azure Blob Storage**
-- Get Capacity, PITR, LTR, Backup Storage, Replication, Redundancy of Azure SQL / Azure SQL Managed Instance
+- Get information of Azure SQL / Azure SQL Managed Instance
 - Collect Diagnostic Setting
    - Support to get Diagnostic Setting of most mainstream services
 - Collect Azure Cache for Redis Network Configuration
@@ -68,12 +68,40 @@ Get the Azure Services with **Availability Zones** enabled in the subscription o
 
 ## Azure SQL
 
+**Get-AzureSql-SqlMI-Configuration.ps1**
+- Capacity
+- PITR
+- LTR
+- Backup Storage
+- Replication
+- Redundancy
+- Usage
+- Private Endpoint
+- Allow Public Network Access
+   - https://docs.microsoft.com/en-us/azure/azure-sql/database/connectivity-settings#deny-public-network-access
+- Allow Azure Service Access
+   - https://docs.microsoft.com/en-us/powershell/module/servicemanagement/azure.service/new-azuresqldatabaseserverfirewallrule?view=azuresmps-4.0.0#description
+- Outbound firewall rules
+   - https://docs.microsoft.com/en-us/azure/azure-sql/database/outbound-firewall-rule-overview
+
 #### Limitation
 
 - Support to identify a Replica Database, but not support to confirm whether a Database has enabled Geo-Replica
 - Support to identify a Database is added to Failover Group, but not support to explicitly indicate Primary and Secondary of Failover Group
 
 ## Azure SQL Managed Instance
+
+**Get-AzureSql-SqlMI-Configuration.ps1**
+- Capacity
+- PITR
+- LTR
+- Backup Storage
+- Replication
+- Redundancy
+- Usage
+- Private Endpoint
+- Public Endpoint
+   - https://docs.microsoft.com/en-us/azure/azure-sql/managed-instance/public-endpoint-configure
 
 #### Limitation
 
