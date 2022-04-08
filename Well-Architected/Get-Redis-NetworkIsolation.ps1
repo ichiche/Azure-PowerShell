@@ -52,10 +52,10 @@ foreach ($Subscription in $Global:Subscriptions) {
             $EnabledPrivateEndpoint = "N"
         }
 
-        if ($RedisCache.publicNetworkAccess -ne "Enabled") {
-            $AllowPrivateEndpointOnly = "Y"
+        if ($RedisCache.publicNetworkAccess -eq "Enabled") {
+            $AllowPublicNetworkAccess = "Y"
         } else {
-            $AllowPrivateEndpointOnly = "N"
+            $AllowPublicNetworkAccess = "N"
         }
 
          # Save to Temp Object
@@ -70,7 +70,7 @@ foreach ($Subscription in $Global:Subscriptions) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "DeployedZone" -Value $DeployedZone
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledVNetIntegration" -Value $EnabledVNetIntegration
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledPrivateEndpoint" -Value $EnabledPrivateEndpoint
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "AllowPrivateEndpointOnly" -Value $AllowPrivateEndpointOnly
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "AllowPublicNetworkAccess" -Value $AllowPublicNetworkAccess
 
         # Save to Array
         $Global:RedisCacheSetting += $obj
@@ -82,7 +82,7 @@ if ($Global:RedisCacheSetting.Count -ne 0) {
     # Prepare Redis Cache Setting Summary
     $SettingStatus = $Global:RedisCacheSetting
 
-    for ($i = 0; $i -lt 3; $i++) {
+    for ($i = 0; $i -lt 4; $i++) {
         switch ($i) {
             0 { 
                 $CurrentSettingStatus = $SettingStatus | group EnabledAZone | select Name, Count 
@@ -95,6 +95,10 @@ if ($Global:RedisCacheSetting.Count -ne 0) {
             2 { 
                 $CurrentSettingStatus = $SettingStatus | group EnabledPrivateEndpoint | select Name, Count 
                 $NetworkType = "Private Endpoint"
+            }
+            3 { 
+                $CurrentSettingStatus = $SettingStatus | group AllowPublicNetworkAccess | select Name, Count 
+                $NetworkType = "Allow Internet Access"
             }
         }
         
