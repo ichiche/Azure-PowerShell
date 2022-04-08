@@ -61,16 +61,16 @@ Get-AzMetric -ResourceId $ResourceId -MetricName 'storage' -WarningAction Silent
 - Common Parameters
   - https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters?view=powershell-7.2
 
-# CAF Landing Zone Assessment
+# Microsoft Azure Well-Architected Framework
 
-Refer to README.md in **CAF WAF Assessment** folder
+Refer to README.md in **Well-Architected** folder
 
 # Azure Automation
 
 ### Golden Image for Windows and Linux
 
 | Id | File Name | Folder
-| - | - | - | - |
+| - | - | - |
 | 1 | Step_1_CreateReferenceVM_InstallPatch.ps1 | Golden Image |
 | 2 | Step_2_Generalize_Capture_ReferenceVM.ps1 | Golden Image |
 | 3 | Verify_Patch_InstallationStatus.ps1 | Golden Image |
