@@ -1,7 +1,9 @@
+# Retrieve the list of Azure SQL Server that allow specific Virtual Network Subnet. 
 # Global Parameter
-#$TargetVNetSubnetName = "AKS-Cluster"
-$TargetVNetSubnetName = "subnet-sit-hk-peak-k8s-nodes"
+$TargetVNetName = ""
+$TargetVNetSubnetName = ""
 $TenantId = "" 
+$SubscriptionName = ""
 
 # Script Variable
 $Global:SqlServerList = @()
@@ -12,13 +14,13 @@ $VirtualNetworkRuleList = @()
 Connect-AzAccount -TenantId $TenantId 
 
 # Get Azure Subscription
-$Subscriptions = Get-AzSubscription -TenantId $TenantId | ? {$_.Name -like "*DEA*"}
+$Subscriptions = Get-AzSubscription -TenantId $TenantId | ? {$_.Name -like "*$SubscriptionName*"}
 
 # Main
 Write-Host "`nThe process has been started" -ForegroundColor Yellow
 
 foreach ($Subscription in $Subscriptions) {
-	$AzContext = Set-AzContext -SubscriptionId $Subscription.Id
+	$AzContext = Set-AzContext -SubscriptionId $Subscription.Id -TenantId $TenantId
     Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
     $CurrentItem++
 
@@ -27,15 +29,18 @@ foreach ($Subscription in $Subscriptions) {
         Write-Host ("`nProcessing " + $SqlServers.Count + " Azure SQL Server(s)")
     
         foreach ($SqlServer in $SqlServers) {
-            $VirtualNetworkRuleList += Get-AzSqlServerVirtualNetworkRule -ResourceGroupName $SqlServer.ResourceGroupName -ServerName $SqlServer.ServerName | ? {$_.VirtualNetworkSubnetId.ToString() -like "*$TargetVNetSubnetName*"}
+            $VirtualNetworkRuleList += Get-AzSqlServerVirtualNetworkRule -ResourceGroupName $SqlServer.ResourceGroupName -ServerName $SqlServer.ServerName | ? {$_.VirtualNetworkSubnetId.ToString() -like "*$TargetVNetName*" -and $_.VirtualNetworkSubnetId.ToString() -like "*$TargetVNetSubnetName*"}
         }
     }
 }
 
-# Print result
-$ServerName = $VirtualNetworkRuleList | select -unique ServerName
+$servers = $VirtualNetworkRuleList | select -unique ServerName
 
 # End
 Write-Host "`nCompleted" -ForegroundColor Yellow
-Write-Host ("`nCount of Azure SQL Server that allow $TargetVNetSubnetName : " + $ServerName.Count) -ForegroundColor Cyan
+Write-Host "`nList of Azure SQL Server :" -ForegroundColor Cyan
+foreach ($server in $servers) {
+    Write-Host $server.ServerName
+}
+Write-Host ("`nCount of Azure SQL Server that allow $TargetVNetSubnetName : " + $servers.Count) -ForegroundColor Cyan
 Write-Host "`n"

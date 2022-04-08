@@ -1,12 +1,14 @@
 # Global Parameter
-$importedSubnets = Import-Csv ./AllowedNetwork.csv
-$kvs = Import-Csv ./kvs.csv 
+$AllowedNetworks = Import-Csv ./AllowedNetwork.csv
+$kvs = Import-Csv ./KeyVault.csv
 $AllowedIpAddressRange = ("8.8.8.8","8.8.4.4")
+$AllowTrustedMicrosoftServices = $false
 
 # Script Variable
 $RequiredServiceEndpoint = "Microsoft.KeyVault"
 $currentSubscriptionId = ""
 $AllowedSubnetId = @()
+$AllowedNetworks = $AllowedNetworks | Sort-Object SubscriptionId
 $kvs = $kvs | Sort-Object SubscriptionId
 
 # Main
@@ -15,18 +17,27 @@ Write-Host ("`n")
 Write-Host ("[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
 
 # Virtual Network Subnet Detail
-foreach ($importedSubnet in $importedSubnets) {
-    $AllowedSubnetId += $importedSubnet.SubnetId
-    $vnet = Get-AzVirtualNetwork -ResourceGroupName $importedSubnet.ResourceGroupName -Name $importedSubnet.VNetName
+foreach ($AllowedNetwork in $AllowedNetworks) {
+    if ($currentSubscriptionId -ne $AllowedNetwork.SubscriptionId) {
+        $currentSubscriptionId = $AllowedNetwork.SubscriptionId
+        $context = Set-AzContext -SubscriptionId $currentSubscriptionId
+        Write-Host ("`nCurrent Subscription: " + $AllowedNetwork.SubscriptionName) -ForegroundColor Cyan
+    }
+
+    $vnet = Get-AzVirtualNetwork -ResourceGroupName $AllowedNetwork.ResourceGroup -Name $AllowedNetwork.VNetName
 
     # Get Subnet Config
-    $SubnetConfigs = Get-AzVirtualNetworkSubnetConfig -Name $importedSubnet.SubnetName -VirtualNetwork $vnet 
+    $SubnetConfigs = Get-AzVirtualNetworkSubnetConfig -Name $AllowedNetwork.SubnetName -VirtualNetwork $vnet 
     foreach ($SubnetConfig in $SubnetConfigs) {
-        Write-Host ("Subnet: " + $SubnetConfig.Name + " of Virtual Network: " + $vnet.Name)
+        Write-Host ("`nSubnet: " + $SubnetConfig.Name + " of Virtual Network: " + $vnet.Name)
+        $AllowedSubnetId += $SubnetConfig.Id
         
         if ($SubnetConfig.ServiceEndpoints.Service -notcontains $RequiredServiceEndpoint) {
             $NextServiceEndpoint = @()
-            $NextServiceEndpoint += $SubnetConfig.ServiceEndpoints.Service
+
+            if ($SubnetConfig.ServiceEndpoints.Service.Count -gt 0) {
+                $NextServiceEndpoint += $SubnetConfig.ServiceEndpoints.Service
+            }
             $NextServiceEndpoint += $RequiredServiceEndpoint
             Write-Host "Adding $RequiredServiceEndpoint ..."
             Set-AzVirtualNetworkSubnetConfig -Name $SubnetConfig.Name -VirtualNetwork $vnet -AddressPrefix $SubnetConfig.AddressPrefix -ServiceEndpoint $NextServiceEndpoint | Out-Null
@@ -43,8 +54,12 @@ foreach ($kv in $kvs) {
         Write-Host ("`nCurrent Subscription: " + $kv.SubscriptionName) -ForegroundColor Cyan
     }
 
-    Write-Host ("Proceeding " + $kv.Name)
-    Update-AzKeyVaultNetworkRuleSet -ResourceGroupName $kv.ResourceGroup -VaultName $kv.Name -VirtualNetworkResourceId $AllowedSubnetId -IpAddressRange $AllowedIpAddressRange -DefaultAction Deny -Bypass AzureServices -PassThru -Confirm:$false | Out-Null
+    Write-Host ("`nProceeding " + $kv.VaultName)
+    if ($AllowTrustedMicrosoftServices) {
+        Update-AzKeyVaultNetworkRuleSet -ResourceGroupName $kv.ResourceGroup -VaultName $kv.VaultName -VirtualNetworkResourceId $AllowedSubnetId -IpAddressRange $AllowedIpAddressRange -DefaultAction Deny -Bypass AzureServices -PassThru -Confirm:$false | Out-Null
+    } else {
+        Update-AzKeyVaultNetworkRuleSet -ResourceGroupName $kv.ResourceGroup -VaultName $kv.VaultName -VirtualNetworkResourceId $AllowedSubnetId -IpAddressRange $AllowedIpAddressRange -DefaultAction Deny -Bypass None -PassThru -Confirm:$false | Out-Null
+    }
 }
 
 # End
