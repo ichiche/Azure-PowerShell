@@ -17,9 +17,9 @@ $error.Clear()
 $GetAzureBackup = $false
 $GetSql_SqlMI_DB = $false
 $GetDiagnosticSetting = $false
-$GetRedisNetworkIsolation = $false
-$GetAZoneEnabledService = $true
-$GetClassicResource = $true
+$GetRedisNetworkIsolation = $true
+$GetAZoneEnabledService = $false
+$GetClassicResource = $false
 
 function Update-RunScriptList {
     param(
@@ -161,7 +161,7 @@ foreach ($RunScript in $Global:RunScriptList) {
 # End
 Write-Host ("`n")
 Write-Host ("[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
-Write-Host "`n`nCAF Landing Zone Assessment have been completed"
+Write-Host "`n`nWell-Architected Assessment have been completed"
 $EndTime = Get-Date
 $Duration = $EndTime - $StartTime
 Write-Host ("`nTotal Process Time: " + $Duration.Minutes + " Minutes " + $Duration.Seconds + " Seconds") -ForegroundColor Blue -BackgroundColor Black
