@@ -9,13 +9,13 @@
         - Show Kubernetes Cluster total instead of node total
 - Well-Architected Framework Operational Excellence
     - Check resource group that contain no resource
-    - Tagging
-    - Service Health Alert configuration, verify if the location where user has deployed the services that is configured the service alert (Region based)
-    - Resource Health Alert
+    - Tagging (TBC)
+    - Service Health Alert configuration, verify location where user deployed the services that is configured the Region based service alert (TBC)
+    - Resource Health Alert (TBC)
 - Well-Architected Framework Security
     - Resource Lock of subscription and resource group level
-    - Microsoft Defender for XXX
-    - Get-AzDdosProtectionPlan > Get Azure DDoS Standard enabled in all VNET, highlight subnet with Firewall, Gateway, AppGW
+    - Microsoft Defender (TBC)
+    - Get-AzDdosProtectionPlan > Get Azure DDoS Standard enabled in all VNET, highlight subnet with Firewall, Gateway, AppGW (TBC)
 - Network
     - Get Storage Account, Key Vault, Container Registry, PaaS Database Network Rule
 - Azure Database for MySQL
