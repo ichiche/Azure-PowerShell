@@ -80,7 +80,7 @@ Write-Host "`nThis should take less than 10 minutes to complete" -ForegroundColo
 
 # Get Virtual Network
 foreach ($Subscription in $Subscriptions) {
-	$AzContext = Set-AzContext -SubscriptionId $Subscription.Id
+	$AzContext = Set-AzContext -SubscriptionId $Subscription.Id -TenantId $TenantId
     $vns = Get-AzVirtualNetwork
     $vngs = Get-AzResourceGroup | Get-AzVirtualNetworkGateway
 
@@ -149,7 +149,7 @@ Write-Host "Ignore the error message about Set-AzContext and Get-AzVirtualNetwor
 # Get Virtual Network Peering for Virtual Network with Virtual Network Gateway deployed
 foreach ($vn in $Global:vNet) {
     if ($vn.VirtualNetworkGateway -eq "Y") {
-        $AzContext = Set-AzContext -SubscriptionId $vn.SubscriptionId
+        $AzContext = Set-AzContext -SubscriptionId $vn.SubscriptionId -TenantId $TenantId
 
         # Get Peering Status
         $peerings = Get-AzVirtualNetworkPeering -ResourceGroupName $vn.ResourceGroup -VirtualNetworkName $vn.VirtualNetwork
@@ -199,7 +199,7 @@ foreach ($vn in $Global:vNet) {
 # Process Second Layer of the Destination Endpoint Virtual Network with ER / VPN Gateway if exist
 if ($Global:vNetPeering.Count -ne 0) {
     foreach ($vNetWithGateway in $Global:vNetPeering) {
-        $AzContext = Set-AzContext -SubscriptionId $vNetWithGateway.DestinationEndpointSubscriptionId
+        $AzContext = Set-AzContext -SubscriptionId $vNetWithGateway.DestinationEndpointSubscriptionId -TenantId $TenantId
         
         # Get Peering Status
         $peerings = Get-AzVirtualNetworkPeering -ResourceGroupName $vNetWithGateway.DestinationEndpointVirtualNetworkRG -VirtualNetworkName $vNetWithGateway.DestinationEndpointVirtualNetwork
@@ -252,7 +252,7 @@ $vNetPeeringCurrentIndex = $Global:vNetPeering.Count
 # Get Virtual Network Peering for Virtual Network without Virtual Network Gateway deployed
 foreach ($vn in $Global:vNet) {
     if ($vn.VirtualNetworkGateway -eq "N" -and $vn.PeeringCount -gt 0) {
-        $AzContext = Set-AzContext -SubscriptionId $vn.SubscriptionId
+        $AzContext = Set-AzContext -SubscriptionId $vn.SubscriptionId -TenantId $TenantId
 
         # Get Peering Status
         $peerings = Get-AzVirtualNetworkPeering -ResourceGroupName $vn.ResourceGroup -VirtualNetworkName $vn.VirtualNetwork
@@ -301,7 +301,7 @@ foreach ($vn in $Global:vNet) {
 
 # Process Second Layer of the Destination Endpoint Virtual Network without ER / VPN Gateway
 for ($i = $vNetPeeringCurrentIndex; $i -lt $Global:vNetPeering.Count; $i++) {
-    $AzContext = Set-AzContext -SubscriptionId $Global:vNetPeering[$i].DestinationEndpointSubscriptionId
+    $AzContext = Set-AzContext -SubscriptionId $Global:vNetPeering[$i].DestinationEndpointSubscriptionId -TenantId $TenantId
     
     # Get Peering Status
     $peerings = Get-AzVirtualNetworkPeering -ResourceGroupName $Global:vNetPeering[$i].DestinationEndpointVirtualNetworkRG -VirtualNetworkName $Global:vNetPeering[$i].DestinationEndpointVirtualNetwork
