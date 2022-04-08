@@ -32,7 +32,7 @@ All scripts with Multi-threading Capability require PowerShell V7 by using **Pip
 
 - Variable under **# Global Parameter** is expected to modify
 - Variable under **# Script Variable** is expected NOT to modify
-- Modify **# Login** if you would like to leverage **Connect-To-Cloud.ps1** to login Azure
+- Comment **# Login** section if you would like to leverage **Connect-To-Cloud.ps1** to login Azure
 
 # Instruction
 
