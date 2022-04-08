@@ -69,7 +69,7 @@ function Clear-UnsupportedResourceType {
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/firewallPolicies"} # Firewall Instance support Diagnostic settings
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/ipGroups"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/localNetworkGateways"}
-    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/serviceEndpointPolicies"} # Hidden Item, not support Diagnostic settings, but support Tagging
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/serviceEndpointPolicies"} # Not support Diagnostic settings, but support Tagging
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/networkIntentPolicies"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/networkWatchers"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Network/networkWatchers/connectionMonitors"}

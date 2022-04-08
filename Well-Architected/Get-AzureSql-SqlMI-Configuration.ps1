@@ -1,6 +1,7 @@
 # Script Variable
 $Global:SQLBackupStatus = @()
 $Global:SQLBackupStatusSummary = @()
+$Global:SQLAccessSummary = @()
 [int]$CurrentItem = 1
 $ErrorActionPreference = "Continue"
 
@@ -27,7 +28,7 @@ Import-Module ImportExcel
 
 # Main
 Write-Host ("`n" + "=" * 100)
-Write-Host "`nGet Capacity, PITR, LTR, Backup Storage, Replication, Redundancy of SQL / SQL Managed Instance" -ForegroundColor Cyan
+Write-Host "`nGet Information of SQL / SQL Managed Instance" -ForegroundColor Cyan
 
 foreach ($Subscription in $Global:Subscriptions) {
     Write-Host ("`n")
@@ -41,9 +42,11 @@ foreach ($Subscription in $Global:Subscriptions) {
     #Region Azure SQL
 	$SqlServers = Get-AzSqlServer
 	$Databases = $SqlServers | Get-AzSqlDatabase | ? {$_.DatabaseName -ne "Master" -and $_.Edition -ne "DataWarehouse"}
+    $pe = Get-AzPrivateEndpoint
 
 	foreach ($Database in $Databases) {
         Write-Host ("SQL Database: " + $Database.DatabaseName)
+        $SqlServer = $SqlServers | ? {$_.ResourceGroupName -eq $Database.ResourceGroupName -and $_.ServerName -eq $Database.ServerName}
         $Location = Rename-Location -Location $Database.Location
 
         # Pricing Tier
@@ -106,6 +109,37 @@ foreach ($Subscription in $Global:Subscriptions) {
             $ZoneRedundant = "N"
         }
 
+        # Private Endpoint
+        $PrivateLinkResource = $pe | ? {$_.PrivateLinkServiceConnections.PrivateLinkServiceId -eq $SqlServer.ResourceId}
+        if ($PrivateLinkResource.Length -gt 0 -and $PrivateLinkResource -ne $null) {
+            $EnabledPrivateEndpoint = "Y"
+        } else {
+            $EnabledPrivateEndpoint = "N"
+        }
+
+        # Allow Public Network Access
+        # Sql Server provisioned in early stage has no value
+        if ($SqlServer.PublicNetworkAccess -eq "Enabled" -or $SqlServer.PublicNetworkAccess -eq $null) {
+            $AllowPublicNetworkAccess = "Y"
+        } else {
+            $AllowPublicNetworkAccess = "N"
+        }
+
+        # Allow Azure Service Access
+        $rules = Get-AzSqlServerFirewallRule -ResourceGroupName $Database.ResourceGroupName -ServerName $Database.ServerName
+        if ($rules.FirewallRuleName -contains "AllowAllWindowsAzureIps" -or $rules.FirewallRuleName -eq "AllowAllWindowsAzureIps") {
+            $AllowAzureServiceAccess = "Y"
+        } else {
+            $AllowAzureServiceAccess = "N"
+        }
+
+        # Outbound Firewall Rule
+        if ($SqlServer.RestrictOutboundNetworkAccess -eq "Enabled") {
+            $RestrictOutboundNetworkAccess = "Y"
+        } else {
+            $RestrictOutboundNetworkAccess = "N"
+        }
+
         # Backup Policy
         $ShortTerm = Get-AzSqlDatabaseBackupShortTermRetentionPolicy  -ResourceGroupName $Database.ResourceGroupName -ServerName $Database.ServerName -DatabaseName $Database.DatabaseName
         $LongTerm = Get-AzSqlDatabaseBackupLongTermRetentionPolicy -ResourceGroupName $Database.ResourceGroupName -ServerName $Database.ServerName -DatabaseName $Database.DatabaseName
@@ -163,6 +197,11 @@ foreach ($Subscription in $Global:Subscriptions) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "BackupStorageRedundancy" -Value $BackupStorageRedundancy
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "ZoneRedundant" -Value $ZoneRedundant
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledPrivateEndpoint" -Value $EnabledPrivateEndpoint
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "AllowPublicNetworkAccess" -Value $AllowPublicNetworkAccess
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "AllowAzureServiceAccess" -Value $AllowAzureServiceAccess
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "RestrictOutboundNetworkAccess" -Value $RestrictOutboundNetworkAccess
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledPublicEndpoint" -Value "N/A"
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "PITR(Day)" -Value $ShortTerm.RetentionDays
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "WeeklyRetention" -Value $WeeklyRetention
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "MonthlyRetention" -Value $MonthlyRetention
@@ -188,7 +227,7 @@ foreach ($Subscription in $Global:Subscriptions) {
         $Edition = $SqlServer.Sku.Tier
         $Sku = $SqlServer.Sku.Name
         $vCore = $SqlServer.VCores
-
+        
         # Failover Group
         $FailoverGroups = Get-AzSqlDatabaseInstanceFailoverGroup -ResourceGroupName $SqlServer.ResourceGroupName -Location $SqlServer.Location
         $FailoverGroupEnabled = "N"
@@ -215,6 +254,21 @@ foreach ($Subscription in $Global:Subscriptions) {
             $ZoneRedundant = "Y"
         } else {
             $ZoneRedundant = "N"
+        }
+
+        # Private Endpoint
+        $PrivateLinkResource = $pe | ? {$_.PrivateLinkServiceConnections.PrivateLinkServiceId -eq $SqlServer.ResourceId}
+        if ($PrivateLinkResource.Length -gt 0 -and $PrivateLinkResource -ne $null) {
+            $EnabledPrivateEndpoint = "Y"
+        } else {
+            $EnabledPrivateEndpoint = "N"
+        }
+
+        # Public Endpoint
+        if ($SqlServer.PublicDataEndpointEnabled) {
+            $EnabledPublicEndpoint = "Y"
+        } else {
+            $EnabledPublicEndpoint = "N"
         }
 
         # SQL Managed Instance Database
@@ -274,6 +328,11 @@ foreach ($Subscription in $Global:Subscriptions) {
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "FailoverGroupName" -Value $FailoverGroupName
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "BackupStorageRedundancy" -Value $BackupStorageRedundancy
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "ZoneRedundant" -Value $ZoneRedundant
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledPrivateEndpoint" -Value $EnabledPrivateEndpoint
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "AllowPublicNetworkAccess" -Value "N/A"
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "AllowAzureServiceAccess" -Value "N/A"
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "RestrictOutboundNetworkAccess" -Value "N/A"
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledPublicEndpoint" -Value $EnabledPublicEndpoint
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "PITR(Day)" -Value $ShortTerm.RetentionDays
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "WeeklyRetention" -Value $WeeklyRetention
@@ -294,6 +353,8 @@ foreach ($Subscription in $Global:Subscriptions) {
 
 #Region Export
 if ($Global:SQLBackupStatus.Count -ne 0) {
+
+    # Backup Status Summary 
     for ($i = 0; $i -lt 4; $i++) {
         switch ($i) {
             0 { 
@@ -329,8 +390,76 @@ if ($Global:SQLBackupStatus.Count -ne 0) {
         }
     }
 
+    # Access Summary    
+    $ZoneRedundantSetting = $Global:SQLBackupStatus | ? {$_.ResourceType -eq "SQL Database"} | select SubscriptionName, ServerName, ZoneRedundant
+    $ZoneRedundantSetting += $Global:SQLBackupStatus | ? {$_.ResourceType -eq "SQL Managed Instance Database"} | select -Unique SubscriptionName, ServerName, ZoneRedundant
+    $AllSetting = $Global:SQLBackupStatus | select -Unique SubscriptionName, ServerName, EnabledPrivateEndpoint
+    $SqlServerSetting = $Global:SQLBackupStatus | ? {$_.ResourceType -eq "SQL Database"} | select -Unique SubscriptionName, ServerName, AllowPublicNetworkAccess, AllowAzureServiceAccess, RestrictOutboundNetworkAccess
+    $SqlMISetting = $Global:SQLBackupStatus | ? {$_.ResourceType -eq "SQL Managed Instance Database"} | select -Unique SubscriptionName, ServerName, EnabledPublicEndpoint
+
+    $CurrentSettingStatus = $Global:SQLBackupStatus | group ZoneRedundant | select Name, Count 
+    foreach ($item in $CurrentSettingStatus) {
+        $obj = New-Object -TypeName PSobject
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Item" -Value "ZoneRedundant"
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Enabled" -Value $item.Name
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $ZoneRedundantSetting.Count
+        $Global:SQLAccessSummary += $obj
+    }
+
+    $CurrentSettingStatus = $AllSetting| group EnabledPrivateEndpoint | select Name, Count 
+    foreach ($item in $CurrentSettingStatus) {
+        $obj = New-Object -TypeName PSobject
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Item" -Value "EnabledPrivateEndpoint"
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Enabled" -Value $item.Name
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $AllSetting.Count
+        $Global:SQLAccessSummary += $obj
+    }
+
+    $CurrentSettingStatus = $SqlServerSetting | group AllowPublicNetworkAccess | select Name, Count 
+    foreach ($item in $CurrentSettingStatus) {
+        $obj = New-Object -TypeName PSobject
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Item" -Value "AllowPublicNetworkAccess"
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Enabled" -Value $item.Name
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $SqlServerSetting.Count
+        $Global:SQLAccessSummary += $obj
+    }
+
+    $CurrentSettingStatus = $SqlServerSetting | group AllowAzureServiceAccess | select Name, Count 
+    foreach ($item in $CurrentSettingStatus) {
+        $obj = New-Object -TypeName PSobject
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Item" -Value "AllowAzureServiceAccess"
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Enabled" -Value $item.Name
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $SqlServerSetting.Count
+        $Global:SQLAccessSummary += $obj
+    }
+
+    $CurrentSettingStatus = $SqlServerSetting | group RestrictOutboundNetworkAccess | select Name, Count 
+    foreach ($item in $CurrentSettingStatus) {
+        $obj = New-Object -TypeName PSobject
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Item" -Value "RestrictOutboundNetworkAccess"
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Enabled" -Value $item.Name
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $SqlServerSetting.Count
+        $Global:SQLAccessSummary += $obj
+    }
+
+    $CurrentSettingStatus = $SqlMISetting | group EnabledPublicEndpoint | select Name, Count 
+    foreach ($item in $CurrentSettingStatus) {
+        $obj = New-Object -TypeName PSobject
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Item" -Value "EnabledPublicEndpoint"
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Enabled" -Value $item.Name
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $SqlMISetting.Count
+        $Global:SQLAccessSummary += $obj
+    }
+
     # Export to Excel File
-    $Global:SQLBackupStatusSummary | sort ResourceType, RetentionType | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "Sql_SqlMI_Summary" -TableName "Sql_SqlMI_Summary" -TableStyle Medium16 -AutoSize -Append
+    $Global:SQLBackupStatusSummary | sort ResourceType, RetentionType | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "Sql_SqlMI_BackupSummary" -TableName "Sql_SqlMI_BackupSummary" -TableStyle Medium16 -AutoSize -Append
+    $Global:SQLAccessSummary | sort ResourceType, RetentionType | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "Sql_SqlMI_Summary" -TableName "Sql_SqlMI_Summary" -TableStyle Medium16 -AutoSize -Append
     $Global:SQLBackupStatus | sort ResourceType, SubscriptionName, DatabaseName | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "Sql_SqlMI_Detail" -TableName "Sql_SqlMI_Detail" -TableStyle Medium16 -AutoSize -Append
 } else {
     $obj = New-Object -TypeName PSobject

@@ -15,12 +15,12 @@ $error.Clear()
 
 # Run-Script Configuration
 $GetAzureBackup = $false
-$GetSql_SqlMI_DB = $false
+$GetSql_SqlMI_DB = $true
 $GetDiagnosticSetting = $false
 $GetRedisNetworkIsolation = $true
 $GetAZoneEnabledService = $false
-$GetClassicResource = $true
-$GetUnmanagedDisk = $true
+$GetClassicResource = $false
+$GetUnmanagedDisk = $false
 
 function Update-RunScriptList {
     param(
@@ -85,10 +85,10 @@ if ($GetAzureBackup) {
 }
 
 if ($GetSql_SqlMI_DB) {
-    Write-Host "Get Capacity, PITR, LTR, Backup Storage, Replication, Redundancy of SQL / SQL Managed Instance" -ForegroundColor Cyan
+    Write-Host "Get Information of SQL / SQL Managed Instance" -ForegroundColor Cyan
     Update-RunScriptList -RunScript "GetSql_SqlMI_DB" -Command "& .\Get-AzureSql-SqlMI-Configuration.ps1"
 } else {
-    $Global:DisabledRunScript += "Get Capacity, PITR, LTR, Backup Storage, Replication, Redundancy of SQL / SQL Managed Instance"
+    $Global:DisabledRunScript += "Get Information of SQL / SQL Managed Instance"
 } 
 
 if ($GetDiagnosticSetting) {
