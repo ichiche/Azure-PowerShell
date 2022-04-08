@@ -83,7 +83,8 @@ Get the Azure Services with **Availability Zones** enabled in the subscription o
 ## Redis Cache
 
 **Get-Redis-NetworkIsolation.ps1**
-- Verify whether **Availability Zones** is enabled
+- Get **Availability Zones** provision status
+- Get Public Network Access configuration
 - Collect the configuration of Network Isolation Method of Redis Cache Instance
 - Require Azure CLI
 
