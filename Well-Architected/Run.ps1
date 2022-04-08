@@ -19,7 +19,8 @@ $GetSql_SqlMI_DB = $false
 $GetDiagnosticSetting = $false
 $GetRedisNetworkIsolation = $true
 $GetAZoneEnabledService = $false
-$GetClassicResource = $false
+$GetClassicResource = $true
+$GetUnmanagedDisk = $true
 
 function Update-RunScriptList {
     param(
@@ -118,6 +119,13 @@ if ($GetClassicResource) {
     $Global:DisabledRunScript += "Get the list of Classic Resource"
 } 
 
+if ($GetUnmanagedDisk) {
+    Write-Host "Get Unmanaged Disk of Virtual Machine" -ForegroundColor Cyan
+    Update-RunScriptList -RunScript "GetUnmanagedDisk" -Command "& .\Get-Unmanaged-Disk.ps1"
+} else {
+    $Global:DisabledRunScript += "Get Unmanaged Disk of Virtual Machine"
+} 
+
 if ($Global:DisabledRunScript.Count -ne 0 -and (![string]::IsNullOrEmpty($Global:DisabledRunScript))) {
     Write-Host "`n"
     Write-Host "Disabled Run-Script:" -ForegroundColor DarkRed -BackgroundColor Black
@@ -126,7 +134,7 @@ if ($Global:DisabledRunScript.Count -ne 0 -and (![string]::IsNullOrEmpty($Global
         Write-Host $item -ForegroundColor Cyan
     }
 }
-Start-Sleep -Seconds 3
+Start-Sleep -Seconds 2
 
 # Startup Message
 Write-Host "`n`n"

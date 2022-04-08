@@ -1,40 +1,49 @@
-# Global Parameter
-$SpecificTenant = "" # "Y" or "N"
-$TenantId = "" # Enter Tenant ID if $SpecificTenant is "Y"
-$CsvFullPath = "C:\Temp\Azure-Unmanaged-Disk.csv" # Export Result to CSV file 
-
 # Script Variable
-$Global:UnmanagedDisks = @()
+$Global:UnmanagedDisk = @()
+$Global:UnmanagedDiskSummary = @()
 $CurrentItem = 1
 
-# Login 
-az login
-Connect-AzAccount
-Start-Sleep -Seconds 2
+# Function to align the Display Name
+function Rename-Location {
+    param (
+        [string]$Location
+    )
 
-# Get Azure Subscription
-if ($SpecificTenant -eq "Y") {
-    #$Subscriptions = Get-AzSubscription -TenantId $TenantId
-} else {
-    #$Subscriptions = Get-AzSubscription
+    foreach ($item in $Global:NameReference) {
+        if ($item.Location -eq $Location) {
+            $Location = $item.DisplayName
+        }
+    }
+
+    return $Location
 }
 
-# Main
-foreach ($Subscription in $Global:Subscriptions) {
-    # Set current subscription for Az Module
-	$AzContext = Set-AzContext -SubscriptionId $Subscription.Id
+# Disable breaking change warning messages
+Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value "true"
 
-    # Set current subscription for Azure CLI
+# Module
+Import-Module ImportExcel
+
+# Main
+Write-Host ("`n" + "=" * 100)
+Write-Host "`nGet Unmanaged Disk of Virtual Machine" -ForegroundColor Cyan
+
+foreach ($Subscription in $Global:Subscriptions) {
+    Write-Host ("`n")
+    Write-Host ("[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
+	
+    # Set current subscription
+    $AzContext = Set-AzContext -SubscriptionId $Subscription.Id
     az account set --subscription $Subscription.Id
 
-    # Main
-    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Global:Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
+    # Get Az VM List
+    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Global:Subscriptions.Count + " Subscription: " + $Subscription.name) -ForegroundColor Yellow
     $CurrentItem++
     $CurrentVMItem = 1
     $vms = Get-AzVM
 
     foreach ($vm in $vms) {
-        Write-Host ("`nProcessing Azure VM (" + $CurrentVMItem + " out of " + $vms.Count + ") of Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("("))) -ForegroundColor White
+        Write-Host ("`nProcessing Azure VM (" + $CurrentVMItem + " out of " + $vms.Count + ") of Subscription: " + $Subscription.name) -ForegroundColor White
         $CurrentVMItem++
 
         # OS Disk
@@ -50,7 +59,7 @@ foreach ($Subscription in $Global:Subscriptions) {
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "VhdUri" -Value $vm.StorageProfile.OsDisk.Vhd.Uri
 
             # Save to Array
-            $Global:UnmanagedDisks += $obj
+            $Global:UnmanagedDisk += $obj
         }
 
         # Data Disk
@@ -69,19 +78,36 @@ foreach ($Subscription in $Global:Subscriptions) {
                 Add-Member -InputObject $obj -MemberType NoteProperty -Name "VhdUri" -Value $VmDisk.vhd.uri
 
                 # Save to Array
-                $Global:UnmanagedDisks += $obj
+                $Global:UnmanagedDisk += $obj
             }
         }
     }
 }
 
-# Export Result to CSV file
-$Global:UnmanagedDisks | sort SubscriptionName, ResourceGroup, VM | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force 
+#Region Export
+if ($Global:UnmanagedDisk.Count -ne 0) {
+    # Prepare Classic Resources Summary
+    $CountType = $Global:UnmanagedDisk | group DiskType | select Name, Count | sort Name
+    $ResourceTotal = $Global:UnmanagedDisk.Count
 
-# End
-Write-Host "`nCompleted" -ForegroundColor Yellow
-Write-Host ("`nCount of Unmanaged Disk: " + $Global:UnmanagedDisks.Count) -ForegroundColor Cyan
-Write-Host "`n"
+    foreach ($item in $CountType) {
+        $obj = New-Object -TypeName PSobject
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "DiskType" -Value $item.Name 
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $ResourceTotal
+        $Global:UnmanagedDiskSummary += $obj
+    }
 
-# Logout
-Disconnect-AzAccount
+    # Export to Excel File
+    $Global:UnmanagedDiskSummary | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "UnmanagedDiskSummary" -TableName "UnmanagedDiskSummary" -TableStyle Medium16 -AutoSize -Append
+    $Global:UnmanagedDisk | sort SubscriptionName, ResourceGroup, VM, DiskName | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "UnmanagedDiskDetail" -TableName "UnmanagedDiskDetail" -TableStyle Medium16 -AutoSize -Append
+} else {
+    $obj = New-Object -TypeName PSobject
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "Unmanaged Disk"
+    Add-Member -InputObject $obj -MemberType NoteProperty -Name "Status" -Value "Resource is not found"
+    $Global:UnmanagedDiskSummary += $obj
+
+    # Export to Excel File
+    $Global:UnmanagedDiskSummary| Export-Excel -Path $Global:ExcelFullPath -WorksheetName "ResourceNotFound" -TableName "ResourceNotFound" -TableStyle Light11 -AutoSize -Append
+}
+#EndRegion Export

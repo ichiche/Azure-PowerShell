@@ -94,6 +94,8 @@ Reference
 
 ## Virtual Machine
 
+- Require Azure CLI to get Unmanaged Disk information
+
 #### Limitation
 
 For verifying the status of **Region Disaster Recovery** and **Zone to Zone Disaster Recovery**

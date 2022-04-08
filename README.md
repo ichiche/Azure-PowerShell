@@ -9,7 +9,7 @@ All scripts in repository are used for DevTest only.
 | Item | Name | Version | Installation | 
 | - | - | - | - | 
 | 1 | PowerShell | 5.1 <br /> 7.1 | https://docs.microsoft.com/en-us/powershell/scripting/install/installing-powershell-on-windows | 
-| 2 | Az Module | 6.4.0 | https://www.powershellgallery.com/packages/Az |
+| 2 | Az Module | 7.4.0 | https://www.powershellgallery.com/packages/Az |
 | 3 | Az.DataProtection Module | 0.3.0 | https://www.powershellgallery.com/packages/Az.DataProtection |
 | 4 | Azure CLI | 2.28.0 | https://docs.microsoft.com/en-us/cli/azure/install-azure-cli |
 | 5 | ImportExcel | 7.3.0 | https://www.powershellgallery.com/packages/ImportExcel |
