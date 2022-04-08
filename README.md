@@ -63,23 +63,23 @@ Get-AzMetric -ResourceId $ResourceId -MetricName 'storage' -WarningAction Silent
 
 # CAF Landing Zone Assessment
 
-Refer to README.md in corresponding folder for instruction.
+Refer to README.md in **CAF WAF Assessment** folder
 
 # Azure Automation
 
 ### Golden Image for Windows and Linux
 
-| Id | File Name | Folder | Description |
+| Id | File Name | Folder
 | - | - | - | - |
-| 1 | Step_1_CreateReferenceVM_InstallPatch.ps1 | Golden Image |  |
-| 2 | Step_2_Generalize_Capture_ReferenceVM.ps1 | Golden Image |  |
-| 3 | Verify_Patch_InstallationStatus.ps1 | Golden Image |  |
-| 4 | Delete_Obsolete_Image_Version.ps1 | Golden Image |  |
+| 1 | Step_1_CreateReferenceVM_InstallPatch.ps1 | Golden Image |
+| 2 | Step_2_Generalize_Capture_ReferenceVM.ps1 | Golden Image |
+| 3 | Verify_Patch_InstallationStatus.ps1 | Golden Image |
+| 4 | Delete_Obsolete_Image_Version.ps1 | Golden Image |
 
 #### Required PowerShell Module on Azure VM (Windows)
 https://www.powershellgallery.com/packages/PSWindowsUpdate/2.2.0.2
 
-# General Script List
+# General Script List (Legacy)
 
 | Id | File Name | Folder | Description |
 | - | - | - | - |
