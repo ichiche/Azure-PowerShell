@@ -4,6 +4,21 @@ $Global:RedisCacheSettingSummary = @()
 [int]$CurrentItem = 1
 $ErrorActionPreference = "Continue"
 
+# Function to align the Display Name
+function Rename-Location {
+    param (
+        [string]$Location
+    )
+
+    foreach ($item in $Global:NameReference) {
+        if ($item.Location -eq $Location) {
+            $Location = $item.DisplayName
+        }
+    }
+
+    return $Location
+}
+
 # Disable breaking change warning messages
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value "true"
 
@@ -17,6 +32,8 @@ Write-Host "`nGet Azure Cache for Redis Network Configuration" -ForegroundColor 
 foreach ($Subscription in $Global:Subscriptions) {
     Write-Host ("`n")
     Write-Host ("[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
+    
+    # Set current subscription
     az account set --subscription $Subscription.Id
     Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Global:Subscriptions.Count + " Subscription: " + $Subscription.name) -ForegroundColor Yellow
     $CurrentItem++
@@ -26,6 +43,8 @@ foreach ($Subscription in $Global:Subscriptions) {
 
     # Get configuration of each Redis Cache
     foreach ($RedisCache in $RedisCaches) {
+        $Location = Rename-Location -Location $RedisCache.location
+
         # SKU
         $sku = ($RedisCache.sku.name + ": " + $RedisCache.sku.family + $RedisCache.sku.capacity)
 
@@ -39,6 +58,8 @@ foreach ($Subscription in $Global:Subscriptions) {
         }
 
         # Redis vNet integration (Not compatible with Redis Private Endpoint)
+        # Enforce to disable public network access
+        # Available for Premium only
         if ($RedisCache.sku.name -eq "Premium" -and $RedisCache.subnetId -ne $null) {
             $EnabledVNetIntegration = "Y"
         } else {
@@ -46,7 +67,8 @@ foreach ($Subscription in $Global:Subscriptions) {
         }
 
         # Redis Private Endpoint (Not compatible with Redis vNet integration)
-        if ($RedisCache.privateEndpointConnections -ne $null) {
+        # Available for Premium, Enterprise and Enterprise Flash
+        if ($RedisCache.sku.name -ne "Basic" -and $RedisCache.sku.name -ne "Standard" -and $RedisCache.privateEndpointConnections -ne $null) {
             $EnabledPrivateEndpoint = "Y"
         } else {
             $EnabledPrivateEndpoint = "N"
@@ -58,14 +80,14 @@ foreach ($Subscription in $Global:Subscriptions) {
             $AllowPublicNetworkAccess = "N"
         }
 
-         # Save to Temp Object
+        # Save to Temp Object
         $obj = New-Object -TypeName PSobject
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value $Subscription.name
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionId" -Value $Subscription.id
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceGroup" -Value $RedisCache.resourceGroup
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceName" -Value $RedisCache.name
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Size" -Value $sku
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $RedisCache.location
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledAZone" -Value $EnabledAZone
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "DeployedZone" -Value $DeployedZone
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledVNetIntegration" -Value $EnabledVNetIntegration

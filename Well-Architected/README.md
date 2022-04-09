@@ -18,11 +18,12 @@
 ## Scope of functionalities
 
 - Get Azure Backup status of **Azure VM**, **SQL Server in Azure VM**, and **Azure Blob Storage**
-- Get information of Azure SQL / Azure SQL Managed Instance
-- Collect Diagnostic Setting
-   - Support to get Diagnostic Setting of most mainstream services
-- Collect Azure Cache for Redis Network Configuration
-   - Include Availability Zones
+- Get Azure SQL / Azure SQL Managed Instance Configuration
+   - Include Availability Zones, Firewall Rule, Replication, Backup
+- Get Diagnostic Setting
+   - Only mainstream services support Diagnostic Log
+- Get Storage Account and Azure Cache for Redis Configuration
+   - Include Availability Zones, Networking, Firewall Rule
 - Get Availability Zone Enabled Service  
 - Get Classic Resource
 
@@ -54,10 +55,6 @@ Get the Azure Services with **Availability Zones** enabled in the subscription o
 - Az Module and Azure CLI are not able to retrieve the Zone redundant status
 - https://docs.microsoft.com/en-us/azure/app-service/how-to-zone-redundancy#how-to-deploy-a-zone-redundant-app-service
 
-#### Storage Account
-
-- V1 is recommended to upgrade
-
 #### Regions and Availability Zones in Azure
 
 - https://docs.microsoft.com/en-us/azure/availability-zones/az-overview#services-by-category
@@ -65,6 +62,16 @@ Get the Azure Services with **Availability Zones** enabled in the subscription o
 ## Azure Kubernetes Service (AKS)
 
 - In Summary Page, it indicates by node pool instead of Kubernetes Cluster instance 
+
+## Storage Account
+
+- Allow blob public access
+   - https://docs.microsoft.com/en-us/azure/storage/blobs/anonymous-read-access-prevent
+- Allow Shared Key Access
+   - https://docs.microsoft.com/en-us/azure/storage/common/shared-key-authorization-prevent?tabs=portal
+- Private Endpoint
+- Allow Public Network Access
+- V1 is recommended to upgrade
 
 ## Azure SQL
 
@@ -114,11 +121,14 @@ Get the Azure Services with **Availability Zones** enabled in the subscription o
 - Get **Availability Zones** provision status
 - Get Public Network Access configuration
 - Collect the configuration of Network Isolation Method of Redis Cache Instance
-- Require Azure CLI
+- Zone Redundancy isn't supported with geo-replication
+- Persistence isn't supported with geo-replication
+- Script require Azure CLI
 
 Reference
 
 - https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-network-isolation
+- https://docs.microsoft.com/en-us/azure/azure-cache-for-redis/cache-how-to-geo-replication#geo-replication-prerequisites
 
 ## Virtual Machine
 

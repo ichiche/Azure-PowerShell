@@ -1,7 +1,7 @@
 # Script Variable
-$Global:SQLBackupStatus = @()
-$Global:SQLBackupStatusSummary = @()
-$Global:SQLAccessSummary = @()
+$Global:SqlSetting = @()
+$Global:SqlSettingSummary = @()
+$Global:SqlAccessSummary = @()
 [int]$CurrentItem = 1
 $ErrorActionPreference = "Continue"
 
@@ -28,7 +28,7 @@ Import-Module ImportExcel
 
 # Main
 Write-Host ("`n" + "=" * 100)
-Write-Host "`nGet Information of SQL / SQL Managed Instance" -ForegroundColor Cyan
+Write-Host "`nGet SQL / SQL Managed Instance Configuration" -ForegroundColor Cyan
 
 foreach ($Subscription in $Global:Subscriptions) {
     Write-Host ("`n")
@@ -213,7 +213,7 @@ foreach ($Subscription in $Global:Subscriptions) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "ServerReservedSize(GB)" -Value "N/A"
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "ServerUsedSize(GB)" -Value "N/A"
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "DBCreationDate" -Value $Database.CreationDate
-        $Global:SQLBackupStatus += $obj
+        $Global:SqlSetting += $obj
 	}
     #EndRegion Azure SQL
 
@@ -345,32 +345,32 @@ foreach ($Subscription in $Global:Subscriptions) {
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "ServerReservedSize(GB)"  -Value $MI_ReservedSpace
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "ServerUsedSize(GB)"  -Value $MI_UsedSpace
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "DBCreationDate" -Value $Database.CreationDate
-            $Global:SQLBackupStatus += $obj
+            $Global:SqlSetting += $obj
         }
     }
     #EndRegion Azure SQL Managed Instance
 }
 
 #Region Export
-if ($Global:SQLBackupStatus.Count -ne 0) {
+if ($Global:SqlSetting.Count -ne 0) {
 
     # Backup Status Summary 
     for ($i = 0; $i -lt 4; $i++) {
         switch ($i) {
             0 { 
-                $CurrentSettingStatus = $Global:SQLBackupStatus | group ResourceType, "PITR(Day)" | select Name, Count 
+                $CurrentSettingStatus = $Global:SqlSetting | group ResourceType, "PITR(Day)" | select Name, Count 
                 $RetentionType = "Point-in-time restore (PITR)"
             }
             1 { 
-                $CurrentSettingStatus = $Global:SQLBackupStatus | group ResourceType, WeeklyRetention | select Name, Count 
+                $CurrentSettingStatus = $Global:SqlSetting | group ResourceType, WeeklyRetention | select Name, Count 
                 $RetentionType = "Long-term retention (Weekly)"
             }
             2 { 
-                $CurrentSettingStatus = $Global:SQLBackupStatus | group ResourceType, MonthlyRetention | select Name, Count 
+                $CurrentSettingStatus = $Global:SqlSetting | group ResourceType, MonthlyRetention | select Name, Count 
                 $RetentionType = "Long-term retention (Monthly)"
             }
             3 { 
-                $CurrentSettingStatus = $Global:SQLBackupStatus | group ResourceType, YearlyRetention | select Name, Count 
+                $CurrentSettingStatus = $Global:SqlSetting | group ResourceType, YearlyRetention | select Name, Count 
                 $RetentionType = "Long-term retention (Yearly)"
             }
         }
@@ -378,7 +378,7 @@ if ($Global:SQLBackupStatus.Count -ne 0) {
         foreach ($item in $CurrentSettingStatus) {
             $ResourceType = $item.Name.Substring(0, $item.Name.IndexOf(","))
             $Retention = $item.Name.Substring($item.Name.IndexOf(",") + 1)
-            $ResourceTotal = $Global:SQLBackupStatus | group ResourceType | ? {$_.Name -eq $ResourceType} | select -ExpandProperty Count
+            $ResourceTotal = $Global:SqlSetting | group ResourceType | ? {$_.Name -eq $ResourceType} | select -ExpandProperty Count
 
             $obj = New-Object -TypeName PSobject
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value $ResourceType
@@ -386,25 +386,32 @@ if ($Global:SQLBackupStatus.Count -ne 0) {
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "Retention" -Value $Retention
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $ResourceTotal
-            $Global:SQLBackupStatusSummary += $obj
+            $Global:SqlSettingSummary += $obj
         }
     }
 
-    # Access Summary    
-    $ZoneRedundantSetting = $Global:SQLBackupStatus | ? {$_.ResourceType -eq "SQL Database"} | select SubscriptionName, ServerName, ZoneRedundant
-    $ZoneRedundantSetting += $Global:SQLBackupStatus | ? {$_.ResourceType -eq "SQL Managed Instance Database"} | select -Unique SubscriptionName, ServerName, ZoneRedundant
-    $AllSetting = $Global:SQLBackupStatus | select -Unique SubscriptionName, ServerName, EnabledPrivateEndpoint
-    $SqlServerSetting = $Global:SQLBackupStatus | ? {$_.ResourceType -eq "SQL Database"} | select -Unique SubscriptionName, ServerName, AllowPublicNetworkAccess, AllowAzureServiceAccess, RestrictOutboundNetworkAccess
-    $SqlMISetting = $Global:SQLBackupStatus | ? {$_.ResourceType -eq "SQL Managed Instance Database"} | select -Unique SubscriptionName, ServerName, EnabledPublicEndpoint
+    # Access Summary
+    # Zone Redundant per SQL Database(s) and SQL Managed Instance Database
+    $ZoneRedundantSetting = $Global:SqlSetting | ? {$_.ResourceType -eq "SQL Database"} | select SubscriptionName, ServerName, ZoneRedundant
+    $ZoneRedundantSetting += $Global:SqlSetting | ? {$_.ResourceType -eq "SQL Managed Instance Database"} | select -Unique SubscriptionName, ServerName, ZoneRedundant
+    
+    # Private Endpoint per SQL Server and SQL Managed Instance Database
+    $AllSetting = $Global:SqlSetting | select -Unique SubscriptionName, ServerName, EnabledPrivateEndpoint
+    
+    # Per SQL Server
+    $SqlServerSetting = $Global:SqlSetting | ? {$_.ResourceType -eq "SQL Database"} | select -Unique SubscriptionName, ServerName, AllowPublicNetworkAccess, AllowAzureServiceAccess, RestrictOutboundNetworkAccess
+    
+    # Per SQL Managed Instance Database
+    $SqlMISetting = $Global:SqlSetting | ? {$_.ResourceType -eq "SQL Managed Instance Database"} | select -Unique SubscriptionName, ServerName, EnabledPublicEndpoint
 
-    $CurrentSettingStatus = $Global:SQLBackupStatus | group ZoneRedundant | select Name, Count 
+    $CurrentSettingStatus = $Global:SqlSetting | group ZoneRedundant | select Name, Count 
     foreach ($item in $CurrentSettingStatus) {
         $obj = New-Object -TypeName PSobject
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Item" -Value "ZoneRedundant"
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Enabled" -Value $item.Name
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $ZoneRedundantSetting.Count
-        $Global:SQLAccessSummary += $obj
+        $Global:SqlAccessSummary += $obj
     }
 
     $CurrentSettingStatus = $AllSetting| group EnabledPrivateEndpoint | select Name, Count 
@@ -414,7 +421,7 @@ if ($Global:SQLBackupStatus.Count -ne 0) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Enabled" -Value $item.Name
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $AllSetting.Count
-        $Global:SQLAccessSummary += $obj
+        $Global:SqlAccessSummary += $obj
     }
 
     $CurrentSettingStatus = $SqlServerSetting | group AllowPublicNetworkAccess | select Name, Count 
@@ -424,7 +431,7 @@ if ($Global:SQLBackupStatus.Count -ne 0) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Enabled" -Value $item.Name
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $SqlServerSetting.Count
-        $Global:SQLAccessSummary += $obj
+        $Global:SqlAccessSummary += $obj
     }
 
     $CurrentSettingStatus = $SqlServerSetting | group AllowAzureServiceAccess | select Name, Count 
@@ -434,7 +441,7 @@ if ($Global:SQLBackupStatus.Count -ne 0) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Enabled" -Value $item.Name
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $SqlServerSetting.Count
-        $Global:SQLAccessSummary += $obj
+        $Global:SqlAccessSummary += $obj
     }
 
     $CurrentSettingStatus = $SqlServerSetting | group RestrictOutboundNetworkAccess | select Name, Count 
@@ -444,7 +451,7 @@ if ($Global:SQLBackupStatus.Count -ne 0) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Enabled" -Value $item.Name
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $SqlServerSetting.Count
-        $Global:SQLAccessSummary += $obj
+        $Global:SqlAccessSummary += $obj
     }
 
     $CurrentSettingStatus = $SqlMISetting | group EnabledPublicEndpoint | select Name, Count 
@@ -454,25 +461,25 @@ if ($Global:SQLBackupStatus.Count -ne 0) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Enabled" -Value $item.Name
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Subtotal" -Value $item.Count
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Total" -Value $SqlMISetting.Count
-        $Global:SQLAccessSummary += $obj
+        $Global:SqlAccessSummary += $obj
     }
 
     # Export to Excel File
-    $Global:SQLBackupStatusSummary | sort ResourceType, RetentionType | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "Sql_SqlMI_BackupSummary" -TableName "Sql_SqlMI_BackupSummary" -TableStyle Medium16 -AutoSize -Append
-    $Global:SQLAccessSummary | sort ResourceType, RetentionType | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "Sql_SqlMI_Summary" -TableName "Sql_SqlMI_Summary" -TableStyle Medium16 -AutoSize -Append
-    $Global:SQLBackupStatus | sort ResourceType, SubscriptionName, DatabaseName | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "Sql_SqlMI_Detail" -TableName "Sql_SqlMI_Detail" -TableStyle Medium16 -AutoSize -Append
+    $Global:SqlSettingSummary | sort ResourceType, RetentionType | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "Sql_SqlMI_BackupSummary" -TableName "Sql_SqlMI_BackupSummary" -TableStyle Medium16 -AutoSize -Append
+    $Global:SqlAccessSummary | sort ResourceType, RetentionType | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "Sql_SqlMI_Summary" -TableName "Sql_SqlMI_Summary" -TableStyle Medium16 -AutoSize -Append
+    $Global:SqlSetting | sort ResourceType, SubscriptionName, DatabaseName | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "Sql_SqlMI_Detail" -TableName "Sql_SqlMI_Detail" -TableStyle Medium16 -AutoSize -Append
 } else {
     $obj = New-Object -TypeName PSobject
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "Azure SQL"
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "Status" -Value "Resource is not found"
-    $Global:SQLBackupStatusSummary += $obj
+    $Global:SqlSettingSummary += $obj
 
     $obj = New-Object -TypeName PSobject
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "Azure SQL Managed Instance"
     Add-Member -InputObject $obj -MemberType NoteProperty -Name "Status" -Value "Resource is not found"
-    $Global:SQLBackupStatusSummary += $obj
+    $Global:SqlSettingSummary += $obj
 
     # Export to Excel File
-    $Global:SQLBackupStatusSummary | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "ResourceNotFound" -TableName "ResourceNotFound" -TableStyle Light11 -AutoSize -Append
+    $Global:SqlSettingSummary | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "ResourceNotFound" -TableName "ResourceNotFound" -TableStyle Light11 -AutoSize -Append
 }
 #EndRegion Export

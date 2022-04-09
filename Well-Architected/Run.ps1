@@ -15,12 +15,13 @@ $error.Clear()
 
 # Run-Script Configuration
 $GetAzureBackup = $false
-$GetSql_SqlMI_DB = $true
-$GetDiagnosticSetting = $false
-$GetRedisNetworkIsolation = $true
+$GetSql_SqlMI_DB = $false
+$GetDiagnosticSetting = $true
+$GetRedisNetworkIsolation = $false
 $GetAZoneEnabledService = $false
 $GetClassicResource = $false
 $GetUnmanagedDisk = $false
+$GetStorageAccount = $true
 
 function Update-RunScriptList {
     param(
@@ -85,10 +86,10 @@ if ($GetAzureBackup) {
 }
 
 if ($GetSql_SqlMI_DB) {
-    Write-Host "Get Information of SQL / SQL Managed Instance" -ForegroundColor Cyan
+    Write-Host "Get SQL / SQL Managed Instance Configuration" -ForegroundColor Cyan
     Update-RunScriptList -RunScript "GetSql_SqlMI_DB" -Command "& .\Get-AzureSql-SqlMI-Configuration.ps1"
 } else {
-    $Global:DisabledRunScript += "Get Information of SQL / SQL Managed Instance"
+    $Global:DisabledRunScript += "Get SQL / SQL Managed Instance Configuration"
 } 
 
 if ($GetDiagnosticSetting) {
@@ -126,6 +127,13 @@ if ($GetUnmanagedDisk) {
     $Global:DisabledRunScript += "Get Unmanaged Disk of Virtual Machine"
 } 
 
+if ($GetStorageAccount) {
+    Write-Host "Get Storage Account Configuration" -ForegroundColor Cyan
+    Update-RunScriptList -RunScript "GetUnmanagedDisk" -Command "& .\Get-StorageAccount-Configuration.ps1"
+} else {
+    $Global:DisabledRunScript += "Get Storage Account Configuration"
+} 
+
 if ($Global:DisabledRunScript.Count -ne 0 -and (![string]::IsNullOrEmpty($Global:DisabledRunScript))) {
     Write-Host "`n"
     Write-Host "Disabled Run-Script:" -ForegroundColor DarkRed -BackgroundColor Black
@@ -134,7 +142,7 @@ if ($Global:DisabledRunScript.Count -ne 0 -and (![string]::IsNullOrEmpty($Global
         Write-Host $item -ForegroundColor Cyan
     }
 }
-Start-Sleep -Seconds 2
+Start-Sleep -Seconds 1
 
 # Startup Message
 Write-Host "`n`n"
@@ -160,7 +168,7 @@ Import-Module ImportExcel
 # Execute Run Script using RunspacePool
 Write-Host "`n`nThe process may take more than 30 minutes ..."
 Write-Host "`nPlease wait until it finishes ..."
-Start-Sleep -Seconds 5
+Start-Sleep -Seconds 1
 $StartTime = Get-Date
 foreach ($RunScript in $Global:RunScriptList) {
     Invoke-Expression -Command $RunScript.Command

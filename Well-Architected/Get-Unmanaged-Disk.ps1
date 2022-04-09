@@ -3,21 +3,6 @@ $Global:UnmanagedDisk = @()
 $Global:UnmanagedDiskSummary = @()
 $CurrentItem = 1
 
-# Function to align the Display Name
-function Rename-Location {
-    param (
-        [string]$Location
-    )
-
-    foreach ($item in $Global:NameReference) {
-        if ($item.Location -eq $Location) {
-            $Location = $item.DisplayName
-        }
-    }
-
-    return $Location
-}
-
 # Disable breaking change warning messages
 Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value "true"
 
@@ -35,9 +20,9 @@ foreach ($Subscription in $Global:Subscriptions) {
     # Set current subscription
     $AzContext = Set-AzContext -SubscriptionId $Subscription.Id
     az account set --subscription $Subscription.Id
+    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Global:Subscriptions.Count + " Subscription: " + $Subscription.name) -ForegroundColor Yellow
 
     # Get Az VM List
-    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Global:Subscriptions.Count + " Subscription: " + $Subscription.name) -ForegroundColor Yellow
     $CurrentItem++
     $CurrentVMItem = 1
     $vms = Get-AzVM

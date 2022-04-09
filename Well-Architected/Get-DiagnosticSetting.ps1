@@ -142,6 +142,8 @@ Write-Host "`nGet Diagnostic Setting" -ForegroundColor Cyan
 foreach ($Subscription in $Global:Subscriptions) {
     Write-Host ("`n")
     Write-Host ("[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
+    
+    # Set current subscription
     $AzContext = Set-AzContext -SubscriptionId $Subscription.Id
     Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Global:Subscriptions.Count + " Subscription: " + $Subscription.name) -ForegroundColor Yellow
     $CurrentItem++
@@ -193,7 +195,7 @@ foreach ($Subscription in $Global:Subscriptions) {
             $EndIndex = ($StartIndex + $PartitionSize - 1)
         }
     
-        # Start Getting Information
+        # Start Threading
         Write-Host ("Thread $_ : Index From " + $StartIndex + " to " + $EndIndex) -ForegroundColor DarkGreen
         foreach ($item in $LocalTempList[$StartIndex..$EndIndex]) {
             Start-Sleep -Milliseconds 300
