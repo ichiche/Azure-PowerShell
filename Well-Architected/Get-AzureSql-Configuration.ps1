@@ -52,10 +52,10 @@ foreach ($Subscription in $Global:Subscriptions) {
         # Pricing Tier
         $Edition = $Database.Edition
         if ($Edition -eq "Premium" -or $Edition -eq "Standard" -or $Edition -eq "Basic") {
-            $Sku = $Database.CurrentServiceObjectiveName
+            $sku = $Database.CurrentServiceObjectiveName
             $vCore = "N/A"
         } else {
-            $Sku = $Database.SkuName
+            $sku = $Database.SkuName
             $vCore = $Database.Capacity
         }
 
@@ -67,9 +67,9 @@ foreach ($Subscription in $Global:Subscriptions) {
             $ElasticPool = Get-AzSqlElasticPool -ResourceGroupName $Database.ResourceGroupName -ServerName $Database.ServerName -ElasticPoolName $PoolName
 
             if ($ElasticPool.Edition -eq "Premium" -or $ElasticPool.Edition -eq "Standard" -or $ElasticPool.Edition -eq "Basic") {
-                $Sku += " " + $ElasticPool.Capacity + " DTU"
+                $sku += " " + $ElasticPool.Capacity + " DTU"
             } else {
-                $Sku += " " + $ElasticPool.SkuName
+                $sku += " " + $ElasticPool.SkuName
                 $vCore = $ElasticPool.Capacity
             }
         }
@@ -188,7 +188,7 @@ foreach ($Subscription in $Global:Subscriptions) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "DatabaseName" -Value $Database.DatabaseName
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "SQL Database"
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Edition" -Value $Edition
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Sku" -Value $Sku
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "SKU" -Value $sku
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "vCore" -Value $vCore
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "ElasticPoolName" -Value $PoolName
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "IsReplica" -Value $IsReplica

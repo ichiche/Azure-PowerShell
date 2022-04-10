@@ -17,7 +17,7 @@
 - PaaS Networking
     - Get App Service, Key Vault, Container Registry
     - Check Private Endpoint Status for above resources 
-- Azure Database for MySQL
+-Azure Database for MySQL
     - Get Backup retention and redundancy option
 - Cosmos DB
     - Get Backup Info (periodic mode backup policy includes Backup Interval, Retention, Copies of data retained, storage redundancy) and (continuous backup mode)

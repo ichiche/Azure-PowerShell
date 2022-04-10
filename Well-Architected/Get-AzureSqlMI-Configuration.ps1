@@ -47,7 +47,7 @@ foreach ($Subscription in $Global:Subscriptions) {
 
         # Pricing Tier
         $Edition = $SqlServer.Sku.Tier
-        $Sku = $SqlServer.Sku.Name
+        $sku = $SqlServer.Sku.Name
         $vCore = $SqlServer.VCores
         
         # Failover Group
@@ -142,7 +142,7 @@ foreach ($Subscription in $Global:Subscriptions) {
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "DatabaseName" -Value $Database.Name
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceType" -Value "SQL Managed Instance Database"
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "Edition" -Value $Edition
-            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Sku" -Value $Sku
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "SKU" -Value $sku
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "vCore" -Value $vCore
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "FailoverGroupEnabled" -Value $FailoverGroupEnabled
             Add-Member -InputObject $obj -MemberType NoteProperty -Name "FailoverGroupName" -Value $FailoverGroupName

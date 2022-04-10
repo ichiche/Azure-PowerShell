@@ -22,7 +22,8 @@ $GetRedisCache = $true
 $GetAZoneEnabledService = $false
 $GetClassicResource = $false
 $GetUnmanagedDisk = $false
-$GetStorageAccount = $true
+$GetStorageAccount = $false
+$GetAppService = $true
 
 function Update-RunScriptList {
     param(
@@ -88,14 +89,14 @@ if ($GetAzureBackup) {
 
 if ($GetAzureSql) {
     Write-Host "Get Azure SQL Configuration" -ForegroundColor Cyan
-    Update-RunScriptList -RunScript "GetSql_DB" -Command "& .\Get-AzureSql-Configuration.ps1"
+    Update-RunScriptList -RunScript "GetAzureSql" -Command "& .\Get-AzureSql-Configuration.ps1"
 } else {
     $Global:DisabledRunScript += "Get Azure SQL Configuration"
 } 
 
 if ($GetAzureSqlMI) {
     Write-Host "Get Azure SQL Managed Instance Configuration" -ForegroundColor Cyan
-    Update-RunScriptList -RunScript "GetSqlMI_DB" -Command "& .\Get-AzureSqlMI-Configuration.ps1"
+    Update-RunScriptList -RunScript "GetAzureSqlMI" -Command "& .\Get-AzureSqlMI-Configuration.ps1"
 } else {
     $Global:DisabledRunScript += "Get Azure SQL Managed Instance Configuration"
 } 
@@ -109,7 +110,7 @@ if ($GetDiagnosticSetting) {
 
 if ($GetRedisCache) {
     Write-Host "Get Azure Cache for Redis Network Configuration" -ForegroundColor Cyan
-    Update-RunScriptList -RunScript "GetRedisNetworkIsolation" -Command "& .\Get-Redis-Configuration.ps1"
+    Update-RunScriptList -RunScript "GetRedisCache" -Command "& .\Get-Redis-Configuration.ps1"
 } else {
     $Global:DisabledRunScript += "Get Azure Cache for Redis Network Configuration"
 } 
@@ -137,9 +138,16 @@ if ($GetUnmanagedDisk) {
 
 if ($GetStorageAccount) {
     Write-Host "Get Storage Account Configuration" -ForegroundColor Cyan
-    Update-RunScriptList -RunScript "GetUnmanagedDisk" -Command "& .\Get-StorageAccount-Configuration.ps1"
+    Update-RunScriptList -RunScript "GetStorageAccount" -Command "& .\Get-StorageAccount-Configuration.ps1"
 } else {
     $Global:DisabledRunScript += "Get Storage Account Configuration"
+} 
+
+if ($GetAppService) {
+    Write-Host "Get App Service Configuration" -ForegroundColor Cyan
+    Update-RunScriptList -RunScript "GetAppService" -Command "& .\Get-AppService.ps1"
+} else {
+    $Global:DisabledRunScript += "Get App Service Configuration"
 } 
 
 if ($Global:DisabledRunScript.Count -ne 0 -and (![string]::IsNullOrEmpty($Global:DisabledRunScript))) {

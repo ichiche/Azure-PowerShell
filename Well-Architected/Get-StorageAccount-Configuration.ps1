@@ -51,10 +51,10 @@ foreach ($Subscription in $Global:Subscriptions) {
         # Redundancy
         if ($sku -like "*ZRS*") {
             $CurrentRedundancyType = $sku.Substring($sku.IndexOf("_") + 1)
-            $EnabledAZone = "Y" 
+            $ZoneRedundant = "Y" 
         } else {
             $CurrentRedundancyType = $sku.Substring($sku.IndexOf("_") + 1)
-            $EnabledAZone = "N" 
+            $ZoneRedundant = "N" 
         }
 
         # When allow blob public access is enabled, one is permitted to configure container ACLs to allow anonymous access to blobs within the storage account. 
@@ -116,15 +116,15 @@ foreach ($Subscription in $Global:Subscriptions) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value $Subscription.Name
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionId" -Value $Subscription.Id
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "ResourceGroup" -Value $StorageAccount.ResourceGroupName
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "InstanceName" -Value $StorageAccount.StorageAccountName
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "SKU" -Value $sku
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Type" -Value $StorageAccount.Kind
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Location" -Value $Location
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "AccessTier" -Value $StorageAccount.AccessTier
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "RedundancyType" -Value $CurrentRedundancyType
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "AllowAnonymousAccess" -Value $AllowBlobPublicAccess
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "AllowSharedKeyAccess" -Value $AllowSharedKeyAccess
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledAZone" -Value $EnabledAZone
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "ZoneRedundant" -Value $ZoneRedundant
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledPrivateEndpoint" -Value $EnabledPrivateEndpoint
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "PublicNetworkAccess" -Value $PublicNetworkAccess
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "FirewallBypass" -Value $FirewallBypass

@@ -46,16 +46,18 @@ Get the Azure Services with **Availability Zones** enabled in the subscription o
 **Get-AzureSqlMI-Configuration.ps1**
 - Azure SQL Managed Instance
 
-#### App Service
-
-- Zone Redundant is supported to be created by ARM template at this moment
-- Zone redundant status is shown on Azure Portal only
-- Az Module and Azure CLI are not able to retrieve the Zone redundant status
-- https://docs.microsoft.com/en-us/azure/app-service/how-to-zone-redundancy#how-to-deploy-a-zone-redundant-app-service
-
 #### Regions and Availability Zones in Azure
 
 - https://docs.microsoft.com/en-us/azure/availability-zones/az-overview#services-by-category
+
+## App Service
+
+- Zone Redundant
+   - https://docs.microsoft.com/en-us/azure/app-service/how-to-zone-redundancy#how-to-deploy-a-zone-redundant-app-service
+- Private Endpoint is only used for incoming flows to your Web App, outgoing flows won't use this Private Endpoint
+   - https://docs.microsoft.com/en-us/azure/app-service/networking/private-endpoint#conceptual-overview
+- Require Azure CLI version 2.31.0 or later to retrieve the Zone redundant status
+   - https://docs.microsoft.com/en-us/cli/azure/release-notes-azure-cli#december-07-2021
 
 ## Azure Kubernetes Service (AKS)
 
