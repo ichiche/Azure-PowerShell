@@ -15,8 +15,8 @@ $error.Clear()
 
 # Run-Script Configuration
 $GetAzureBackup = $false
-$GetSql_SqlMI_DB = $false
-$GetDiagnosticSetting = $true
+$GetSql_SqlMI_DB = $true
+$GetDiagnosticSetting = $false
 $GetRedisNetworkIsolation = $false
 $GetAZoneEnabledService = $false
 $GetClassicResource = $false
@@ -114,10 +114,10 @@ if ($GetAZoneEnabledService) {
 } 
 
 if ($GetClassicResource) {
-    Write-Host "Get the list of Classic Resource" -ForegroundColor Cyan
+    Write-Host "Get Classic Resources" -ForegroundColor Cyan
     Update-RunScriptList -RunScript "GetClassicResource" -Command "& .\Get-ClassicResource.ps1"
 } else {
-    $Global:DisabledRunScript += "Get the list of Classic Resource"
+    $Global:DisabledRunScript += "Get Classic Resources"
 } 
 
 if ($GetUnmanagedDisk) {

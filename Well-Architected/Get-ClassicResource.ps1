@@ -44,7 +44,7 @@ Import-Module ImportExcel
 
 # Main
 Write-Host ("`n" + "=" * 100)
-Write-Host "`nGet the list of Classic Resources" -ForegroundColor Cyan
+Write-Host "`nGet Classic Resources" -ForegroundColor Cyan
 
 foreach ($Subscription in $Global:Subscriptions) {
     Write-Host ("`n")

@@ -1,6 +1,16 @@
-# Instruction
+# Summary of Functionalities
 
-## QuickStart
+- Get Azure Backup status of **Azure VM**, **SQL Server in Azure VM**, and **Azure Blob Storage**
+- Get Azure SQL and Azure SQL Managed Instance Configuration
+   - Include Availability Zones, Firewall Rule, Replication, Backup
+- Get Diagnostic Setting
+   - Only mainstream services support Diagnostic Log
+- Get Storage Account and Azure Cache for Redis Configuration
+   - Include Availability Zones, Networking, Firewall Rule
+- Get Availability Zone Enabled Service  
+- Get Classic Resource
+
+# QuickStart
 
 1. Download all scripts to same local directory
 1. Modify **Global Parameter**
@@ -15,17 +25,7 @@
 
 - Refer to To-Do-List.md for upcoming enhancement
 
-## Scope of functionalities
-
-- Get Azure Backup status of **Azure VM**, **SQL Server in Azure VM**, and **Azure Blob Storage**
-- Get Azure SQL / Azure SQL Managed Instance Configuration
-   - Include Availability Zones, Firewall Rule, Replication, Backup
-- Get Diagnostic Setting
-   - Only mainstream services support Diagnostic Log
-- Get Storage Account and Azure Cache for Redis Configuration
-   - Include Availability Zones, Networking, Firewall Rule
-- Get Availability Zone Enabled Service  
-- Get Classic Resource
+# Instruction
 
 ## Availability Zone
 
@@ -44,8 +44,10 @@ Get the Azure Services with **Availability Zones** enabled in the subscription o
 - Api Management
 - Azure Firewall
 
-**Get-AzureSql-SqlMI-Configuration.ps1**
+**Get-AzureSql-Configuration.ps1**
 - Azure SQL Database
+
+**Get-AzureSqlMI-Configuration.ps1**
 - Azure SQL Managed Instance
 
 #### App Service
@@ -75,7 +77,7 @@ Get the Azure Services with **Availability Zones** enabled in the subscription o
 
 ## Azure SQL
 
-**Get-AzureSql-SqlMI-Configuration.ps1**
+**Get-AzureSql-Configuration.ps1**
 - Capacity
 - PITR
 - LTR
@@ -98,7 +100,7 @@ Get the Azure Services with **Availability Zones** enabled in the subscription o
 
 ## Azure SQL Managed Instance
 
-**Get-AzureSql-SqlMI-Configuration.ps1**
+**Get-AzureSqlMI-Configuration.ps1**
 - Capacity
 - PITR
 - LTR
