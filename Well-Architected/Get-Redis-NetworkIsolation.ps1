@@ -34,12 +34,14 @@ foreach ($Subscription in $Global:Subscriptions) {
     Write-Host ("[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
     
     # Set current subscription
+    $AzContext = Set-AzContext -SubscriptionId $Subscription.Id -TenantId $Subscription.TenantId
     az account set --subscription $Subscription.Id
     Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Global:Subscriptions.Count + " Subscription: " + $Subscription.name) -ForegroundColor Yellow
     $CurrentItem++
     
     # Get the Redis Cache List of current subscription
     $RedisCaches = az redis list | ConvertFrom-Json
+    $RedisCaches = $RedisCaches | sort Name
 
     # Get configuration of each Redis Cache
     foreach ($RedisCache in $RedisCaches) {
@@ -80,6 +82,24 @@ foreach ($Subscription in $Global:Subscriptions) {
             $AllowPublicNetworkAccess = "N"
         }
 
+        # Geo-Replication
+        if ($RedisCache.linkedServers.id -ne $null) {
+            $RedisCacheLink = Get-AzRedisCacheLink -PrimaryServerName $RedisCache.name
+            $GeoReplication = "Enabled"
+
+            if ($RedisCacheLink -ne $null) {
+                $IsPrimaryReplica = "Y"
+                $LinkedCache = $RedisCacheLink.SecondaryServerName
+            } else {
+                $IsPrimaryReplica = "N"
+                $LinkedCache = (Get-AzRedisCacheLink -SecondaryServerName $RedisCache.name).PrimaryServerName
+            }
+        } else {
+            $GeoReplication = "Disabled"
+            $IsPrimaryReplica = "N/A"
+            $LinkedCache = "N/A"
+        }
+
         # Save to Temp Object
         $obj = New-Object -TypeName PSobject
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value $Subscription.name
@@ -93,6 +113,9 @@ foreach ($Subscription in $Global:Subscriptions) {
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledVNetIntegration" -Value $EnabledVNetIntegration
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "EnabledPrivateEndpoint" -Value $EnabledPrivateEndpoint
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "AllowPublicNetworkAccess" -Value $AllowPublicNetworkAccess
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "GeoReplication" -Value $GeoReplication
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "IsPrimaryReplica" -Value $IsPrimaryReplica
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "LinkedCache" -Value $LinkedCache
 
         # Save to Array
         $Global:RedisCacheSetting += $obj
