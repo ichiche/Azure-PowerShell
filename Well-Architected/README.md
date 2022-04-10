@@ -21,10 +21,6 @@
    1. Copy the content of **Run.ps1** and paste into **Windows PowerShell**
 1. [Optional] Separately Login Azure using Az Module and Azure CLI in **Windows PowerShell** and retrieve the list of certain subscriptions
 
-## Remark
-
-- Refer to To-Do-List.md for upcoming enhancement
-
 # Instruction
 
 ## Availability Zone
@@ -125,7 +121,7 @@ Get the Azure Services with **Availability Zones** enabled in the subscription o
 - Collect the configuration of Network Isolation Method of Redis Cache Instance
 - Zone Redundancy isn't supported with geo-replication
 - Persistence isn't supported with geo-replication
-- Script require Azure CLI
+- Require Azure CLI to get Redis information
 
 Reference
 
@@ -153,7 +149,8 @@ For verifying the status of **Region Disaster Recovery** and **Zone to Zone Disa
    - Not support to detect a deleted VM but backup copy exist in a Recovery Service Vault
 - Not Support to list the Azure File Share with/without backup enabled
    - Although RunAs account with read only permission is capable to retrieve Azure File Share Backup Copy by running Get-AzRecoveryServicesBackupProtectionPolicy, it is not able to list Azure File Share of all storage account without access key or using read only access account
-- Clarify the backup status SQL Server in Azure VM replied on Resource Type **Microsoft.SqlVirtualMachine/SqlVirtualMachines**
+- Backup status SQL Server in Azure VM 
+   - Clarification is relying on Resource Type **Microsoft.SqlVirtualMachine/SqlVirtualMachines**
    - Azure VM Agent has to function properly in order to reflect whether SQL Server is installed on Azure VM 
    - Support to query the Databases that enable backup, not support to query the Databases that has not enable backup
 
