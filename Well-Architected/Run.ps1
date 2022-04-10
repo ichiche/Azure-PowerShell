@@ -15,10 +15,10 @@ $error.Clear()
 
 # Run-Script Configuration
 $GetAzureBackup = $false
-$GetAzureSql = $true
-$GetAzureSqlMI = $true
+$GetAzureSql = $false
+$GetAzureSqlMI = $false
 $GetDiagnosticSetting = $false
-$GetRedisNetworkIsolation = $false
+$GetRedisCache = $true
 $GetAZoneEnabledService = $false
 $GetClassicResource = $false
 $GetUnmanagedDisk = $false
@@ -107,9 +107,9 @@ if ($GetDiagnosticSetting) {
     $Global:DisabledRunScript += "Get Diagnostic Setting"
 } 
 
-if ($GetRedisNetworkIsolation) {
+if ($GetRedisCache) {
     Write-Host "Get Azure Cache for Redis Network Configuration" -ForegroundColor Cyan
-    Update-RunScriptList -RunScript "GetRedisNetworkIsolation" -Command "& .\Get-Redis-NetworkIsolation.ps1"
+    Update-RunScriptList -RunScript "GetRedisNetworkIsolation" -Command "& .\Get-Redis-Configuration.ps1"
 } else {
     $Global:DisabledRunScript += "Get Azure Cache for Redis Network Configuration"
 } 
