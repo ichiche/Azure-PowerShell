@@ -15,7 +15,8 @@ $error.Clear()
 
 # Run-Script Configuration
 $GetAzureBackup = $false
-$GetSql_SqlMI_DB = $true
+$GetAzureSql = $true
+$GetAzureSqlMI = $true
 $GetDiagnosticSetting = $false
 $GetRedisNetworkIsolation = $false
 $GetAZoneEnabledService = $false
@@ -85,11 +86,18 @@ if ($GetAzureBackup) {
     $Global:DisabledRunScript += "Get Azure Backup Status"
 }
 
-if ($GetSql_SqlMI_DB) {
-    Write-Host "Get SQL / SQL Managed Instance Configuration" -ForegroundColor Cyan
-    Update-RunScriptList -RunScript "GetSql_SqlMI_DB" -Command "& .\Get-AzureSql-SqlMI-Configuration.ps1"
+if ($GetAzureSql) {
+    Write-Host "Get Azure SQL Configuration" -ForegroundColor Cyan
+    Update-RunScriptList -RunScript "GetSql_DB" -Command "& .\Get-AzureSql-Configuration.ps1"
 } else {
-    $Global:DisabledRunScript += "Get SQL / SQL Managed Instance Configuration"
+    $Global:DisabledRunScript += "Get Azure SQL Configuration"
+} 
+
+if ($GetAzureSqlMI) {
+    Write-Host "Get Azure SQL Managed Instance Configuration" -ForegroundColor Cyan
+    Update-RunScriptList -RunScript "GetSqlMI_DB" -Command "& .\Get-AzureSqlMI-Configuration.ps1"
+} else {
+    $Global:DisabledRunScript += "Get Azure SQL Managed Instance Configuration"
 } 
 
 if ($GetDiagnosticSetting) {
