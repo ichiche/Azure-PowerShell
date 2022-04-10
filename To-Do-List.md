@@ -1,20 +1,20 @@
 ```
-# Target
-- Azone
+- Availability Zone Enablement
     - Support more services
         - Azure Cosmos DB
         - Azure Database for MySQL
         - Azure Database for PostgreSQL
 - Well-Architected Framework Operational Excellence
     - Check resource group that contain no resource
-    - Tagging (TBC)
     - Service Health Alert configuration, verify location where user deployed the services that is configured the Region based service alert (TBC)
     - Resource Health Alert (TBC)
 - Well-Architected Framework Security
     - Resource Lock of subscription and resource group level
+    - Each VNet Subnet should associate a Network Security Group (NSG)
     - Microsoft Defender (TBC)
+    - Tagging (TBC)
     - Get-AzDdosProtectionPlan > Get Azure DDoS Standard enabled in all VNET, highlight subnet with Firewall, Gateway, AppGW (TBC)
-- Network
+- PaaS Networking
     - Get App Service, Key Vault, Container Registry
     - Check Private Endpoint Status for above resources 
 - Azure Database for MySQL
