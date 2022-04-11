@@ -107,4 +107,18 @@ az feature register --namespace "Microsoft.Network" --name "AllowUpdateAddressSp
 
 # Once the feature 'AllowUpdateAddressSpaceInPeeredVnets' is registered, invoking 'az provider register -n Microsoft.Network' is required to get the change propagated
 az provider register -n Microsoft.Network
+
+# Managed Disk with Zone
+# Register
+Register-AzProviderFeature -FeatureName "SsdZrsManagedDisks" -ProviderNamespace "Microsoft.Compute" 
+
+# Verify
+Get-AzProviderFeature -FeatureName "SsdZrsManagedDisks" -ProviderNamespace "Microsoft.Compute"  
+
+# Image and Snapshot with Zone
+# Register
+Register-AzProviderFeature -FeatureName "ZRSImagesAndSnapshots" -ProviderNamespace "Microsoft.Compute" 
+
+# Verify
+Get-AzProviderFeature -FeatureName "ZRSImagesAndSnapshots" -ProviderNamespace "Microsoft.Compute"  
 ```

@@ -37,7 +37,7 @@ Get the Azure Services with **Availability Zones** enabled in the subscription o
 - Virtual Machine
 - Virtual Machine Scale Set
 - Managed Disk
-- Api Management
+- API Management
 - Azure Firewall
 
 **Get-AzureSql-Configuration.ps1**
@@ -45,6 +45,10 @@ Get the Azure Services with **Availability Zones** enabled in the subscription o
 
 **Get-AzureSqlMI-Configuration.ps1**
 - Azure SQL Managed Instance
+
+**Get-AppService.ps1**
+- App Service
+- Function App
 
 #### Regions and Availability Zones in Azure
 

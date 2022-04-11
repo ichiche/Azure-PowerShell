@@ -15,7 +15,7 @@
     - Tagging (TBC)
     - Get-AzDdosProtectionPlan > Get Azure DDoS Standard enabled in all VNET, highlight subnet with Firewall, Gateway, AppGW (TBC)
 - PaaS Networking
-    - Get App Service, Key Vault, Container Registry
+    - Get Key Vault, Container Registry
     - Check Private Endpoint Status for above resources 
 -Azure Database for MySQL
     - Get Backup retention and redundancy option
