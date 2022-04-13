@@ -1,5 +1,5 @@
 # Global Parameter
-$SpecificTenant = "" # "Y" or "N"
+$SpecificTenant = "N" # "Y" or "N"
 $TenantId = "" # Enter Tenant ID if $SpecificTenant is "Y"
 $Global:ExcelOutputFolder = "C:\Temp"
 $ExcelFileName = "WAF-Assessment.xlsx" # Export Result to Excel file 
@@ -14,15 +14,15 @@ $Width = 120
 $error.Clear()
 
 # Run-Script Configuration
-$GetAzureBackup = $false
-$GetAzureSql = $false
-$GetAzureSqlMI = $false
-$GetDiagnosticSetting = $false
+$GetAzureBackup = $true
+$GetAzureSql = $true
+$GetAzureSqlMI = $true
+$GetDiagnosticSetting = $true
 $GetRedisCache = $true
-$GetAZoneEnabledService = $false
-$GetClassicResource = $false
-$GetUnmanagedDisk = $false
-$GetStorageAccount = $false
+$GetAZoneEnabledService = $true
+$GetClassicResource = $true
+$GetUnmanagedDisk = $true
+$GetStorageAccount = $true
 $GetAppService = $true
 
 function Update-RunScriptList {
@@ -66,8 +66,9 @@ if (Test-Path $Global:ExcelFullPath) {
 }
 
 # Login
-#$AzLogin = az login | Out-Null
 #$ConnectAzAccount = Connect-AzAccount | Out-Null
+#$AzLogin = az login | Out-Null
+
 
 # Get Azure Subscription
 if ($SpecificTenant -eq "Y") {
