@@ -14,13 +14,13 @@
     - Microsoft Defender (TBC)
     - Tagging (TBC)
     - Get-AzDdosProtectionPlan > Get Azure DDoS Standard enabled in all VNET, highlight subnet with Firewall, Gateway, AppGW (TBC)
+    - Get Service Endpoint Status of all VNet Subnet (TBC)
+    - Get Management Group hierarchy (TBC)
 - PaaS Networking
     - Get Key Vault, Container Registry
-    - Check Private Endpoint Status for above resources 
+    - Check Private Endpoint Status
 -Azure Database for MySQL
     - Get Backup retention and redundancy option
 - Cosmos DB
     - Get Backup Info (periodic mode backup policy includes Backup Interval, Retention, Copies of data retained, storage redundancy) and (continuous backup mode)
-- Get Service Endpoint Status of all VNet Subnet (TBC)
-- Get Management Group hierarchy (TBC)
 ```
