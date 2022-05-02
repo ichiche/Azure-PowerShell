@@ -7,8 +7,8 @@ $DiskEncryptionSetName = "DiskEncryptionSet-AKS-Prod"
 # Create an Azure Key Vault resource in a supported Azure region
 az keyvault create -n $KeyVaultName -g $KeyVaultRG -l $Location --enable-purge-protection true --enable-soft-delete true
 
-# Create a software-protected key 
-az keyvault key create --vault-name $KeyVaultName --name $KeyName --protection software
+# Create a software-protected key OR Upload the custom key to Key Vault
+# az keyvault key create --vault-name $KeyVaultName --name $KeyName --protection software
 
 # Retrieve the Key Vault Id and store it in a variable
 $keyVaultId = $(az keyvault show --name $KeyVaultName --query "[id]" -o tsv)
