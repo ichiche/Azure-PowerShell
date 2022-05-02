@@ -10,11 +10,11 @@ All scripts in repository are used for DevTest only.
 1. Fork a repository or download the necessary script to local computer
 1. Modify the script if necessary
 1. Review **Subscription Management** section
-1. Execute the script from **Windows PowerShell**
+1. Execute the script from **Windows PowerShell** (Recommended) OR Azure Cloud Shell
 
-# Prerequisites
+# Instruction
 
-Following tool or module are required in order to run the scripts
+### Prerequisites
 
 | Item | Name | Version | Installation | 
 | - | - | - | - | 
@@ -39,7 +39,7 @@ Install-Module -Name ImportExcel -RequiredVersion 7.4.2 -Confirm:$false -Force
 ```
 ### Subscription Management
 
-Most of the scripts support to retrieve information or modify configuration from multiple subscriptions. There is a simple foreach loop to iterate through the subscriptions from the scripts.
+Most of the scripts support to retrieve information or modify configuration from multiple subscriptions. There is a simple foreach loop to iterate through the subscriptions in the scripts.
 
 ```PowerShell
 foreach ($Subscription in $Global:Subscriptions) {
@@ -47,7 +47,7 @@ foreach ($Subscription in $Global:Subscriptions) {
 }
 ```
 
-Using below command to determine the list of subscriptions, then assign to variable **$Global:Subscriptions**
+Using below command to determine the list of subscriptions which is assigned to variable **$Global:Subscriptions**
 
 ```PowerShell
 # Optional
@@ -58,13 +58,13 @@ $SubscriptionName = "Subscription Name"
 $Global:Subscriptions = Get-AzSubscription -TenantId $TenantId | ? {$_.Name -like "*$SubscriptionName*"} 
 ```
 
-# Script Functionality
-
-### Modification
+### Script Parameter
 
 - Variable under **# Global Parameter** is expected to modify
 - Variable under **# Script Variable** is expected NOT to modify
 - Comment **# Login** section if you would like to leverage **Connect-To-Cloud.ps1** to login Azure
+
+# Script Functionality
 
 ### Microsoft Azure Well-Architected Framework
 
@@ -123,21 +123,7 @@ Get-AzMetric -ResourceId $ResourceId -MetricName 'storage' -WarningAction Silent
 - Common Parameters
   - https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_commonparameters?view=powershell-7.2
 
-### PowerShell Multi-threading
-
-This project will not implement RunSpaces for PowerShell V5.
-
-All scripts with Multi-threading Capability require PowerShell V7 by using **Pipeline parallelization with ForEach-Object -Parallel**.
-
-**Reference**
-
-- https://docs.microsoft.com/en-us/powershell/scripting/whats-new/what-s-new-in-powershell-70?view=powershell-7.1
-- https://docs.microsoft.com/en-us/dotnet/api/system.management.automation.runspaces.runspacefactory.createrunspacepool?view=powershellsdk-7.0.0
-- https://adamtheautomator.com/powershell-multithreading/
-- https://devblogs.microsoft.com/scripting/beginning-use-of-powershell-runspaces-part-1/
-- https://gist.github.com/rjmholt/02fe49189540acf0d2650f571f5176db
-
-### Preview Feature
+### Azure Preview Feature
 
 ```PowerShell
 # Verify EncryptionAtHost feature is registered by Subscription 
@@ -163,3 +149,17 @@ Register-AzProviderFeature -FeatureName "ZRSImagesAndSnapshots" -ProviderNamespa
 # Verify
 Get-AzProviderFeature -FeatureName "ZRSImagesAndSnapshots" -ProviderNamespace "Microsoft.Compute"  
 ```
+
+### PowerShell Multi-threading
+
+This project will not implement RunSpaces for PowerShell V5.
+
+All scripts with Multi-threading Capability require PowerShell V7 by using **Pipeline parallelization with ForEach-Object -Parallel**.
+
+**Reference**
+
+- https://docs.microsoft.com/en-us/powershell/scripting/whats-new/what-s-new-in-powershell-70?view=powershell-7.1
+- https://docs.microsoft.com/en-us/dotnet/api/system.management.automation.runspaces.runspacefactory.createrunspacepool?view=powershellsdk-7.0.0
+- https://adamtheautomator.com/powershell-multithreading/
+- https://devblogs.microsoft.com/scripting/beginning-use-of-powershell-runspaces-part-1/
+- https://gist.github.com/rjmholt/02fe49189540acf0d2650f571f5176db
