@@ -25,14 +25,4 @@ foreach ($RecoveryServicesVault in $RecoveryServicesVaults) {
 }
 
 # Output 
-$BackupItemVMRecoveryPoint 
-
-# Get Recovery Points within a specific time range for an item
-# https://docs.microsoft.com/en-us/powershell/module/az.recoveryservices/get-azrecoveryservicesbackuprecoverypoint?view=azps-7.1.0
-
-<# 
-$rp = Get-AzRecoveryServicesBackupRecoveryPoint -Item $BackupItemVM[2] -StartDate $StartDate.ToUniversalTime() -EndDate $EndDate.ToUniversalTime() -VaultId $RecoveryServicesVaults[0].Id
-$container = Get-AzRecoveryServicesBackupContainer -ContainerType AzureVM -Status Registered -Name "V2VM" -VaultId $vault.ID
-$backupItem = Get-AzRecoveryServicesBackupItem -ContainerType AzureVM -WorkloadType AzureVM -VaultId $vault.ID
-$rp = Get-AzRecoveryServicesBackupRecoveryPoint -Item $backupItem -StartDate $startdate.ToUniversalTime() -EndDate $enddate.ToUniversalTime() -VaultId $vault.ID
-#>
+$BackupItemVMRecoveryPoint
