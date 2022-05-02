@@ -27,14 +27,22 @@ foreach ($Subscription in $Global:Subscriptions) {
     $usages = Get-AzVMUsage -Location $Location
 
     foreach ($usage in $usages) {
+        $AvailableValue = ($usage.Limit - $usage.CurrentValue)
+
         # Save to Temp Object
         $obj = New-Object -TypeName PSobject
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionName" -Value $Subscription.name
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "SubscriptionId" -Value $Subscription.id
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "ItemName" -Value $usage.Name.LocalizedValue
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Used" -Value $usage.CurrentValue
         Add-Member -InputObject $obj -MemberType NoteProperty -Name "Limit" -Value $usage.Limit
-        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Unit" -Value $usage.Unit
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Used" -Value $usage.CurrentValue
+        Add-Member -InputObject $obj -MemberType NoteProperty -Name "Available" -Value $AvailableValue
+        if ($usage.Limit -ne 0) {
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Available(%)" -Value ($AvailableValue / $usage.Limit).ToString("P")
+        } else {
+            Add-Member -InputObject $obj -MemberType NoteProperty -Name "Available(%)" -Value "0%"
+        }
+        #Add-Member -InputObject $obj -MemberType NoteProperty -Name "Unit" -Value $usage.Unit
 
         # Save to Array
         $Global:UsageQuota += $obj
@@ -42,4 +50,4 @@ foreach ($Subscription in $Global:Subscriptions) {
 }
 
 # Export to Excel File
-$Global:UsageQuota | sort SubscriptionName, ItemName | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "Microsoft.Compute" -TableName "Microsoft.Compute" -TableStyle Medium16 -AutoSize -Append
+$Global:UsageQuota | sort SubscriptionName, ItemName | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "MicrosoftCompute" -TableName "MicrosoftCompute" -TableStyle Medium16 -AutoSize -Append
