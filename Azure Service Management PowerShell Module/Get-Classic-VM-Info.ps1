@@ -1,5 +1,12 @@
-$asmvm = Get-AzureVM
+# Script Variable
 $asmvmInfo = @()
+
+# Main
+Write-Host ("`n")
+Write-Host ("[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
+
+# Get Azure Classic VM from current subscription
+$asmvm = Get-AzureVM
 
 foreach ($vm in $asmvm) {
 	$rgName = Get-AzureRmResource -Name $vm.Name | select -first 1 -ExpandProperty ResourceGroupName
@@ -39,5 +46,10 @@ foreach ($vm in $asmvm) {
 	}
 }
 
-# Export Result to CSV file 
+# Export to CSV file 
 $asmvmInfo | Export-Csv -NoTypeInformation C:\Temp\ClassicVM-FullList.csv -Force
+
+# End
+Write-Host ("`n")
+Write-Host ("[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
+Write-Host "`n`nCompleted"
