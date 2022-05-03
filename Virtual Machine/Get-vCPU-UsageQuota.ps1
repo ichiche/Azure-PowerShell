@@ -51,3 +51,8 @@ foreach ($Subscription in $Global:Subscriptions) {
 
 # Export to Excel File
 $Global:UsageQuota | sort SubscriptionName, ItemName | Export-Excel -Path $Global:ExcelFullPath -WorksheetName "MicrosoftCompute" -TableName "MicrosoftCompute" -TableStyle Medium16 -AutoSize -Append
+
+# End
+Write-Host ("`n")
+Write-Host ("[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
+Write-Host "`n`nCompleted"
