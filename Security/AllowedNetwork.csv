@@ -1,4 +1,0 @@
-﻿SubscriptionName,SubscriptionId,ResourceGroup,VNetName,SubnetName
-ES-CE-LR-INT chicheng,7a2dec40-395f-45a9-b6b0-bef1593ce760,Network,vnet-hub-prd-eas-001,AppService
-ES-CE-LR-INT chicheng,7a2dec40-395f-45a9-b6b0-bef1593ce760,Network,vnet-hub-prd-sea-001,APIM
-ES-CE-LR-INT chicheng,7a2dec40-395f-45a9-b6b0-bef1593ce760,Network,vnet-hub-prd-sea-001,AppGateway
