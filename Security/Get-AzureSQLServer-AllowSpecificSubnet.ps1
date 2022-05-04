@@ -38,7 +38,7 @@ $servers = $VirtualNetworkRuleList | select -unique ServerName
 
 # End
 Write-Host "`nCompleted" -ForegroundColor Yellow
-Write-Host "`nList of Azure SQL Server :" -ForegroundColor Cyan
+Write-Host "`nList of Azure SQL Server that allow $TargetVNetSubnetName :" -ForegroundColor Cyan
 foreach ($server in $servers) {
     Write-Host $server.ServerName
 }
