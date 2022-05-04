@@ -1,19 +1,20 @@
 # Global Parameter
-$NewImageName = "" # Enter the Name of new created Azure Image 
-$osDiskName = "" # Enter OS Disk Name of VM
-$rgName = "" # Enter Resource Group Name
-$location = "" # Enter Azure Resource Location, e.g. "East Asia"
-$subscriptionId = "" # Enter Subscription ID
+$subscriptionId = "" # Subscription Id of OS Disk and will provision Azure Image under same Subscription
+$osDiskRGName = "" # Resource Group Name of OS Disk
+$osDiskName = "" # OS Disk Name of VM
+$NewImageRGName = ""
+$NewImageName = ""
+$location = "" # Azure Resource Location of both OS Disk and Azure Image
 
 # Login
 Connect-AzAccount
 
 # Main
 Set-AzContext -SubscriptionId $subscriptionId
-$managedDiskID = "/subscriptions/$subscriptionId/resourceGroups/$rgName/providers/Microsoft.Compute/disks/$osDiskName"
+$managedDiskID = "/subscriptions/$subscriptionId/resourceGroups/$osDiskRGName/providers/Microsoft.Compute/disks/$osDiskName"
 $imageConfig = New-AzImageConfig -Location $location # -HyperVGeneration V2
 $imageConfig = Set-AzImageOsDisk -Image $imageConfig -OsState Generalized -OsType Windows -ManagedDiskId $managedDiskID
-New-AzImage -ImageName $NewImageName -ResourceGroupName $rgName -Image $imageConfig
+New-AzImage -ImageName $NewImageName -ResourceGroupName $NewImageRGName -Image $imageConfig
 
 # Logout
 Disconnect-AzAccount

@@ -38,7 +38,7 @@ function Rename-Location {
 # Main
 foreach ($Subscription in $Subscriptions) {
     # Set current subscription for Az Module
-	$AzContext = Set-AzContext -SubscriptionId $Subscription.Id
+	$AzContext = Set-AzContext -SubscriptionId $Subscription.Id -TenantId $Subscription.TenantId
     Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
     $CurrentItem++
 
@@ -61,7 +61,7 @@ foreach ($Subscription in $Subscriptions) {
     }
 }
 
-# Export Result to CSV file
+# Export to CSV file
 $Global:ClassicVMList | sort SubscriptionName, ResourceGroup, InstanceName | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force
 
 # End
