@@ -26,3 +26,6 @@ $nsg | Add-AzNetworkSecurityRuleConfig -Direction Outbound -Priority 130 -Access
 
 # Update the NSG
 $nsg | Set-AzNetworkSecurityGroup
+
+# End
+Write-Host "`nCompleted`n" -ForegroundColor Yellow

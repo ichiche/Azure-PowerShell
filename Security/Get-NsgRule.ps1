@@ -123,10 +123,14 @@ if ($SpecificTenant -eq "Y") {
 
 # Main
 foreach ($Subscription in $Subscriptions) {
-    $AzContext = Set-AzContext -SubscriptionId $Subscription.Id 
-    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Subscriptions.Count + " Subscription: " + $AzContext.Name.Substring(0, $AzContext.Name.IndexOf("(")) + "`n") -ForegroundColor Yellow
-    $CurrentItem++
+    Write-Host ("`n")
+    Write-Host ("[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
 
+    # Set current subscription
+    $AzContext = Set-AzContext -SubscriptionId $Subscription.Id -TenantId $Subscription.TenantId
+    Write-Host ("`nProcessing " + $CurrentItem + " out of " + $Subscriptions.Count + " Subscription: " + $Subscription.name) -ForegroundColor Yellow
+    $CurrentItem++
+    
     # Network Security Group
     $nsgs = Get-AzNetworkSecurityGroup
 
@@ -143,11 +147,13 @@ foreach ($Subscription in $Subscriptions) {
     }
 }
 
-# Export Result to CSV file
+# Export to CSV file
 $Global:ResultArray | sort Subscription, ResourceGroup, NsgName | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force 
 
 # End
-Write-Host "`nCompleted`n" -ForegroundColor Yellow
+Write-Host ("`n")
+Write-Host ("[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
+Write-Host "`n`nCompleted"
 
 # Logout
 Disconnect-AzAccount
