@@ -119,7 +119,7 @@ foreach ($Subscription in $Global:Subscriptions) {
 
         # Allow Public Network Access
         # Sql Server provisioned in early stage has no value
-        if ($SqlServer.PublicNetworkAccess -eq "Enabled" -or $SqlServer.PublicNetworkAccess -eq $null) {
+        if ($SqlServer.PublicNetworkAccess -eq "Enabled" -or $SqlServer.PublicNetworkAccess -ne $null) {
             $AllowPublicNetworkAccess = "Y"
         } else {
             $AllowPublicNetworkAccess = "N"
