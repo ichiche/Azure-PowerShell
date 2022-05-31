@@ -143,7 +143,7 @@ if ($Global:StorageAccountSetting.Count -ne 0) {
     for ($i = 0; $i -lt 4; $i++) {
         switch ($i) {
             0 { 
-                $CurrentSettingStatus = $SettingStatus | group EnabledAZone | select Name, Count 
+                $CurrentSettingStatus = $SettingStatus | group ZoneRedundant | select Name, Count 
                 $NetworkType = "Zone Redundant"
             }
             1 { 
