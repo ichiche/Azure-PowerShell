@@ -14,14 +14,14 @@ $Width = 120
 $error.Clear()
 
 # Run-Script Configuration
-$GetAzureBackup = $true
+$GetAzureBackup = $false
 $GetAzureSql = $true
-$GetAzureSqlMI = $true
-$GetDiagnosticSetting = $true
-$GetRedisCache = $true
-$GetAZoneEnabledService = $true
-$GetClassicResource = $true
-$GetUnmanagedDisk = $true
+$GetAzureSqlMI = $false
+$GetDiagnosticSetting = $false
+$GetRedisCache = $false
+$GetAZoneEnabledService = $false
+$GetClassicResource = $false
+$GetUnmanagedDisk = $false
 $GetStorageAccount = $true
 $GetAppService = $true
 
@@ -186,7 +186,7 @@ Import-Module ImportExcel
 Write-Host "`n`nThe process may take more than 30 minutes ..."
 Write-Host "`nPlease wait until it finishes ..."
 Start-Sleep -Seconds 1
-$StartTime = Get-Date
+$Global:StartTime = Get-Date
 foreach ($RunScript in $Global:RunScriptList) {
     Invoke-Expression -Command $RunScript.Command
 }
@@ -195,9 +195,9 @@ foreach ($RunScript in $Global:RunScriptList) {
 Write-Host ("`n")
 Write-Host ("[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
 Write-Host "`n`nWell-Architected Assessment have been completed"
-$EndTime = Get-Date
-$Duration = $EndTime - $StartTime
-Write-Host ("`nTotal Process Time: " + $Duration.Minutes + " Minutes " + $Duration.Seconds + " Seconds") -ForegroundColor Blue -BackgroundColor Black
+$Global:EndTime = Get-Date
+$Duration = $Global:EndTime - $Global:StartTime
+Write-Host ("`nTotal Process Time: " + $Duration.Hours + " Hours " + $Duration.Minutes + " Minutes " + $Duration.Seconds + " Seconds") -ForegroundColor Blue -BackgroundColor Black
 Start-Sleep -Seconds 1
 Write-Host ("`nPlease refer to the Assessment Result locate at " + $Global:ExcelFullPath)
 Write-Host "`n`n"
