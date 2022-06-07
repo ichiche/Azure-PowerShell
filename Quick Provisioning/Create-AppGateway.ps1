@@ -2,8 +2,8 @@
 #$Location = "Southeast Asia"
 $Location = "East Asia"
 $AppGatewayRG = "AppGateway"
-$AppGatewayName ="agw-core-prd-sea-001"
-$pipName = "pip-agw-core-prd-sea-001"
+$AppGatewayName ="agw-core-prd-eas-001"
+$pipName = "pip-agw-core-prd-eas-001"
 $HubVNetRG = "Network"
 #$HubVNetName = "vnet-hub-prd-sea-001"
 #$AppGatewaySubnetName = "AppGateway"
@@ -65,8 +65,8 @@ $agw = New-AzApplicationGateway -ResourceGroupName $AppGatewayRG -Name $AppGatew
     -BackendHttpSettingsCollection $BackendHttpSetting `
     -HttpListeners $HttpListener `
     -RequestRoutingRules $RoutingRule `
-    -Sku $sku
-    -Zone (1,2,3)
+    -Sku $sku `
+    -Zone "1","2","3"
 #EndRegion Application Gateway
 
 #Region Log Analytics Workspace
