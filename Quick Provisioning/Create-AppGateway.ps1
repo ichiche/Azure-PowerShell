@@ -7,7 +7,7 @@ $pipName = "pip-agw-core-prd-sea-001"
 $HubVNetRG = "Network"
 #$HubVNetName = "vnet-hub-prd-sea-001"
 #$AppGatewaySubnetName = "AppGateway"
-$HubVNetName = "vn-poc-hk-peak"
+$HubVNetName = "vnet-hub-prd-eas-001"
 $AppGatewaySubnetName = "subnet-poc-hk-peak-appgateway"
 $logRG = "Log"
 $logName = "log-analytics-temp-prd-sea-001"
@@ -52,7 +52,7 @@ $RoutingRule = New-AzApplicationGatewayRequestRoutingRule -Name "DefaultRoutingR
 $sku = New-AzApplicationGatewaySku -Name Standard_v2 -Tier Standard_v2
 
 # Application Gateway Auto Scale
-$autoscaleConfig = New-AzApplicationGatewayAutoscaleConfiguration -MinCapacity 0 -MaxCapacity 2
+$autoscaleConfig = New-AzApplicationGatewayAutoscaleConfiguration -MinCapacity 1 -MaxCapacity 3
 
 # Provision Application Gateway
 $agw = New-AzApplicationGateway -ResourceGroupName $AppGatewayRG -Name $AppGatewayName `
@@ -66,6 +66,7 @@ $agw = New-AzApplicationGateway -ResourceGroupName $AppGatewayRG -Name $AppGatew
     -HttpListeners $HttpListener `
     -RequestRoutingRules $RoutingRule `
     -Sku $sku
+    -Zone (1,2,3)
 #EndRegion Application Gateway
 
 #Region Log Analytics Workspace
