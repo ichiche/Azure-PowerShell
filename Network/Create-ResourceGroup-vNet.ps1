@@ -1,10 +1,13 @@
 # Global Parameter
-$CsvFilePath = ".\vnet-list.csv"
+$CsvFilePath = "./vnet-list.csv"
 
 # Script Variable
 $CurrentSubscription = ""
 $vnets = Import-Csv $CsvFilePath
 $vnets = $vnets | Sort-Object Subscription,ResourceGroup,VNetName
+
+# Disable breaking change warning messages
+Set-Item Env:\SuppressAzurePowerShellBreakingChangeWarnings -Value "true"
 
 #Region Resource Group
 $rgs = $vnets | Select-Object -Unique ResourceGroup, Subscription, Location
