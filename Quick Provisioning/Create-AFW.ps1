@@ -1,10 +1,11 @@
 # Global Parameter
-$Location = "Southeast Asia"
+$Location = "East Asia"
 $FirewallPolicyRG = "FirewallPolicy"
 $FirewallPolicyId = "/subscriptions/7a2dec40-395f-45a9-b6b0-bef1593ce760/resourceGroups/AzureFirewall/providers/Microsoft.Network/firewallPolicies/afwpol-core-prd-sea-001"
 $FirewallPolicyName = "afwpol-core-prd-sea-001"
 $FirewallName = "afw-core-prd-sea-001"
-$pipName = "pip-afw-core-prd-sea-001"
+$pipName1 = "pip-afw-core-prd-eas-001"
+$pipName2 = "pip-afwmgmt-core-prd-eas-001"
 $HubVNetRG = "Network"
 $HubVNetName = "vnet-hub-prd-sea-001"
 $logRG = "Log"
@@ -37,7 +38,12 @@ Set-AzFirewallPolicyRuleCollectionGroup -Name $rcgroup.Name -Priority 200 -RuleC
 #Region Public IP Address
 Write-Host ("`n[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
 Write-Host "`nProvision Public IP Address for Azure Firewall ..." -ForegroundColor Cyan
-$pip = New-AzPublicIpAddress -ResourceGroupName $FirewallPolicyRG -Name $pipName -AllocationMethod Static -Location $Location -Sku Standard -Zone (1,2,3)
+$pip = New-AzPublicIpAddress -ResourceGroupName $FirewallPolicyRG -Name $pipName1 -AllocationMethod Static -Location $Location -Sku Standard -Zone (1,2,3)
+Start-Sleep -Seconds 10
+
+Write-Host ("`n[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
+Write-Host "`nProvision Public IP Address for Azure Firewall Forced Tunneling ..." -ForegroundColor Cyan
+$pip = New-AzPublicIpAddress -ResourceGroupName $FirewallPolicyRG -Name $pipName2 -AllocationMethod Static -Location $Location -Sku Standard -Zone (1,2,3)
 Start-Sleep -Seconds 10
 #EndRegion Public IP Address
 
