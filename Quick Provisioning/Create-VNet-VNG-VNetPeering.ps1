@@ -6,6 +6,28 @@ $DmzRG = "rg-gpsn01-pd-eas-dmz01"
 # Main
 $StartTime = Get-Date
 
+#Region Resource Group
+Write-Host "`nProvision Resource Group ..." -ForegroundColor Cyan
+
+# Create Resource Group if not exist
+$IsExist = Get-AzResourceGroup -Name $HubRG -ErrorAction SilentlyContinue
+if ([string]::IsNullOrEmpty($IsExist)) {
+    New-AzResourceGroup -Name $HubRG -Location $Location | Out-Null
+    Write-Host ($HubRG + " is created") 
+} else {
+    Write-Host ($HubRG + " already exist") -ForegroundColor Yellow
+}
+
+$IsExist = Get-AzResourceGroup -Name $DmzRG -ErrorAction SilentlyContinue
+if ([string]::IsNullOrEmpty($IsExist)) {
+    New-AzResourceGroup -Name $DmzRG -Location $Location | Out-Null
+    Write-Host ($DmzRG + " is created") 
+} else {
+    Write-Host ($DmzRG + " already exist") -ForegroundColor Yellow
+}
+Start-Sleep -Seconds 2
+#EndRegion Resource Group
+
 #Region Virtual Network
 Write-Host ("`n[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
 
