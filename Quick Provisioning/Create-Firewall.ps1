@@ -30,7 +30,7 @@ Start-Sleep -Seconds 10
 Write-Host ("`n[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
 Write-Host "`nProvision Network Rule of Azure Firewall Policy ..." -ForegroundColor Cyan
 $rcgroup = New-AzFirewallPolicyRuleCollectionGroup -Name "RootCollectionGroup" -Priority 200 -FirewallPolicyObject $fwpol
-$netrule = New-AzFirewallPolicyNetworkRule -name Allow-Any-Any -Protocol ("Any", "TCP", "UDP", "ICMP") -SourceAddress "*" -DestinationAddress "*" -DestinationPort "*"
+$netrule = New-AzFirewallPolicyNetworkRule -name Allow-Any-Any -Protocol ("Any", "TCP", "UDP", "ICMP") -SourceAddress "10.10.0.0/16" -DestinationAddress "*" -DestinationPort "*"
 $netcol = New-AzFirewallPolicyFilterRuleCollection -Name "SharedPlatformRuleCollection" -Priority 300 -Rule $netrule -ActionType "Allow"
 Set-AzFirewallPolicyRuleCollectionGroup -Name $rcgroup.Name -Priority 200 -RuleCollection $netcol -FirewallPolicyObject $fwpol 
 #EndRegion Azure Firewall Network Rule
