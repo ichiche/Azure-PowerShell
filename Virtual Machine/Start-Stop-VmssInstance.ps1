@@ -13,7 +13,7 @@ $vmss | ft Name, InstanceID, Location, Zones, @{n="PowerState";e={$($_.InstanceV
 $InstanceIds = @()
 $list = $vmss | ? {$_.Zones -eq $SelectedAZone}
 foreach ($item in $list) { $InstanceIds += "$($item.InstanceID)"} 
-Stop-AzVmss -InstanceId $InstanceIds -ResourceGroupName $VmssRG -VMScaleSetName $VmssName -Confirm:$false -Force
+Stop-AzVmss -InstanceId $InstanceIds -ResourceGroupName $VmssRG -VMScaleSetName $VmssName -Force -Confirm:$false 
 
 # Start VM in Scale Set that is not in running state
 $vmss = Get-AzVmssVM -ResourceGroupName $VmssRG -VMScaleSetName $VmssName -InstanceView
