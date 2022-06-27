@@ -62,7 +62,7 @@ foreach ($Subscription in $Subscriptions) {
 }
 
 # Export to CSV file
-$Global:ClassicVMList | sort SubscriptionName, ResourceGroup, InstanceName | Export-Csv -Path $CsvFullPath -NoTypeInformation -Confirm:$false -Force
+$Global:ClassicVMList | sort SubscriptionName, ResourceGroup, InstanceName | Export-Csv -Path $CsvFullPath -NoTypeInformation -Force -Confirm:$false 
 
 # End
 Write-Host "`nCompleted" -ForegroundColor Yellow
