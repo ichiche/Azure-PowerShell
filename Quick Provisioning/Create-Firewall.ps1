@@ -59,7 +59,7 @@ Start-Sleep -Seconds 5
 if ($ForcedTunnelingEnabled) {
     Write-Host ("`n[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
     Write-Host "`nProvision Public IP Address for Azure Firewall Forced Tunneling ..." -ForegroundColor Cyan
-    $pip = New-AzPublicIpAddress -ResourceGroupName $FirewallPolicyRG -Name $pipForcedTunneling -AllocationMethod Static -Location $Location -Sku Standard -Zone (1,2,3)
+    $mgmtpip = New-AzPublicIpAddress -ResourceGroupName $FirewallPolicyRG -Name $pipForcedTunneling -AllocationMethod Static -Location $Location -Sku Standard -Zone (1,2,3)
     Start-Sleep -Seconds 5
 }
 #EndRegion Public IP Address
@@ -69,9 +69,9 @@ Write-Host ("`n[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor
 Write-Host "`nProvision Azure Firewall ..." -ForegroundColor Cyan
 $HubVNet = Get-AzVirtualNetwork -ResourceGroup $HubVNetRG -Name $HubVNetName
 if ($ForcedTunnelingEnabled) {
-    
+    $afw = New-AzFirewall -ResourceGroupName $HubVNetRG -Name $FirewallName -Location $Location -VirtualNetwork $HubVNet -PublicIpAddress $pip -ManagementPublicIpAddress $mgmtpip -FirewallPolicyId $FirewallPolicyId -Zone 1,2,3
 } else {
-    $afw = New-AzFirewall -ResourceGroupName $HubVNetRG -Name $FirewallName -Location $Location -VirtualNetwork $HubVNet -PublicIpAddress $pip -FirewallPolicyId $FirewallPolicyId
+    $afw = New-AzFirewall -ResourceGroupName $HubVNetRG -Name $FirewallName -Location $Location -VirtualNetwork $HubVNet -PublicIpAddress $pip -FirewallPolicyId $FirewallPolicyId -Zone 1,2,3
 }
 #EndRegion Azure Firewall
 
