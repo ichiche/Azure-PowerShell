@@ -84,6 +84,24 @@ Refer to README.md in **Well-Architected** folder
 #### Required PowerShell Module on Azure VM (Windows)
 https://www.powershellgallery.com/packages/PSWindowsUpdate/2.2.0.2
 
+# Issue Log
+
+```PowerShell
+# Provision Azure Application Gateway with Redirection Rule that encounter the issue
+
+# Config
+#$RedirectConfiguration = New-AzApplicationGatewayRedirectConfiguration -Name "DefaultRedirectConfiguration" -RedirectType Permanent -TargetUrl "http://8.8.8.8"
+#$RoutingRule = New-AzApplicationGatewayRequestRoutingRule -Name "DefaultRoutingRule"-RuleType Basic -HttpListener $HttpListener -RedirectConfiguration $RedirectConfiguration -BackendHttpSettings $BackendHttpSetting
+
+# Id
+#$RedirectConfiguration = New-AzApplicationGatewayRedirectConfiguration -Name "DefaultRedirectConfiguration" -RedirectType Permanent -TargetUrl "http://8.8.8.8" -IncludePath $false -IncludeQueryString $false
+#$RoutingRule = New-AzApplicationGatewayRequestRoutingRule -Name "DefaultRoutingRule"-RuleType Basic -HttpListenerId $HttpListener.Id -RedirectConfigurationId $RedirectConfiguration.Id
+
+# Error Message
+# New-AzApplicationGateway: Resource...agw-core-prd-sea-001/redirectConfigurations/DefaultRedirectConfiguration referenced by resource...agw-core-prd-sea-001/requestRoutingRules/DefaultRoutingRule was not found. 
+# Please make sure that the referenced resource exists, and that both resources are in the same region.
+```
+
 # List of Script (Legacy)
 
 | Id | File Name | Folder | Description |
