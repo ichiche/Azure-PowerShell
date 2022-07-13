@@ -89,16 +89,16 @@ https://www.powershellgallery.com/packages/PSWindowsUpdate/2.2.0.2
 #### Fail to provision Azure Application Gateway with Redirection Rule
 
 ```PowerShell
-# Config
+# Using RedirectConfiguration
 $RedirectConfiguration = New-AzApplicationGatewayRedirectConfiguration -Name "DefaultRedirectConfiguration" -RedirectType Permanent -TargetUrl "http://8.8.8.8"
 $RoutingRule = New-AzApplicationGatewayRequestRoutingRule -Name "DefaultRoutingRule"-RuleType Basic -HttpListener $HttpListener -RedirectConfiguration $RedirectConfiguration -BackendHttpSettings $BackendHttpSetting
 
-# Id
+# Using RedirectConfigurationId
 $RedirectConfiguration = New-AzApplicationGatewayRedirectConfiguration -Name "DefaultRedirectConfiguration" -RedirectType Permanent -TargetUrl "http://8.8.8.8" -IncludePath $false -IncludeQueryString $false
 $RoutingRule = New-AzApplicationGatewayRequestRoutingRule -Name "DefaultRoutingRule"-RuleType Basic -HttpListenerId $HttpListener.Id -RedirectConfigurationId $RedirectConfiguration.Id
 
-# Error Message
-New-AzApplicationGateway: Resource...agw-core-prd-sea-001/redirectConfigurations/DefaultRedirectConfiguration referenced by resource...agw-core-prd-sea-001/requestRoutingRules/DefaultRoutingRule was not found. Please make sure that the referenced resource exists, and that both resources are in the same region.
+# Above command encounter same error message
+# New-AzApplicationGateway: Resource...agw-core-prd-sea-001/redirectConfigurations/DefaultRedirectConfiguration referenced by resource...agw-core-prd-sea-001/requestRoutingRules/DefaultRoutingRule was not found. Please make sure that the referenced resource exists, and that both resources are in the same region.
 ```
 
 # List of Script (Legacy)
