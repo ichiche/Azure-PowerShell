@@ -86,7 +86,7 @@ https://www.powershellgallery.com/packages/PSWindowsUpdate/2.2.0.2
 
 # Issue Log
 
-1. Provision Azure Application Gateway with Redirection Rule that encounter the issue
+#### Provision Azure Application Gateway with Redirection Rule that encounter the issue
 
 ```PowerShell
 # Config
