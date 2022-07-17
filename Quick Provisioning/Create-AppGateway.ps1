@@ -1,19 +1,31 @@
 # Global Parameter
-#$Location = "Southeast Asia"
 $Location = "East Asia"
 $AppGatewayRG = "AppGateway"
 $AppGatewayName ="agw-core-prd-eas-001"
 $pipName = "pip-agw-core-prd-eas-001"
 $HubVNetRG = "Network"
-#$HubVNetName = "vnet-hub-prd-sea-001"
-#$AppGatewaySubnetName = "AppGateway"
 $HubVNetName = "vnet-hub-prd-eas-001"
 $AppGatewaySubnetName = "subnet-poc-hk-peak-appgateway"
+$logIsExist = $true
 $logRG = "Log"
 $logName = "log-analytics-temp-prd-sea-001"
 
 # Main
 $StartTime = Get-Date
+
+#Region Resource Group
+Write-Host "`nProvision Resource Group ..." -ForegroundColor Cyan
+
+# Create Resource Group if not exist
+$IsExist = Get-AzResourceGroup -Name $AppGatewayRG -ErrorAction SilentlyContinue
+if ([string]::IsNullOrEmpty($IsExist)) {
+    New-AzResourceGroup -Name $AppGatewayRG -Location $Location | Out-Null
+    Write-Host ($AppGatewayRG + " is created") 
+} else {
+    Write-Host ($AppGatewayRG + " already exist") -ForegroundColor Yellow
+}
+Start-Sleep -Seconds 5
+#EndRegion Resource Group
 
 #Region Public IP Address
 Write-Host ("`n[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
@@ -70,10 +82,16 @@ $agw = New-AzApplicationGateway -ResourceGroupName $AppGatewayRG -Name $AppGatew
 #EndRegion Application Gateway
 
 #Region Log Analytics Workspace
-# Standard Tier: Pricing tier doesn't match the subscription's billing model
-#$workspace = New-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName -Sku pergb2018 -Location $Location
-$workspace = Get-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName
-Start-Sleep -Seconds 15
+if ($logIsExist) {
+    $workspace = Get-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName
+    
+} else {
+    # Sku pergb2018 is Pay-as-you-go pricing tier
+    $workspace = New-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName -Sku pergb2018 -Location $Location
+    Start-Sleep -Seconds 15
+}
+
+# Enable all metrics and logs for a resource
 $DiagnosticSetting = Set-AzDiagnosticSetting -Name "log-analytics-prd-sea-001" -ResourceId $agw.Id -WorkspaceId $workspace.ResourceId -Enabled $true
 #EndRegion Log Analytics Workspace
 
