@@ -84,6 +84,8 @@ if ($logIsExist) {
     $workspace = New-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName -Sku pergb2018 -Location $Location
     Start-Sleep -Seconds 15
 }
+
+# Enable all metrics and logs for a resource
 $DiagnosticSetting = Set-AzDiagnosticSetting -Name "log-analytics-prd-sea-001" -ResourceId $afw.Id -WorkspaceId $workspace.ResourceId -Enabled $true
 #EndRegion Log Analytics Workspace
 
