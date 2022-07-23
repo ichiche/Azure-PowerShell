@@ -44,6 +44,7 @@ function Clear-UnsupportedResourceType {
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Compute/virtualMachineScaleSets"} # Enabling Azure Monitors for VMSS
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.ContainerRegistry/registries/replications"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.ContainerRegistry/registries/webhooks"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.ContainerInstance/containerGroups"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.DataCatalog/catalogs"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.DevTestLab/schedules"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.MarketplaceApps/classicDevServices"}
@@ -105,6 +106,8 @@ function Clear-UnsupportedResourceType {
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.DataProtection/BackupVaults"} # Backup Vault not support, but Recovery Service vault support
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.DataMigration/services"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.DataMigration/services/projects"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.MachineLearning/commitmentPlans"}
+    $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.MachineLearning/Workspaces"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Migrate/assessmentProjects"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "Microsoft.Migrate/migrateprojects"}
     $AzResources = $AzResources | ? {$_.ResourceType -ne "microsoft.offazure/ImportSites"}
