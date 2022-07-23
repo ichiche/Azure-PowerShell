@@ -2,16 +2,19 @@
 $Location = "East Asia"
 $AppGatewayRG = "AppGateway"
 $AppGatewayName ="agw-core-prd-eas-001"
+$skuName = "Standard_v2"
+$skuTier = "Standard_v2"
 $pipName = "pip-agw-core-prd-eas-001"
 $HubVNetRG = "Network"
 $HubVNetName = "vnet-hub-prd-eas-001"
-$AppGatewaySubnetName = "subnet-poc-hk-peak-appgateway"
+$AppGatewaySubnetName = "snet-appgateway-001"
 $logIsExist = $true
 $logRG = "Log"
 $logName = "log-analytics-temp-prd-sea-001"
 
 # Main
 $StartTime = Get-Date
+Write-Host ("`n[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
 
 #Region Resource Group
 Write-Host "`nProvision Resource Group ..." -ForegroundColor Cyan
@@ -20,9 +23,9 @@ Write-Host "`nProvision Resource Group ..." -ForegroundColor Cyan
 $IsExist = Get-AzResourceGroup -Name $AppGatewayRG -ErrorAction SilentlyContinue
 if ([string]::IsNullOrEmpty($IsExist)) {
     New-AzResourceGroup -Name $AppGatewayRG -Location $Location | Out-Null
-    Write-Host ($AppGatewayRG + " is created") 
+    Write-Host ("Resource Group " + $AppGatewayRG + " is created") 
 } else {
-    Write-Host ($AppGatewayRG + " already exist") -ForegroundColor Yellow
+    Write-Host ("Resource Group " + $AppGatewayRG + " already exist") -ForegroundColor Yellow
 }
 Start-Sleep -Seconds 5
 #EndRegion Resource Group
@@ -61,7 +64,7 @@ $HttpListener = New-AzApplicationGatewayHttpListener -Name "DefaultHttpListener"
 $RoutingRule = New-AzApplicationGatewayRequestRoutingRule -Name "DefaultRoutingRule"-RuleType Basic -HttpListener $HttpListener -BackendAddressPool $BackendAddressPool -BackendHttpSettings $BackendHttpSetting 
 
 # Application Gateway Sku
-$sku = New-AzApplicationGatewaySku -Name Standard_v2 -Tier Standard_v2
+$sku = New-AzApplicationGatewaySku -Name $skuName -Tier $skuTier
 
 # Application Gateway Auto Scale
 $autoscaleConfig = New-AzApplicationGatewayAutoscaleConfiguration -MinCapacity 1 -MaxCapacity 3
@@ -92,7 +95,7 @@ if ($logIsExist) {
 }
 
 # Enable all metrics and logs for a resource
-$DiagnosticSetting = Set-AzDiagnosticSetting -Name "log-analytics-prd-sea-001" -ResourceId $agw.Id -WorkspaceId $workspace.ResourceId -Enabled $true
+$DiagnosticSetting = Set-AzDiagnosticSetting -Name "DiagnosticEnabled" -ResourceId $agw.Id -WorkspaceId $workspace.ResourceId -Enabled $true
 #EndRegion Log Analytics Workspace
 
 # End
@@ -108,5 +111,6 @@ Write-Host "`n`n"
 Remove-AzApplicationGateway -ResourceGroupName $AppGatewayRG -Name $AppGatewayName -Force -Confirm:$false
 Start-Sleep -Seconds 15
 Remove-AzPublicIpAddress -ResourceGroupName $AppGatewayRG -Name $pipName -Force -Confirm:$false
+Remove-AzResourceGroup -Name $AppGatewayRG -Force -Confirm:$false
 Remove-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName -Force -Confirm:$false
 #EndRegion Decommission
