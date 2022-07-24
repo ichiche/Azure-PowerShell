@@ -1,19 +1,21 @@
 # Global Parameter
-$Location = "East Asia"
+$Location = "Southeast Asia"
 $FirewallPolicyRG = "FirewallPolicy"
 $FirewallPolicyName = "afwpol-core-prd-sea-001"
 $FirewallName = "afw-core-prd-sea-001"
-$pipName1 = "pip-afw-core-prd-eas-001"
-$ForcedTunnelingEnabled = $false
-$pipForcedTunneling = "pip-afwmgmt-core-prd-eas-001"
+$pipName = "pip-afw-core-prd-sea-001"
+$ForcedTunnelingEnabled = $true
+$pipForcedTunnelingName = "pip-afwmgmt-core-prd-sea-001"
 $HubVNetRG = "Network"
 $HubVNetName = "vnet-hub-prd-sea-001"
+$AllowSourceAddressRange = "10.10.0.0/16"
 $logIsExist = $true
 $logRG = "Log"
 $logName = "log-analytics-temp-prd-sea-001"
 
 # Main
 $StartTime = Get-Date
+Write-Host ("`n[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
 
 #Region Resource Group
 Write-Host "`nProvision Resource Group ..." -ForegroundColor Cyan
@@ -22,9 +24,9 @@ Write-Host "`nProvision Resource Group ..." -ForegroundColor Cyan
 $IsExist = Get-AzResourceGroup -Name $FirewallPolicyRG -ErrorAction SilentlyContinue
 if ([string]::IsNullOrEmpty($IsExist)) {
     New-AzResourceGroup -Name $FirewallPolicyRG -Location $Location | Out-Null
-    Write-Host ($FirewallPolicyRG + " is created") 
+    Write-Host ("Resource Group " + $FirewallPolicyRG + " is created") 
 } else {
-    Write-Host ($FirewallPolicyRG + " already exist") -ForegroundColor Yellow
+    Write-Host ("Resource Group " + $FirewallPolicyRG + " already exist") -ForegroundColor Yellow
 }
 Start-Sleep -Seconds 5
 #EndRegion Resource Group
@@ -45,7 +47,7 @@ Start-Sleep -Seconds 10
 Write-Host ("`n[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
 Write-Host "`nProvision Network Rule of Azure Firewall Policy ..." -ForegroundColor Cyan
 $rcgroup = New-AzFirewallPolicyRuleCollectionGroup -Name "RootCollectionGroup" -Priority 200 -FirewallPolicyObject $fwpol
-$netrule = New-AzFirewallPolicyNetworkRule -name Allow-Any-Any -Protocol ("Any", "TCP", "UDP", "ICMP") -SourceAddress "10.10.0.0/16" -DestinationAddress "*" -DestinationPort "*"
+$netrule = New-AzFirewallPolicyNetworkRule -name Allow-Any-Any -Protocol ("Any", "TCP", "UDP", "ICMP") -SourceAddress $AllowSourceAddressRange -DestinationAddress "*" -DestinationPort "*"
 $netcol = New-AzFirewallPolicyFilterRuleCollection -Name "SharedPlatformRuleCollection" -Priority 300 -Rule $netrule -ActionType "Allow"
 Set-AzFirewallPolicyRuleCollectionGroup -Name $rcgroup.Name -Priority 200 -RuleCollection $netcol -FirewallPolicyObject $fwpol 
 #EndRegion Azure Firewall Network Rule
@@ -53,13 +55,13 @@ Set-AzFirewallPolicyRuleCollectionGroup -Name $rcgroup.Name -Priority 200 -RuleC
 #Region Public IP Address
 Write-Host ("`n[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
 Write-Host "`nProvision Public IP Address for Azure Firewall ..." -ForegroundColor Cyan
-$pip = New-AzPublicIpAddress -ResourceGroupName $FirewallPolicyRG -Name $pipName1 -AllocationMethod Static -Location $Location -Sku Standard -Zone (1,2,3)
+$pip = New-AzPublicIpAddress -ResourceGroupName $FirewallPolicyRG -Name $pipName -AllocationMethod Static -Location $Location -Sku Standard -Zone (1,2,3)
 Start-Sleep -Seconds 5
 
 if ($ForcedTunnelingEnabled) {
     Write-Host ("`n[LOG] " + (Get-Date -Format "yyyy-MM-dd hh:mm")) -ForegroundColor White -BackgroundColor Black
     Write-Host "`nProvision Public IP Address for Azure Firewall Forced Tunneling ..." -ForegroundColor Cyan
-    $mgmtpip = New-AzPublicIpAddress -ResourceGroupName $FirewallPolicyRG -Name $pipForcedTunneling -AllocationMethod Static -Location $Location -Sku Standard -Zone (1,2,3)
+    $mgmtpip = New-AzPublicIpAddress -ResourceGroupName $FirewallPolicyRG -Name $pipForcedTunnelingName -AllocationMethod Static -Location $Location -Sku Standard -Zone (1,2,3)
     Start-Sleep -Seconds 5
 }
 #EndRegion Public IP Address
@@ -86,7 +88,7 @@ if ($logIsExist) {
 }
 
 # Enable all metrics and logs for a resource
-$DiagnosticSetting = Set-AzDiagnosticSetting -Name "log-analytics-prd-sea-001" -ResourceId $afw.Id -WorkspaceId $workspace.ResourceId -Enabled $true
+$DiagnosticSetting = Set-AzDiagnosticSetting -Name "DiagnosticEnabled" -ResourceId $afw.Id -WorkspaceId $workspace.ResourceId -Enabled $true
 #EndRegion Log Analytics Workspace
 
 # End
@@ -104,7 +106,8 @@ Start-Sleep -Seconds 10
 Remove-AzFirewallPolicy -ResourceGroupName $FirewallPolicyRG -Name $FirewallPolicyName -Force -Confirm:$false
 Remove-AzPublicIpAddress -ResourceGroupName $FirewallPolicyRG -Name $pipName -Force -Confirm:$false
 if ($ForcedTunnelingEnabled) {
-    Remove-AzPublicIpAddress -ResourceGroupName $FirewallPolicyRG -Name $pipForcedTunneling -Force -Confirm:$false
+    Remove-AzPublicIpAddress -ResourceGroupName $FirewallPolicyRG -Name $pipForcedTunnelingName -Force -Confirm:$false
 }
+Remove-AzResourceGroup -Name $FirewallPolicyRG -Force -Confirm:$false
 Remove-AzOperationalInsightsWorkspace -ResourceGroupName $logRG -Name $logName -Force -Confirm:$false
 #EndRegion Decommission
