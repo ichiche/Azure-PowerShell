@@ -82,6 +82,7 @@ Refer to README.md in **Well-Architected** folder
 | 4 | Delete_Obsolete_Image_Version.ps1 | Golden Image |
 
 #### Required PowerShell Module on Azure VM (Windows)
+
 https://www.powershellgallery.com/packages/PSWindowsUpdate/2.2.0.2
 
 # Issue Log
@@ -123,12 +124,14 @@ Connect-PnPOnline: Cannot find certificate with this thumbprint in the certifica
 ```
 
 Granting access via Azure AD App-Only
-https://docs.microsoft.com/en-us/sharepoint/dev/solution-guidance/security-apponly-azuread
+
+- https://docs.microsoft.com/en-us/sharepoint/dev/solution-guidance/security-apponly-azuread
 
 Azure Automation Runbook job goes into suspended mode when adding file to Sharepoint
-https://docs.microsoft.com/en-us/answers/questions/431771/azure-automation-runbook-job-goes-into-suspended-m.html
-https://docs.microsoft.com/en-us/answers/questions/214757/connect-sponline-using-pnp-by-azure-app-registrati.html
-https://github.com/pnp/PnP-PowerShell/issues/1541
+
+- https://docs.microsoft.com/en-us/answers/questions/431771/azure-automation-runbook-job-goes-into-suspended-m.html
+- https://docs.microsoft.com/en-us/answers/questions/214757/connect-sponline-using-pnp-by-azure-app-registrati.html
+- https://github.com/pnp/PnP-PowerShell/issues/1541
 
 # List of Script (Legacy)
 
