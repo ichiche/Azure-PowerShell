@@ -101,6 +101,11 @@ $RoutingRule = New-AzApplicationGatewayRequestRoutingRule -Name "DefaultRoutingR
 # New-AzApplicationGateway: Resource...agw-core-prd-sea-001/redirectConfigurations/DefaultRedirectConfiguration referenced by resource...agw-core-prd-sea-001/requestRoutingRules/DefaultRoutingRule was not found. Please make sure that the referenced resource exists, and that both resources are in the same region.
 ```
 
+#### PnP Online
+
+https://docs.microsoft.com/en-us/answers/questions/431771/azure-automation-runbook-job-goes-into-suspended-m.html
+https://github.com/pnp/PnP-PowerShell/issues/1541
+
 # List of Script (Legacy)
 
 | Id | File Name | Folder | Description |
