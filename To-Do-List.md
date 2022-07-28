@@ -1,4 +1,6 @@
 ```
+- Fix
+    - Exclude Databricks Storage Account
 - Availability Zone Enablement
     - Support more services
         - Azure Cosmos DB
